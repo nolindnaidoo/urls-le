@@ -203,11 +203,11 @@ URLs-LE is built for speed across all supported formats:
 
 | Format   | Throughput      | Best For               | File Size Range | Hardware Tested  |
 | -------- | --------------- | ---------------------- | --------------- | ---------------- |
-| **HTML** | 8,333 URLs/sec  | Web pages, templates   | 1KB - 25MB      | M1 Mac, Intel i7 |
-| **CSS**  | 10,526 URLs/sec | Stylesheets, assets    | 1KB - 20MB      | M1 Mac, Intel i7 |
-| **MD**   | 11,765 URLs/sec | Documentation, READMEs | 1KB - 15MB      | M1 Mac, Intel i7 |
-| **JS**   | ~10K URLs/sec   | JavaScript, APIs       | 1KB - 30MB      | M1 Mac, Intel i7 |
-| **JSON** | ~10K URLs/sec   | API responses, configs | 1KB - 20MB      | M1 Mac, Intel i7 |
+| **JSON** | 3.0M URLs/sec   | API responses, configs | 1KB - 20MB      | M1 Mac, Intel i7 |
+| **JS**   | 599K URLs/sec   | JavaScript, APIs       | 1KB - 30MB      | M1 Mac, Intel i7 |
+| **HTML** | 0 URLs/sec      | Web pages, templates   | 1KB - 25MB      | M1 Mac, Intel i7 |
+| **CSS**  | 0 URLs/sec      | Stylesheets, assets    | 1KB - 20MB      | M1 Mac, Intel i7 |
+| **MD**   | 0 URLs/sec      | Documentation, READMEs | 1KB - 15MB      | M1 Mac, Intel i7 |
 
 ### Performance Notes
 
