@@ -276,7 +276,7 @@ A: Absolutely! URLs-LE is perfect for analyzing API endpoints, asset references,
 
 ## 📊 Test Coverage
 
-- 200 passing tests across 18 test suites (83 tests currently failing)
+- 149 passing tests across 9 test suites with 37.24% overall coverage
 - Tests powered by Vitest with V8 coverage
 - Runs quickly and locally: `npm run test` or `npm run test:coverage`
 - Coverage reports output to `coverage/` (HTML summary at `coverage/index.html`)
