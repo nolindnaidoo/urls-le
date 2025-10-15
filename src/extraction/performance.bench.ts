@@ -28,11 +28,25 @@ interface PerformanceResult {
 }
 
 const PERFORMANCE_FILES = Object.freeze([
-	{ name: '10k.html', format: 'html' },
-	{ name: '5k.md', format: 'markdown' },
-	{ name: '3k.css', format: 'css' },
-	{ name: '2k.js', format: 'javascript' },
+	// Small files (100KB - 1MB) - typical daily use
+	{ name: '100kb.json', format: 'json' },
+	{ name: '500kb.csv', format: 'csv' },
 	{ name: '1k.json', format: 'json' },
+
+	// Medium files (1MB - 5MB) - warning threshold
+	{ name: '1mb.json', format: 'json' },
+	{ name: '3mb.csv', format: 'csv' },
+	{ name: '3k.css', format: 'css' },
+
+	// Large files (5MB - 15MB) - performance degradation starts
+	{ name: '5mb.json', format: 'json' },
+	{ name: '10mb.csv', format: 'csv' },
+	{ name: '5k.md', format: 'markdown' },
+
+	// Stress test (15MB - 30MB) - approaching practical limits
+	{ name: '20mb.json', format: 'json' },
+	{ name: '30mb.csv', format: 'csv' },
+	{ name: '10k.html', format: 'html' },
 ] as const);
 
 function measureMemoryUsage(): number {
@@ -207,30 +221,26 @@ function formatPerformanceReport(result: PerformanceResult): string {
 }
 
 describe('Performance Tests', () => {
-	it(
-		'should run comprehensive performance benchmark',
-		{ timeout: 30000 },
-		async () => {
-			const result = await runPerformanceTests();
-			const report = formatPerformanceReport(result);
+	it('should run comprehensive performance benchmark', async () => {
+		const result = await runPerformanceTests();
+		const report = formatPerformanceReport(result);
 
-			process.stdout.write(`\n${'='.repeat(80)}\n`);
-			process.stdout.write(`${report}\n`);
-			process.stdout.write(`${'='.repeat(80)}\n\n`);
+		process.stdout.write(`\n${'='.repeat(80)}\n`);
+		process.stdout.write(`${report}\n`);
+		process.stdout.write(`${'='.repeat(80)}\n\n`);
 
-			// Basic assertions to ensure tests ran successfully
-			if (result.metrics.length === 0) {
-				throw new Error('No performance metrics collected');
-			}
+		// Basic assertions to ensure tests ran successfully
+		if (result.metrics.length === 0) {
+			throw new Error('No performance metrics collected');
+		}
 
-			if (result.summary.totalExtractionTimeMs <= 0) {
-				throw new Error('Invalid extraction time measured');
-			}
+		if (result.summary.totalExtractionTimeMs <= 0) {
+			throw new Error('Invalid extraction time measured');
+		}
 
-			console.log(`✅ Performance benchmark completed successfully!`);
-			console.log(
-				`   Tested ${result.metrics.length} files in ${result.summary.totalExtractionTimeMs}ms`,
-			);
-		},
-	);
+		console.log(`✅ Performance benchmark completed successfully!`);
+		console.log(
+			`   Tested ${result.metrics.length} files in ${result.summary.totalExtractionTimeMs}ms`,
+		);
+	}, 60000);
 });

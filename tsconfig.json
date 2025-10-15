@@ -20,6 +20,8 @@
         "src/__mocks__/**/*",
         "test/**/*",
         "vitest.config.ts",
-        "**/*.test.ts"
+        "**/*.test.ts",
+        "**/*.bench.ts",
+        "scripts"
     ]
 }

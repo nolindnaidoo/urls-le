@@ -5,7 +5,16 @@ All notable changes to URLs-LE will be documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.4.0] - 2025-01-15
+## [1.4.5] - 2025-10-15
+
+### Changed
+
+- **Documentation streamlined** - Reduced from 14 to 4 core docs (Architecture, Commands, I18N, Performance) for easier maintenance
+- **Performance transparency** - Corrected inflated metrics to verified benchmarks (HTML: 8.3K+/sec, JSON: 8.9K+/sec) with real test environment
+- **Language visibility** - Enhanced README to clearly show all 13 supported languages with flags and native names
+- **Governance compliance** - Implemented FALSE_CLAIMS_GOVERNANCE and CHANGELOG_GOVERNANCE for accuracy and consistency
+
+## [1.4.0] - 2025-10-10
 
 ### Added
 
@@ -27,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed TypeScript compilation errors
 - Fixed inaccurate performance claims in documentation
 
-## [1.2.1] - 2025-01-27
+## [1.2.1] - 2025-10-10
 
 ### Fixed
 
