@@ -3,7 +3,7 @@
 	"publisher": "nolindnaidoo",
 	"displayName": "URLs-LE",
 	"description": "Zero Hassle URL Extraction from Documentation, Configs, and Code",
-	"version": "1.4.5",
+	"version": "1.4.6",
 	"license": "MIT",
 	"author": {
 		"name": "Nolin D Naidoo",
@@ -204,7 +204,7 @@
 				},
 				"urls-le.safety.fileSizeWarnBytes": {
 					"type": "number",
-					"default": 1e6,
+					"default": 1000000,
 					"minimum": 1000,
 					"description": "%manifest.settings.safety.warn.file-size.desc%"
 				},
