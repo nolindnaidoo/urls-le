@@ -166,7 +166,7 @@ Absolutely! Audit API endpoints, asset references, and external links for broken
 
 ## 📊 Testing
 
-**193 unit tests** • **99.6% function coverage, 81% line coverage**  
+**193 unit tests** • **71.79% function coverage, 33.66% line coverage**  
 Powered by Vitest • Run with `bun test --coverage`
 
 ---
