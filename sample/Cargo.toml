@@ -1,0 +1,41 @@
+[package]
+name = "sample-rust-project"
+version = "0.1.0"
+edition = "2021"
+authors = ["Developer <dev@example.com>"]
+description = "Sample Rust project with URL references"
+homepage = "https://rust-project.example.com"
+repository = "https://github.com/example/rust-project"
+documentation = "https://docs.rs/sample-rust-project"
+readme = "https://raw.githubusercontent.com/example/rust-project/main/README.md"
+license = "MIT"
+license-file = "https://github.com/example/rust-project/blob/main/LICENSE"
+keywords = ["api", "web", "http"]
+
+[dependencies]
+tokio = { version = "1.35", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+reqwest = { version = "0.11", features = ["json"] }
+# External API client
+api-client = { git = "https://github.com/api-vendor/rust-client" }
+# Custom registry
+custom-crate = { registry = "https://custom-registry.example.com" }
+
+[dev-dependencies]
+mockito = { git = "https://github.com/lipanski/mockito" }
+
+[profile.release]
+opt-level = 3
+
+[[example]]
+name = "basic"
+path = "https://raw.githubusercontent.com/example/rust-project/main/examples/basic.rs"
+
+[package.metadata.docs.rs]
+default-target = "x86_64-unknown-linux-gnu"
+
+# Additional URLs in comments
+# API Documentation: https://api.example.com/docs
+# Support: mailto:support@rust-project.com
+# Chat: https://discord.gg/rust-project
+

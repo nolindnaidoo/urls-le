@@ -1,0 +1,119 @@
+/* Sample CSS with various URL references */
+
+/* Import statements */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import './reset.css';
+@import url('../vendor/normalize.css');
+
+/* Background images */
+body {
+  background-image: url('https://cdn.example.com/images/background.jpg');
+  background: url('./images/texture.png') repeat;
+}
+
+.hero {
+  background: url('https://images.unsplash.com/photo-1234567890') center/cover;
+}
+
+.banner {
+  background-image: url('../assets/banner.jpg');
+}
+
+/* Font faces */
+@font-face {
+  font-family: 'CustomFont';
+  src: url('./fonts/custom-font.woff2') format('woff2'),
+    url('https://cdn.example.com/fonts/custom-font.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'IconFont';
+  src: url('../fonts/icons.eot');
+  src: url('../fonts/icons.eot?#iefix') format('embedded-opentype'),
+    url('../fonts/icons.woff2') format('woff2'), url('../fonts/icons.ttf') format('truetype');
+}
+
+/* Cursors */
+.clickable {
+  cursor: url('./cursors/pointer.cur'), pointer;
+}
+
+.custom-cursor {
+  cursor: url('https://example.com/cursors/custom.png'), auto;
+}
+
+/* Gradients with URLs (edge case - URLs in gradients) */
+.complex-bg {
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.8)), url('./images/overlay.jpg');
+}
+
+/* Border images */
+.fancy-border {
+  border-image: url('https://cdn.example.com/borders/pattern.png') 30 round;
+}
+
+/* Mask images */
+.masked {
+  mask-image: url('./masks/shape.svg');
+  -webkit-mask-image: url('https://example.com/masks/circle.svg');
+}
+
+/* List style images */
+ul.custom {
+  list-style-image: url('../icons/bullet.png');
+}
+
+/* Content property */
+.icon::before {
+  content: url('./icons/star.svg');
+}
+
+/* Filter URLs */
+.filtered {
+  filter: url('#svg-filter');
+}
+
+/* Shape outside */
+.shaped {
+  shape-outside: url('https://example.com/shapes/polygon.png');
+}
+
+/* Various protocols */
+.protocols {
+  /* HTTP */
+  background: url('http://example.com/http-image.jpg');
+
+  /* HTTPS */
+  background: url('https://secure.example.com/https-image.jpg');
+
+  /* Protocol-relative */
+  background: url('//cdn.example.com/image.jpg');
+
+  /* Data URL (should be excluded) */
+  background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAiIGhlaWdodD0iMTAiPjwvc3ZnPg==');
+}
+
+/* Media queries */
+@media (min-width: 768px) {
+  body {
+    background-image: url('./images/bg-desktop.jpg');
+  }
+}
+
+@media print {
+  body {
+    background: url('../images/print-bg.jpg');
+  }
+}
+
+/* Complex selectors */
+a[href="https://example.com"]::after
+{
+  content: url('./icons/external-link.svg');
+}
+
+/* Multiple URLs in single property */
+.multiple {
+  background: url('./bg1.jpg') top left, url('https://cdn.example.com/bg2.jpg') bottom right,
+    url('../images/bg3.png') center;
+}

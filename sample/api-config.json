@@ -1,0 +1,75 @@
+{
+  "api": {
+    "baseUrl": "https://api.example.com/v1",
+    "endpoints": {
+      "users": "https://api.example.com/v1/users",
+      "posts": "https://api.example.com/v1/posts",
+      "comments": "https://api.example.com/v1/comments",
+      "auth": {
+        "login": "https://api.example.com/v1/auth/login",
+        "logout": "https://api.example.com/v1/auth/logout",
+        "refresh": "https://api.example.com/v1/auth/refresh"
+      }
+    }
+  },
+  "cdn": {
+    "images": "https://cdn.example.com/images",
+    "assets": "https://cdn.example.com/assets",
+    "videos": "https://cdn.example.com/videos"
+  },
+  "external": {
+    "github": "https://github.com/username/repo",
+    "docs": "https://docs.example.com",
+    "support": "https://support.example.com/help",
+    "status": "https://status.example.com"
+  },
+  "webhooks": [
+    "https://webhook.example.com/events",
+    "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX",
+    "https://discord.com/api/webhooks/123456789/abcdefgh"
+  ],
+  "oauth": {
+    "google": {
+      "authUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+      "tokenUrl": "https://oauth2.googleapis.com/token",
+      "userInfo": "https://www.googleapis.com/oauth2/v1/userinfo"
+    },
+    "github": {
+      "authUrl": "https://github.com/login/oauth/authorize",
+      "tokenUrl": "https://github.com/login/oauth/access_token",
+      "userInfo": "https://api.github.com/user"
+    }
+  },
+  "resources": {
+    "documentation": "https://docs.example.com/api/reference",
+    "changelog": "https://github.com/example/api/blob/main/CHANGELOG.md",
+    "issues": "https://github.com/example/api/issues",
+    "community": "https://community.example.com"
+  },
+  "monitoring": {
+    "metrics": "https://metrics.example.com/api",
+    "logs": "https://logs.example.com/v2/query",
+    "traces": "https://traces.example.com/api/v1"
+  },
+  "social": {
+    "twitter": "https://twitter.com/example",
+    "linkedin": "https://linkedin.com/company/example",
+    "facebook": "https://facebook.com/example",
+    "youtube": "https://youtube.com/@example"
+  },
+  "protocols": {
+    "http": "http://legacy.example.com/api",
+    "https": "https://secure.example.com/api",
+    "ws": "wss://websocket.example.com",
+    "ftp": "ftp://files.example.com/public",
+    "mailto": "mailto:support@example.com",
+    "tel": "tel:+1-555-0100"
+  },
+  "files": {
+    "terms": "https://example.com/legal/terms.pdf",
+    "privacy": "https://example.com/legal/privacy.pdf",
+    "logo": "https://example.com/assets/logo.svg",
+    "favicon": "https://example.com/favicon.ico"
+  }
+}
+

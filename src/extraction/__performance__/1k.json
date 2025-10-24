@@ -1,0 +1,343 @@
+[
+  {
+    "website": "https://example8051.com",
+    "api": "https://api.service469.io/v1/data",
+    "cdn": "https://cdn.assets51.net/images/photo.jpg",
+    "docs": "https://docs.platform489.dev/guide",
+    "repo": "https://github.com/user721/repo",
+    "nested": {
+      "url1": "https://nested0.3229093474459417.com/path",
+      "url2": "http://sub.domain0.3579117723976305.org/resource"
+    }
+  },
+  {
+    "website": "https://example1625.com",
+    "api": "https://api.service806.io/v1/data",
+    "cdn": "https://cdn.assets68.net/images/photo.jpg",
+    "docs": "https://docs.platform91.dev/guide",
+    "repo": "https://github.com/user1957/repo",
+    "nested": {
+      "url1": "https://nested0.158011058723885.com/path",
+      "url2": "http://sub.domain0.10262394284960952.org/resource"
+    }
+  },
+  {
+    "website": "https://example7714.com",
+    "api": "https://api.service938.io/v1/data",
+    "cdn": "https://cdn.assets56.net/images/photo.jpg",
+    "docs": "https://docs.platform46.dev/guide",
+    "repo": "https://github.com/user8316/repo",
+    "nested": {
+      "url1": "https://nested0.23551607089843585.com/path",
+      "url2": "http://sub.domain0.424028257508684.org/resource"
+    }
+  },
+  {
+    "website": "https://example1828.com",
+    "api": "https://api.service986.io/v1/data",
+    "cdn": "https://cdn.assets48.net/images/photo.jpg",
+    "docs": "https://docs.platform21.dev/guide",
+    "repo": "https://github.com/user6207/repo",
+    "nested": {
+      "url1": "https://nested0.7576765981231233.com/path",
+      "url2": "http://sub.domain0.7693652885650566.org/resource"
+    }
+  },
+  {
+    "website": "https://example9795.com",
+    "api": "https://api.service140.io/v1/data",
+    "cdn": "https://cdn.assets47.net/images/photo.jpg",
+    "docs": "https://docs.platform336.dev/guide",
+    "repo": "https://github.com/user6514/repo",
+    "nested": {
+      "url1": "https://nested0.8649668263581017.com/path",
+      "url2": "http://sub.domain0.5717209303137554.org/resource"
+    }
+  },
+  {
+    "website": "https://example3416.com",
+    "api": "https://api.service260.io/v1/data",
+    "cdn": "https://cdn.assets47.net/images/photo.jpg",
+    "docs": "https://docs.platform63.dev/guide",
+    "repo": "https://github.com/user3276/repo",
+    "nested": {
+      "url1": "https://nested0.2915554115231126.com/path",
+      "url2": "http://sub.domain0.8653771533654118.org/resource"
+    }
+  },
+  {
+    "website": "https://example3825.com",
+    "api": "https://api.service564.io/v1/data",
+    "cdn": "https://cdn.assets72.net/images/photo.jpg",
+    "docs": "https://docs.platform359.dev/guide",
+    "repo": "https://github.com/user1425/repo",
+    "nested": {
+      "url1": "https://nested0.1822037110248843.com/path",
+      "url2": "http://sub.domain0.9860725015858315.org/resource"
+    }
+  },
+  {
+    "website": "https://example8062.com",
+    "api": "https://api.service640.io/v1/data",
+    "cdn": "https://cdn.assets88.net/images/photo.jpg",
+    "docs": "https://docs.platform133.dev/guide",
+    "repo": "https://github.com/user4738/repo",
+    "nested": {
+      "url1": "https://nested0.7282766823265263.com/path",
+      "url2": "http://sub.domain0.2220525006622468.org/resource"
+    }
+  },
+  {
+    "website": "https://example9811.com",
+    "api": "https://api.service123.io/v1/data",
+    "cdn": "https://cdn.assets30.net/images/photo.jpg",
+    "docs": "https://docs.platform7.dev/guide",
+    "repo": "https://github.com/user4772/repo",
+    "nested": {
+      "url1": "https://nested0.008058793432725975.com/path",
+      "url2": "http://sub.domain0.2888241917948474.org/resource"
+    }
+  },
+  {
+    "website": "https://example7900.com",
+    "api": "https://api.service815.io/v1/data",
+    "cdn": "https://cdn.assets42.net/images/photo.jpg",
+    "docs": "https://docs.platform186.dev/guide",
+    "repo": "https://github.com/user8632/repo",
+    "nested": {
+      "url1": "https://nested0.04115900695367414.com/path",
+      "url2": "http://sub.domain0.5855455539007675.org/resource"
+    }
+  },
+  {
+    "website": "https://example4571.com",
+    "api": "https://api.service754.io/v1/data",
+    "cdn": "https://cdn.assets28.net/images/photo.jpg",
+    "docs": "https://docs.platform40.dev/guide",
+    "repo": "https://github.com/user4365/repo",
+    "nested": {
+      "url1": "https://nested0.5977319316329512.com/path",
+      "url2": "http://sub.domain0.09375950611939499.org/resource"
+    }
+  },
+  {
+    "website": "https://example4374.com",
+    "api": "https://api.service94.io/v1/data",
+    "cdn": "https://cdn.assets89.net/images/photo.jpg",
+    "docs": "https://docs.platform417.dev/guide",
+    "repo": "https://github.com/user3580/repo",
+    "nested": {
+      "url1": "https://nested0.7989169940255676.com/path",
+      "url2": "http://sub.domain0.7247662037603863.org/resource"
+    }
+  },
+  {
+    "website": "https://example4123.com",
+    "api": "https://api.service203.io/v1/data",
+    "cdn": "https://cdn.assets49.net/images/photo.jpg",
+    "docs": "https://docs.platform422.dev/guide",
+    "repo": "https://github.com/user7910/repo",
+    "nested": {
+      "url1": "https://nested0.799684035254603.com/path",
+      "url2": "http://sub.domain0.9690008382193993.org/resource"
+    }
+  },
+  {
+    "website": "https://example1258.com",
+    "api": "https://api.service487.io/v1/data",
+    "cdn": "https://cdn.assets14.net/images/photo.jpg",
+    "docs": "https://docs.platform2.dev/guide",
+    "repo": "https://github.com/user3154/repo",
+    "nested": {
+      "url1": "https://nested0.23207100488809085.com/path",
+      "url2": "http://sub.domain0.8639465858469783.org/resource"
+    }
+  },
+  {
+    "website": "https://example3088.com",
+    "api": "https://api.service912.io/v1/data",
+    "cdn": "https://cdn.assets81.net/images/photo.jpg",
+    "docs": "https://docs.platform361.dev/guide",
+    "repo": "https://github.com/user4997/repo",
+    "nested": {
+      "url1": "https://nested0.6681589891758357.com/path",
+      "url2": "http://sub.domain0.9748966391525011.org/resource"
+    }
+  },
+  {
+    "website": "https://example2166.com",
+    "api": "https://api.service365.io/v1/data",
+    "cdn": "https://cdn.assets28.net/images/photo.jpg",
+    "docs": "https://docs.platform482.dev/guide",
+    "repo": "https://github.com/user4802/repo",
+    "nested": {
+      "url1": "https://nested0.062433497014868555.com/path",
+      "url2": "http://sub.domain0.4899839211371898.org/resource"
+    }
+  },
+  {
+    "website": "https://example5443.com",
+    "api": "https://api.service971.io/v1/data",
+    "cdn": "https://cdn.assets50.net/images/photo.jpg",
+    "docs": "https://docs.platform92.dev/guide",
+    "repo": "https://github.com/user9141/repo",
+    "nested": {
+      "url1": "https://nested0.7182625928423373.com/path",
+      "url2": "http://sub.domain0.8646177536514729.org/resource"
+    }
+  },
+  {
+    "website": "https://example9851.com",
+    "api": "https://api.service523.io/v1/data",
+    "cdn": "https://cdn.assets70.net/images/photo.jpg",
+    "docs": "https://docs.platform311.dev/guide",
+    "repo": "https://github.com/user204/repo",
+    "nested": {
+      "url1": "https://nested0.97869374749476.com/path",
+      "url2": "http://sub.domain0.21923316986021035.org/resource"
+    }
+  },
+  {
+    "website": "https://example4725.com",
+    "api": "https://api.service527.io/v1/data",
+    "cdn": "https://cdn.assets62.net/images/photo.jpg",
+    "docs": "https://docs.platform238.dev/guide",
+    "repo": "https://github.com/user8980/repo",
+    "nested": {
+      "url1": "https://nested0.787069399492773.com/path",
+      "url2": "http://sub.domain0.6730107439072276.org/resource"
+    }
+  },
+  {
+    "website": "https://example3305.com",
+    "api": "https://api.service350.io/v1/data",
+    "cdn": "https://cdn.assets35.net/images/photo.jpg",
+    "docs": "https://docs.platform257.dev/guide",
+    "repo": "https://github.com/user4794/repo",
+    "nested": {
+      "url1": "https://nested0.3653486436414586.com/path",
+      "url2": "http://sub.domain0.6571581654057538.org/resource"
+    }
+  },
+  {
+    "website": "https://example8488.com",
+    "api": "https://api.service937.io/v1/data",
+    "cdn": "https://cdn.assets86.net/images/photo.jpg",
+    "docs": "https://docs.platform224.dev/guide",
+    "repo": "https://github.com/user2055/repo",
+    "nested": {
+      "url1": "https://nested0.7950649836636855.com/path",
+      "url2": "http://sub.domain0.4454609175828018.org/resource"
+    }
+  },
+  {
+    "website": "https://example1951.com",
+    "api": "https://api.service767.io/v1/data",
+    "cdn": "https://cdn.assets17.net/images/photo.jpg",
+    "docs": "https://docs.platform259.dev/guide",
+    "repo": "https://github.com/user4349/repo",
+    "nested": {
+      "url1": "https://nested0.3754123463717056.com/path",
+      "url2": "http://sub.domain0.30981931256895756.org/resource"
+    }
+  },
+  {
+    "website": "https://example3218.com",
+    "api": "https://api.service273.io/v1/data",
+    "cdn": "https://cdn.assets56.net/images/photo.jpg",
+    "docs": "https://docs.platform30.dev/guide",
+    "repo": "https://github.com/user8324/repo",
+    "nested": {
+      "url1": "https://nested0.4083621916904332.com/path",
+      "url2": "http://sub.domain0.05901641536125479.org/resource"
+    }
+  },
+  {
+    "website": "https://example7516.com",
+    "api": "https://api.service417.io/v1/data",
+    "cdn": "https://cdn.assets81.net/images/photo.jpg",
+    "docs": "https://docs.platform109.dev/guide",
+    "repo": "https://github.com/user2577/repo",
+    "nested": {
+      "url1": "https://nested0.631899538585323.com/path",
+      "url2": "http://sub.domain0.6435527809527011.org/resource"
+    }
+  },
+  {
+    "website": "https://example4261.com",
+    "api": "https://api.service410.io/v1/data",
+    "cdn": "https://cdn.assets72.net/images/photo.jpg",
+    "docs": "https://docs.platform422.dev/guide",
+    "repo": "https://github.com/user2893/repo",
+    "nested": {
+      "url1": "https://nested0.32667054706282184.com/path",
+      "url2": "http://sub.domain0.259338849266306.org/resource"
+    }
+  },
+  {
+    "website": "https://example3765.com",
+    "api": "https://api.service23.io/v1/data",
+    "cdn": "https://cdn.assets95.net/images/photo.jpg",
+    "docs": "https://docs.platform186.dev/guide",
+    "repo": "https://github.com/user6590/repo",
+    "nested": {
+      "url1": "https://nested0.3110247016800938.com/path",
+      "url2": "http://sub.domain0.031167415169981116.org/resource"
+    }
+  },
+  {
+    "website": "https://example5484.com",
+    "api": "https://api.service772.io/v1/data",
+    "cdn": "https://cdn.assets39.net/images/photo.jpg",
+    "docs": "https://docs.platform50.dev/guide",
+    "repo": "https://github.com/user1164/repo",
+    "nested": {
+      "url1": "https://nested0.8943985237559804.com/path",
+      "url2": "http://sub.domain0.23314124804395142.org/resource"
+    }
+  },
+  {
+    "website": "https://example9551.com",
+    "api": "https://api.service595.io/v1/data",
+    "cdn": "https://cdn.assets88.net/images/photo.jpg",
+    "docs": "https://docs.platform358.dev/guide",
+    "repo": "https://github.com/user3317/repo",
+    "nested": {
+      "url1": "https://nested0.954988811516334.com/path",
+      "url2": "http://sub.domain0.2038274690707359.org/resource"
+    }
+  },
+  {
+    "website": "https://example8373.com",
+    "api": "https://api.service903.io/v1/data",
+    "cdn": "https://cdn.assets92.net/images/photo.jpg",
+    "docs": "https://docs.platform168.dev/guide",
+    "repo": "https://github.com/user4643/repo",
+    "nested": {
+      "url1": "https://nested0.04156989824055901.com/path",
+      "url2": "http://sub.domain0.9037123527775619.org/resource"
+    }
+  },
+  {
+    "website": "https://example2722.com",
+    "api": "https://api.service577.io/v1/data",
+    "cdn": "https://cdn.assets12.net/images/photo.jpg",
+    "docs": "https://docs.platform161.dev/guide",
+    "repo": "https://github.com/user5868/repo",
+    "nested": {
+      "url1": "https://nested0.9173534363680415.com/path",
+      "url2": "http://sub.domain0.4074672475680309.org/resource"
+    }
+  },
+  {
+    "website": "https://example1137.com",
+    "api": "https://api.service76.io/v1/data",
+    "cdn": "https://cdn.assets74.net/images/photo.jpg",
+    "docs": "https://docs.platform36.dev/guide",
+    "repo": "https://github.com/user8733/repo",
+    "nested": {
+      "url1": "https://nested0.4485134428769887.com/path",
+      "url2": "http://sub.domain0.5544181634815386.org/resource"
+    }
+  }
+]

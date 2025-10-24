@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>sample-maven-project</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>Sample Maven Project</name>
+    <description>Sample project demonstrating URL extraction from Maven POM files</description>
+    <url>https://project.example.com</url>
+    <inceptionYear>2024</inceptionYear>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>developer</id>
+            <name>Example Developer</name>
+            <email>mailto:dev@example.com</email>
+            <url>https://github.com/developer</url>
+        </developer>
+    </developers>
+
+    <organization>
+        <name>Example Organization</name>
+        <url>https://www.example.com</url>
+    </organization>
+
+    <scm>
+        <connection>scm:git:https://github.com/example/sample-project.git</connection>
+        <developerConnection>scm:git:https://github.com/example/sample-project.git</developerConnection>
+        <url>https://github.com/example/sample-project</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/example/sample-project/issues</url>
+    </issueManagement>
+
+    <ciManagement>
+        <system>GitHub Actions</system>
+        <url>https://github.com/example/sample-project/actions</url>
+    </ciManagement>
+
+    <distributionManagement>
+        <repository>
+            <id>releases</id>
+            <url>https://maven.example.com/repository/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <url>https://maven.example.com/repository/snapshots</url>
+        </snapshotRepository>
+        <site>
+            <id>site</id>
+            <url>https://site.example.com/project</url>
+        </site>
+    </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        <repository>
+            <id>custom-repo</id>
+            <url>https://maven.custom.com/repository</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central-plugins</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <api.base.url>https://api.example.com/v1</api.base.url>
+        <docs.url>https://docs.example.com</docs.url>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.12.1</version>
+                <configuration>
+                    <siteUrl>https://site.example.com</siteUrl>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
