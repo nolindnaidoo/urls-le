@@ -1,7 +1,4 @@
-import * as nls from 'vscode-nls';
 import type { UrlProtocol, ValidationResult } from '../types';
-
-const localize = nls.config({ messageFormat: nls.MessageFormat.file })();
 
 const SUPPORTED_PROTOCOLS = [
 	'http:',
@@ -129,18 +126,12 @@ export async function validateUrl(
 ): Promise<ValidationResult> {
 	// Fail fast: Check basic format
 	if (!isValidUrl(url)) {
-		return createInvalidResult(
-			url,
-			localize('runtime.validation.invalid-format', 'Invalid URL format'),
-		);
+		return createInvalidResult(url, 'Invalid URL format');
 	}
 
 	// Fail fast: Check for suspicious patterns
 	if (isSuspiciousUrl(url)) {
-		return createErrorResult(
-			url,
-			localize('runtime.validation.suspicious-url', 'Suspicious URL detected'),
-		);
+		return createErrorResult(url, 'Suspicious URL detected');
 	}
 
 	// Return valid result (HTTP validation would go here in production)

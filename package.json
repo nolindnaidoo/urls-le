@@ -53,7 +53,6 @@
 	],
 	"icon": "src/assets/images/icon.png",
 	"main": "./dist/extension.js",
-	"l10n": "./package.nls.json",
 	"activationEvents": [
 		"onLanguage:markdown",
 		"onLanguage:html",
@@ -359,7 +358,6 @@
 		"vitest": "^3.2.4"
 	},
 	"dependencies": {
-		"vscode-nls": "^5.2.0",
 		"@iarna/toml": "^2.2.5",
 		"ini": "^5.0.0"
 	}

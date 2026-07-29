@@ -1,8 +1,5 @@
-import * as nls from 'vscode-nls';
 import type { Configuration } from '../types';
 import { createEnhancedError } from './errorHandling';
-
-const localize = nls.config({ messageFormat: nls.MessageFormat.file })();
 
 /**
  * Configuration validation result
@@ -65,10 +62,7 @@ export function createConfigurationError(
 	return createEnhancedError(
 		error,
 		'configuration',
-		localize(
-			'runtime.config.validation-failed',
-			'Configuration validation failed',
-		),
+		'Configuration validation failed',
 	);
 }
 

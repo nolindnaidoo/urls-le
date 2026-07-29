@@ -1,7 +1,4 @@
 import * as vscode from 'vscode';
-import * as nls from 'vscode-nls';
-
-const localize = nls.config({ messageFormat: nls.MessageFormat.file })();
 
 export function registerDedupeCommand(context: vscode.ExtensionContext): void {
 	const command = vscode.commands.registerCommand(
@@ -69,30 +66,19 @@ async function replaceDocumentContent(
 }
 
 function showNoEditorWarning(): void {
-	vscode.window.showWarningMessage(
-		localize('runtime.dedupe.no-editor', 'No active editor found'),
-	);
+	vscode.window.showWarningMessage('No active editor found');
 }
 
 function showSuccessMessage(originalCount: number, dedupedCount: number): void {
 	const removedCount = originalCount - dedupedCount;
 	vscode.window.showInformationMessage(
-		localize(
-			'runtime.dedupe.success',
-			'Removed {0} duplicate URLs ({1} remaining)',
-			removedCount,
-			dedupedCount,
-		),
+		`Removed ${removedCount} duplicate URLs (${dedupedCount} remaining)`,
 	);
 }
 
 function handleDedupeError(error: unknown): void {
 	const message =
-		error instanceof Error
-			? error.message
-			: localize('runtime.error.unknown-fallback', 'Unknown error occurred');
+		error instanceof Error ? error.message : 'Unknown error occurred';
 
-	vscode.window.showErrorMessage(
-		localize('runtime.dedupe.error', 'Deduplication failed: {0}', message),
-	);
+	vscode.window.showErrorMessage(`Deduplication failed: ${message}`);
 }

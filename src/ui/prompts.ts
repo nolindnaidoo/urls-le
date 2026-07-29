@@ -1,33 +1,23 @@
 import * as vscode from 'vscode';
-import * as nls from 'vscode-nls';
-
-const localize = nls.config({ messageFormat: nls.MessageFormat.file })();
 
 // Helper to handle CSV header-based column selection
 async function handleCsvHeaderBasedSelection(
 	headerCells: readonly string[],
 ): Promise<CsvPromptOptions> {
-	const allLabel = localize('runtime.csv.columns.all', 'All columns');
+	const allLabel = 'All columns';
 	const picks: Array<vscode.QuickPickItem> = [
 		{
 			label: allLabel,
-			description: localize(
-				'runtime.csv.columns.all.desc',
-				'Extract from all columns',
-			),
+			description: 'Extract from all columns',
 		},
 		...headerCells.map((name, index) => ({
-			label:
-				name || localize('runtime.csv.column.default', '(Column {0})', index),
-			description: localize('runtime.csv.column.index', 'Index {0}', index),
+			label: name || `(Column ${index})`,
+			description: `Index ${index}`,
 		})),
 	];
 
 	const selected = await vscode.window.showQuickPick(picks, {
-		placeHolder: localize(
-			'runtime.csv.picker.placeholder',
-			'Select a CSV column or all columns',
-		),
+		placeHolder: 'Select a CSV column or all columns',
 		matchOnDescription: true,
 	});
 
@@ -63,11 +53,7 @@ function findColumnIndex(
 
 	// Fallback to default label match (Column {i})
 	for (let i = 0; i < headerCells.length; i++) {
-		const defaultLabel = localize(
-			'runtime.csv.column.default',
-			'(Column {0})',
-			i,
-		);
+		const defaultLabel = `(Column ${i})`;
 		if (defaultLabel === label) {
 			return i;
 		}
@@ -81,10 +67,8 @@ async function handleCsvIndexBasedSelection(
 	lines: readonly string[],
 ): Promise<CsvPromptOptions> {
 	const idxStr = await vscode.window.showInputBox({
-		prompt: localize(
-			'runtime.csv.input.prompt',
+		prompt:
 			'Enter column indexes (comma-separated), or leave empty for all columns',
-		),
 		validateInput: (val) => {
 			if (val.trim() === '') return null;
 			const parts = val
@@ -94,10 +78,7 @@ async function handleCsvIndexBasedSelection(
 			const allInts = parts.every((p) => /^(\d+)$/.test(p));
 			return allInts
 				? null
-				: localize(
-						'runtime.csv.input.validation',
-						'Enter valid column indexes separated by commas, or leave empty',
-					);
+				: 'Enter valid column indexes separated by commas, or leave empty';
 		},
 	});
 
@@ -122,11 +103,7 @@ async function handleCsvIndexBasedSelection(
 
 	if (inRange.length === 0) {
 		vscode.window.showWarningMessage(
-			localize(
-				'runtime.csv.error.out-of-range',
-				'Column index out of range ({0}). Using all columns instead',
-				indices.join(','),
-			),
+			`Column index out of range (${indices.join(',')}). Using all columns instead`,
 		);
 		return Object.freeze({ csvHasHeader: false, selectAllColumns: true });
 	}
@@ -195,10 +172,7 @@ export function promptForFileType(): Promise<
 		{ label: 'CSS', value: 'css' },
 		{ label: 'XML', value: 'xml' },
 		{
-			label: localize(
-				'runtime.picker.filetype.fallback',
-				'Unknown (regex fallback)',
-			),
+			label: 'Unknown (regex fallback)',
 			value: 'unknown',
 		},
 	];
@@ -207,10 +181,7 @@ export function promptForFileType(): Promise<
 			.showQuickPick(
 				items.map((i) => i.label),
 				{
-					placeHolder: localize(
-						'runtime.picker.filetype.placeholder',
-						'Choose file type for URL extraction',
-					),
+					placeHolder: 'Choose file type for URL extraction',
 				},
 			)
 			.then(

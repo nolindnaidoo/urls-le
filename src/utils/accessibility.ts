@@ -1,7 +1,3 @@
-import * as nls from 'vscode-nls';
-
-const localize = nls.config({ messageFormat: nls.MessageFormat.file })();
-
 export interface AccessibilityResult {
 	url: string;
 	accessible: boolean;
@@ -50,12 +46,7 @@ async function checkSingleUrlAccessibility(
 	return {
 		url,
 		accessible: false,
-		issues: [
-			localize(
-				'runtime.analysis.accessibility-issue',
-				'Accessibility issue detected',
-			),
-		],
+		issues: ['Accessibility issue detected'],
 		severity: 'error',
 	};
 }

@@ -1,7 +1,4 @@
 import * as vscode from 'vscode';
-import * as nls from 'vscode-nls';
-
-const localize = nls.config({ messageFormat: nls.MessageFormat.file })();
 
 type SortOrder = 'asc' | 'desc' | 'domain' | 'length-asc' | 'length-desc';
 
@@ -43,36 +40,30 @@ async function executeSortCommand(): Promise<void> {
 
 async function promptForSortOrder(): Promise<SortOption | undefined> {
 	return vscode.window.showQuickPick(createSortOptions(), {
-		placeHolder: localize('runtime.sort.pick.placeholder', 'Select sort order'),
+		placeHolder: 'Select sort order',
 	});
 }
 
 function createSortOptions(): SortOption[] {
 	return [
 		{
-			label: localize('runtime.sort.pick.alpha-asc', 'Alphabetical (A → Z)'),
+			label: 'Alphabetical (A → Z)',
 			value: 'asc',
 		},
 		{
-			label: localize('runtime.sort.pick.alpha-desc', 'Alphabetical (Z → A)'),
+			label: 'Alphabetical (Z → A)',
 			value: 'desc',
 		},
 		{
-			label: localize('runtime.sort.pick.domain', 'By Domain'),
+			label: 'By Domain',
 			value: 'domain',
 		},
 		{
-			label: localize(
-				'runtime.sort.pick.length-asc',
-				'By Length (Short → Long)',
-			),
+			label: 'By Length (Short → Long)',
 			value: 'length-asc',
 		},
 		{
-			label: localize(
-				'runtime.sort.pick.length-desc',
-				'By Length (Long → Short)',
-			),
+			label: 'By Length (Long → Short)',
 			value: 'length-desc',
 		},
 	];
@@ -156,24 +147,16 @@ async function replaceDocumentContent(
 }
 
 function showNoEditorWarning(): void {
-	vscode.window.showWarningMessage(
-		localize('runtime.sort.no-editor', 'No active editor found'),
-	);
+	vscode.window.showWarningMessage('No active editor found');
 }
 
 function showSuccessMessage(count: number, sortLabel: string): void {
-	vscode.window.showInformationMessage(
-		localize('runtime.sort.success', 'Sorted {0} URLs ({1})', count, sortLabel),
-	);
+	vscode.window.showInformationMessage(`Sorted ${count} URLs (${sortLabel})`);
 }
 
 function handleSortError(error: unknown): void {
 	const message =
-		error instanceof Error
-			? error.message
-			: localize('runtime.error.unknown-fallback', 'Unknown error occurred');
+		error instanceof Error ? error.message : 'Unknown error occurred';
 
-	vscode.window.showErrorMessage(
-		localize('runtime.sort.error', 'Sorting failed: {0}', message),
-	);
+	vscode.window.showErrorMessage(`Sorting failed: ${message}`);
 }

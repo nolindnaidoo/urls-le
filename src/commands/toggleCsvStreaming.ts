@@ -1,7 +1,4 @@
 import * as vscode from 'vscode';
-import * as nls from 'vscode-nls';
-
-const localize = nls.config({ messageFormat: nls.MessageFormat.file })();
 
 export function registerToggleCsvStreamingCommand(
 	context: vscode.ExtensionContext,
@@ -20,8 +17,8 @@ export function registerToggleCsvStreamingCommand(
 			);
 
 			const message = newValue
-				? localize('runtime.csv.streaming.enabled', 'CSV streaming enabled')
-				: localize('runtime.csv.streaming.disabled', 'CSV streaming disabled');
+				? 'CSV streaming enabled'
+				: 'CSV streaming disabled';
 
 			vscode.window.showInformationMessage(message);
 		},
