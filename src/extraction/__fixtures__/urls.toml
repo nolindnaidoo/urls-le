@@ -1,0 +1,8 @@
+[package]
+homepage = "https://example.com"
+repository = "https://github.com/example/repo"
+documentation = "http://docs.example.com/book"
+
+[contact]
+email = "mailto:team@example.com"
+mirrors = ["https://mirror-a.example.com", "ftp://mirror-b.example.com/pub"]

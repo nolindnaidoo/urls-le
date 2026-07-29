@@ -1,0 +1,14 @@
+{
+  "homepage": "https://example.com",
+  "insecure": "http://legacy.example.com/api",
+  "repository": {
+    "url": "https://github.com/example/repo.git"
+  },
+  "mirrors": [
+    "https://mirror-a.example.com",
+    "https://mirror-a.example.com"
+  ],
+  "contact": "mailto:team@example.com",
+  "phone": "tel:+15551230000",
+  "ftp": "ftp://files.example.com/pub"
+}

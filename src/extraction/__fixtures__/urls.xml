@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <url>https://example.com/project</url>
+  <scm>
+    <url>https://github.com/example/repo</url>
+    <connection>scm:git:https://github.com/example/repo.git</connection>
+  </scm>
+  <repository url="https://repo.example.com/maven2"/>
+  <link href="http://legacy.example.com/feed"/>
+  <contact>mailto:team@example.com</contact>
+  <phone>tel:+15557778888</phone>
+  <mirror>ftp://mirror.example.com/pub</mirror>
+</project>

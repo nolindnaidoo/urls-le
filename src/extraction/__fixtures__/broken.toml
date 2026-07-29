@@ -1,0 +1,3 @@
+[package
+homepage = "https://fallback.example.com/after-parse-error"
+docs = "http://fallback-docs.example.com"

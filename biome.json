@@ -39,6 +39,18 @@
 	},
 	"overrides": [
 		{
+			"includes": ["**/__fixtures__/**", "**/__snapshots__/**"],
+			"linter": {
+				"enabled": false
+			},
+			"formatter": {
+				"enabled": false
+			},
+			"assist": {
+				"enabled": false
+			}
+		},
+		{
 			"includes": ["**/*.test.ts", "**/__mocks__/**"],
 			"linter": {
 				"rules": {

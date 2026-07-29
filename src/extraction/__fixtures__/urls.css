@@ -1,0 +1,13 @@
+@import url("https://fonts.example.com/css?family=Inter");
+
+.hero {
+  background-image: url("http://images.example.com/hero.jpg");
+}
+
+.icon {
+  background: url("ftp://assets.example.com/icons/star.svg");
+}
+
+.local {
+  src: url("file:///opt/fonts/custom.woff2");
+}
