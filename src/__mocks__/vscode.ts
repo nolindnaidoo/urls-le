@@ -22,7 +22,7 @@ export const window = {
 	showErrorMessage: vi.fn(),
 	showQuickPick: vi.fn(),
 	showInputBox: vi.fn(),
-	withProgress: vi.fn((options, task) => task()),
+	withProgress: vi.fn((_options, task) => task()),
 	setStatusBarMessage: vi.fn(),
 	createStatusBarItem: vi.fn(() => ({
 		text: '',

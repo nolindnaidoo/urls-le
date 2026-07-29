@@ -112,8 +112,8 @@ describe('URL Validation', () => {
 			const results = await validateUrls(urls, config);
 
 			expect(results).toHaveLength(2);
-			expect(results[0].status).toBe('valid');
-			expect(results[1].status).toBe('valid');
+			expect(results[0]?.status).toBe('valid');
+			expect(results[1]?.status).toBe('valid');
 		});
 
 		it('should handle invalid URLs', async () => {
@@ -126,8 +126,8 @@ describe('URL Validation', () => {
 			const results = await validateUrls(urls, config);
 
 			expect(results).toHaveLength(2);
-			expect(results[0].status).toBe('valid');
-			expect(results[1].status).toBe('invalid');
+			expect(results[0]?.status).toBe('valid');
+			expect(results[1]?.status).toBe('invalid');
 		});
 	});
 });

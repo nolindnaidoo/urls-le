@@ -12,10 +12,10 @@ describe('extractFromHtml', () => {
 		const result = extractFromHtml(html);
 
 		expect(result.length).toBe(3);
-		expect(result[0].value).toBe('https://example.com');
-		expect(result[0].protocol).toBe('https');
-		expect(result[1].value).toBe('https://github.com/user/repo');
-		expect(result[2].value).toBe('mailto:user@example.com');
+		expect(result[0]?.value).toBe('https://example.com');
+		expect(result[0]?.protocol).toBe('https');
+		expect(result[1]?.value).toBe('https://github.com/user/repo');
+		expect(result[2]?.value).toBe('mailto:user@example.com');
 	});
 
 	it('extractFromHtml: src attributes', () => {
@@ -28,9 +28,9 @@ describe('extractFromHtml', () => {
 		const result = extractFromHtml(html);
 
 		expect(result.length).toBe(3);
-		expect(result[0].value).toBe('https://example.com/image.jpg');
-		expect(result[1].value).toBe('https://cdn.example.com/script.js');
-		expect(result[2].value).toBe('https://example.com/embed');
+		expect(result[0]?.value).toBe('https://example.com/image.jpg');
+		expect(result[1]?.value).toBe('https://cdn.example.com/script.js');
+		expect(result[2]?.value).toBe('https://example.com/embed');
 	});
 
 	it('extractFromHtml: action attributes', () => {
@@ -42,8 +42,8 @@ describe('extractFromHtml', () => {
 		const result = extractFromHtml(html);
 
 		expect(result.length).toBe(2);
-		expect(result[0].value).toBe('https://example.com/submit');
-		expect(result[1].value).toBe('https://api.example.com/v1/users');
+		expect(result[0]?.value).toBe('https://example.com/submit');
+		expect(result[1]?.value).toBe('https://api.example.com/v1/users');
 	});
 
 	it('extractFromHtml: plain text URLs', () => {
@@ -56,9 +56,9 @@ describe('extractFromHtml', () => {
 		const result = extractFromHtml(html);
 
 		expect(result.length).toBe(3);
-		expect(result[0].value).toBe('https://example.com');
-		expect(result[1].value).toBe('https://github.com/user/repo');
-		expect(result[2].value).toBe('https://example.com/contact');
+		expect(result[0]?.value).toBe('https://example.com');
+		expect(result[1]?.value).toBe('https://github.com/user/repo');
+		expect(result[2]?.value).toBe('https://example.com/contact');
 	});
 
 	it('extractFromHtml: mixed URL types', () => {
@@ -74,12 +74,12 @@ describe('extractFromHtml', () => {
 		const result = extractFromHtml(html);
 
 		expect(result.length).toBe(6);
-		expect(result[0].protocol).toBe('https');
-		expect(result[1].protocol).toBe('http');
-		expect(result[2].protocol).toBe('ftp');
-		expect(result[3].protocol).toBe('mailto');
-		expect(result[4].protocol).toBe('tel');
-		expect(result[5].protocol).toBe('file');
+		expect(result[0]?.protocol).toBe('https');
+		expect(result[1]?.protocol).toBe('http');
+		expect(result[2]?.protocol).toBe('ftp');
+		expect(result[3]?.protocol).toBe('mailto');
+		expect(result[4]?.protocol).toBe('tel');
+		expect(result[5]?.protocol).toBe('file');
 	});
 
 	it('extractFromHtml: should not extract from comments', () => {
@@ -93,7 +93,7 @@ describe('extractFromHtml', () => {
 
 		// Should only extract URLs outside comments
 		expect(result.length).toBe(1);
-		expect(result[0].value).toBe('https://actual.com');
+		expect(result[0]?.value).toBe('https://actual.com');
 	});
 
 	it('extractFromHtml: should not extract invalid URLs', () => {
@@ -108,7 +108,7 @@ describe('extractFromHtml', () => {
 
 		// Should only extract valid URLs
 		expect(result.length).toBe(1);
-		expect(result[0].value).toBe('https://example.com');
+		expect(result[0]?.value).toBe('https://example.com');
 	});
 
 	it('extractFromHtml: URLs with query parameters', () => {
@@ -120,8 +120,8 @@ describe('extractFromHtml', () => {
 		const result = extractFromHtml(html);
 
 		expect(result.length).toBe(2);
-		expect(result[0].value).toBe('https://example.com/search?q=test&page=1');
-		expect(result[1].value).toBe(
+		expect(result[0]?.value).toBe('https://example.com/search?q=test&page=1');
+		expect(result[1]?.value).toBe(
 			'https://api.example.com/users?id=123&format=json',
 		);
 	});
@@ -135,8 +135,8 @@ describe('extractFromHtml', () => {
 		const result = extractFromHtml(html);
 
 		expect(result.length).toBe(2);
-		expect(result[0].value).toBe('https://example.com/page#section1');
-		expect(result[1].value).toBe('https://example.com/page#section2');
+		expect(result[0]?.value).toBe('https://example.com/page#section1');
+		expect(result[1]?.value).toBe('https://example.com/page#section2');
 	});
 
 	it('extractFromHtml: relative URLs (not supported)', () => {
@@ -170,8 +170,8 @@ describe('extractFromHtml', () => {
 		const result = extractFromHtml(html);
 
 		expect(result.length).toBe(1);
-		expect(result[0].position.line).toBe(2);
-		expect(result[0].position.column > 0).toBeTruthy();
+		expect(result[0]?.position?.line).toBe(2);
+		expect((result[0]?.position?.column ?? 0) > 0).toBeTruthy();
 	});
 
 	it('extractFromHtml: context tracking', () => {
@@ -180,7 +180,7 @@ describe('extractFromHtml', () => {
 		const result = extractFromHtml(html);
 
 		expect(result.length).toBe(1);
-		expect(result[0].context).toBe(`<a href="https://example.com">Link</a>`);
+		expect(result[0]?.context).toBe(`<a href="https://example.com">Link</a>`);
 	});
 
 	it('extractFromHtml: large HTML file', () => {
@@ -194,8 +194,8 @@ describe('extractFromHtml', () => {
 
 		// Should extract all URLs
 		expect(result.length).toBe(1000);
-		expect(result[0].value).toBe('https://example.com/page0');
-		expect(result[999].value).toBe('https://example.com/page999');
+		expect(result[0]?.value).toBe('https://example.com/page0');
+		expect(result[999]?.value).toBe('https://example.com/page999');
 	});
 
 	it('extractFromHtml: duplicate URLs', () => {
@@ -209,7 +209,7 @@ describe('extractFromHtml', () => {
 
 		// Should deduplicate URLs
 		expect(result.length).toBe(1);
-		expect(result[0].value).toBe('https://example.com');
+		expect(result[0]?.value).toBe('https://example.com');
 	});
 
 	it('extractFromHtml: URLs with special characters', () => {
@@ -223,9 +223,9 @@ describe('extractFromHtml', () => {
 
 		// Should extract all 3 href URLs + 1 partial from plain text (space terminates URL regex)
 		expect(result.length).toBe(4);
-		expect(result[0].value).toBe('https://example.com/path with spaces');
-		expect(result[1].value).toBe('https://example.com/path'); // Partial from plain text extraction
-		expect(result[2].value).toBe('https://example.com/path-with-dashes');
-		expect(result[3].value).toBe('https://example.com/path_with_underscores');
+		expect(result[0]?.value).toBe('https://example.com/path with spaces');
+		expect(result[1]?.value).toBe('https://example.com/path'); // Partial from plain text extraction
+		expect(result[2]?.value).toBe('https://example.com/path-with-dashes');
+		expect(result[3]?.value).toBe('https://example.com/path_with_underscores');
 	});
 });

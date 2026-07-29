@@ -8,8 +8,8 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].value).toBe('https://example.com');
-			expect(urls[0].protocol).toBe('https');
+			expect(urls[0]?.value).toBe('https://example.com');
+			expect(urls[0]?.protocol).toBe('https');
 		});
 
 		it('should extract URLs from double-quoted strings', () => {
@@ -17,7 +17,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].value).toBe('https://example.com');
+			expect(urls[0]?.value).toBe('https://example.com');
 		});
 
 		it('should extract URLs from template literals', () => {
@@ -25,7 +25,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].value).toBe('https://example.com');
+			expect(urls[0]?.value).toBe('https://example.com');
 		});
 
 		it('should extract multiple URLs from same line', () => {
@@ -34,8 +34,8 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(2);
-			expect(urls[0].value).toBe('https://example.com');
-			expect(urls[1].value).toBe('https://test.com');
+			expect(urls[0]?.value).toBe('https://example.com');
+			expect(urls[1]?.value).toBe('https://test.com');
 		});
 
 		it('should extract URLs from object properties', () => {
@@ -63,7 +63,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].protocol).toBe('http');
+			expect(urls[0]?.protocol).toBe('http');
 		});
 
 		it('should extract HTTPS URLs', () => {
@@ -71,7 +71,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].protocol).toBe('https');
+			expect(urls[0]?.protocol).toBe('https');
 		});
 
 		it('should extract FTP URLs', () => {
@@ -79,7 +79,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].protocol).toBe('ftp');
+			expect(urls[0]?.protocol).toBe('ftp');
 		});
 
 		it('should extract mailto URLs', () => {
@@ -87,7 +87,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].protocol).toBe('mailto');
+			expect(urls[0]?.protocol).toBe('mailto');
 		});
 
 		it('should extract tel URLs', () => {
@@ -95,7 +95,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].protocol).toBe('tel');
+			expect(urls[0]?.protocol).toBe('tel');
 		});
 
 		it('should extract file URLs', () => {
@@ -103,7 +103,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].protocol).toBe('file');
+			expect(urls[0]?.protocol).toBe('file');
 		});
 	});
 
@@ -130,7 +130,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].value).toBe('https://example.com');
+			expect(urls[0]?.value).toBe('https://example.com');
 		});
 
 		it('should handle URLs with query parameters', () => {
@@ -138,7 +138,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].value).toBe('https://example.com/search?q=test&page=1');
+			expect(urls[0]?.value).toBe('https://example.com/search?q=test&page=1');
 		});
 
 		it('should handle URLs with fragments', () => {
@@ -146,7 +146,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].value).toBe('https://example.com/page#section');
+			expect(urls[0]?.value).toBe('https://example.com/page#section');
 		});
 
 		it('should handle URLs with ports', () => {
@@ -154,7 +154,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].value).toBe('https://example.com:8080/api');
+			expect(urls[0]?.value).toBe('https://example.com:8080/api');
 		});
 
 		it('should handle URLs with authentication', () => {
@@ -162,7 +162,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].value).toBe('https://user:pass@example.com');
+			expect(urls[0]?.value).toBe('https://user:pass@example.com');
 		});
 
 		it('should handle URLs with special characters', () => {
@@ -171,7 +171,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].value).toBe(
+			expect(urls[0]?.value).toBe(
 				'https://example.com/path/with-dashes_and_underscores',
 			);
 		});
@@ -207,23 +207,23 @@ describe('JavaScript URL Extraction', () => {
       `;
 			const urls = extractFromJavaScript(content);
 
-			expect(urls[0].position.line).toBe(2);
-			expect(urls[1].position.line).toBe(3);
+			expect(urls[0]?.position?.line).toBe(2);
+			expect(urls[1]?.position?.line).toBe(3);
 		});
 
 		it('should track column positions', () => {
 			const content = "const url = 'https://example.com';";
 			const urls = extractFromJavaScript(content);
 
-			expect(urls[0].position.column).toBeGreaterThan(0);
+			expect(urls[0]?.position?.column).toBeGreaterThan(0);
 		});
 
 		it('should include context', () => {
 			const content = "const url = 'https://example.com';";
 			const urls = extractFromJavaScript(content);
 
-			expect(urls[0].context).toBeTruthy();
-			expect(urls[0].context).toContain('https://example.com');
+			expect(urls[0]?.context).toBeTruthy();
+			expect(urls[0]?.context).toContain('https://example.com');
 		});
 	});
 
@@ -233,7 +233,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].value).toBe('https://example.com');
+			expect(urls[0]?.value).toBe('https://example.com');
 		});
 
 		it('should extract URLs from TypeScript interfaces', () => {
@@ -269,7 +269,7 @@ describe('JavaScript URL Extraction', () => {
 			expect(urls.length).toBeGreaterThanOrEqual(0);
 			// If extracted, should be marked as javascript protocol
 			if (urls.length > 0) {
-				expect(urls[0].value).toBe('javascript:alert(1)');
+				expect(urls[0]?.value).toBe('javascript:alert(1)');
 			}
 		});
 
@@ -288,7 +288,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].value.length).toBeGreaterThan(2000);
+			expect(urls[0]?.value.length).toBeGreaterThan(2000);
 		});
 
 		it('should handle URLs with encoded characters', () => {
@@ -296,7 +296,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].value).toBe('https://example.com/path%20with%20spaces');
+			expect(urls[0]?.value).toBe('https://example.com/path%20with%20spaces');
 		});
 
 		it('should handle URLs with Unicode characters', () => {
@@ -304,7 +304,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].value).toBe('https://例え.jp/パス');
+			expect(urls[0]?.value).toBe('https://例え.jp/パス');
 		});
 	});
 
@@ -317,7 +317,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].value).toBe('https://api.example.com/data');
+			expect(urls[0]?.value).toBe('https://api.example.com/data');
 		});
 
 		it('should extract URLs from axios calls', () => {
@@ -328,7 +328,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].value).toBe('https://api.example.com/users');
+			expect(urls[0]?.value).toBe('https://api.example.com/users');
 		});
 
 		it('should extract URLs from import statements', () => {
@@ -336,7 +336,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].value).toBe('https://cdn.example.com/module.js');
+			expect(urls[0]?.value).toBe('https://cdn.example.com/module.js');
 		});
 
 		it('should extract URLs from dynamic imports', () => {
@@ -345,7 +345,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].value).toBe('https://cdn.example.com/module.js');
+			expect(urls[0]?.value).toBe('https://cdn.example.com/module.js');
 		});
 
 		it('should extract URLs from environment variables', () => {
@@ -355,7 +355,7 @@ describe('JavaScript URL Extraction', () => {
 			const urls = extractFromJavaScript(content);
 
 			expect(urls).toHaveLength(1);
-			expect(urls[0].value).toBe('https://api.example.com');
+			expect(urls[0]?.value).toBe('https://api.example.com');
 		});
 	});
 });

@@ -9,7 +9,7 @@ describe('Extract.ts Edge Cases', () => {
 
 			expect(result.success).toBe(false);
 			expect(result.errors).toHaveLength(1);
-			expect(result.errors[0].message).toContain('Content too large');
+			expect(result.errors[0]?.message).toContain('Content too large');
 		});
 
 		it('should accept content at exactly 10MB', async () => {
@@ -41,7 +41,7 @@ describe('Extract.ts Edge Cases', () => {
 
 			expect(result.urls.length).toBe(50_000);
 			expect(result.errors).toHaveLength(1);
-			expect(result.errors[0].message).toContain('truncated');
+			expect(result.errors[0]?.message).toContain('truncated');
 		});
 
 		it('should not truncate when URL count is at limit', async () => {

@@ -13,12 +13,9 @@ function createTestConfig(): Configuration {
 		safetyFileSizeWarnBytes: 1000000,
 		safetyLargeOutputLinesThreshold: 50000,
 		safetyManyDocumentsThreshold: 8,
-		analysisEnabled: true,
-		analysisIncludeSecurity: true,
-		analysisIncludeAccessibility: true,
-		validationEnabled: true,
-		validationTimeout: 5000,
-		validationFollowRedirects: true,
+		showParseErrors: false,
+		statusBarEnabled: true,
+		telemetryEnabled: false,
 	});
 }
 
@@ -67,8 +64,8 @@ describe('URL Analysis', () => {
 			const result = analyzeUrls(urls, createTestConfig());
 
 			expect(result.domains).toBeDefined();
-			expect(result.domains.uniqueDomains).toBe(3);
-			expect(result.domains.commonDomains).toBeDefined();
+			expect(result.domains?.uniqueDomains).toBe(3);
+			expect(result.domains?.commonDomains).toBeDefined();
 		});
 
 		it('should analyze security aspects when enabled', () => {
@@ -82,9 +79,9 @@ describe('URL Analysis', () => {
 			const result = analyzeUrls(urls, createTestConfig());
 
 			expect(result.security).toBeDefined();
-			expect(result.security.secure).toBe(3);
-			expect(result.security.insecure).toBe(1);
-			expect(result.security.suspicious).toBe(1);
+			expect(result.security?.secure).toBe(3);
+			expect(result.security?.insecure).toBe(1);
+			expect(result.security?.suspicious).toBe(1);
 		});
 
 		it('should analyze accessibility aspects when enabled', () => {
@@ -98,8 +95,8 @@ describe('URL Analysis', () => {
 			const result = analyzeUrls(urls, createTestConfig());
 
 			expect(result.accessibility).toBeDefined();
-			expect(result.accessibility.accessible).toBe(2);
-			expect(result.accessibility.inaccessible).toBe(2);
+			expect(result.accessibility?.accessible).toBe(2);
+			expect(result.accessibility?.inaccessible).toBe(2);
 		});
 
 		it('should handle empty URL list', () => {
@@ -154,10 +151,10 @@ describe('URL Analysis', () => {
 
 			const result = analyzeUrls(urls, createTestConfig());
 
-			expect(result.domains.commonDomains).toBeDefined();
-			expect(result.domains.commonDomains.length).toBeGreaterThan(0);
-			expect(result.domains.commonDomains[0].domain).toBe('example.com');
-			expect(result.domains.commonDomains[0].count).toBe(3);
+			expect(result.domains?.commonDomains).toBeDefined();
+			expect(result.domains?.commonDomains.length).toBeGreaterThan(0);
+			expect(result.domains?.commonDomains[0]?.domain).toBe('example.com');
+			expect(result.domains?.commonDomains[0]?.count).toBe(3);
 		});
 
 		it('should detect suspicious URLs', () => {
@@ -169,9 +166,9 @@ describe('URL Analysis', () => {
 
 			const result = analyzeUrls(urls, createTestConfig());
 
-			expect(result.security.suspicious).toBe(2);
-			expect(result.security.issues).toBeDefined();
-			expect(result.security.issues.length).toBe(2);
+			expect(result.security?.suspicious).toBe(2);
+			expect(result.security?.issues).toBeDefined();
+			expect(result.security?.issues.length).toBe(2);
 		});
 
 		it('should handle URLs with special characters', () => {
@@ -185,7 +182,7 @@ describe('URL Analysis', () => {
 			const result = analyzeUrls(urls, createTestConfig());
 
 			expect(result.count).toBe(4);
-			expect(result.domains.uniqueDomains).toBe(1);
+			expect(result.domains?.uniqueDomains).toBe(1);
 		});
 
 		it('should analyze subdomain distribution', () => {
@@ -199,8 +196,8 @@ describe('URL Analysis', () => {
 
 			const result = analyzeUrls(urls, createTestConfig());
 
-			expect(result.domains.uniqueDomains).toBe(5);
-			expect(result.domains.commonDomains).toBeDefined();
+			expect(result.domains?.uniqueDomains).toBe(5);
+			expect(result.domains?.commonDomains).toBeDefined();
 		});
 
 		it('should always include security analysis', () => {

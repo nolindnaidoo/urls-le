@@ -38,19 +38,18 @@ const mockConfig: Configuration = {
 	safetyFileSizeWarnBytes: 1000,
 	safetyLargeOutputLinesThreshold: 100,
 	safetyManyDocumentsThreshold: 50,
-	analysisEnabled: true,
-	analysisIncludeSecurity: true,
-	analysisIncludeAccessibility: true,
-	validationEnabled: true,
-	validationTimeout: 5000,
-	validationFollowRedirects: true,
+	showParseErrors: false,
+	statusBarEnabled: true,
+	telemetryEnabled: false,
 };
 
 describe('Safety Checks', () => {
 	describe('handleSafetyChecks', () => {
 		it('should proceed when safety is disabled', () => {
 			const config = { ...mockConfig, safetyEnabled: false };
-			const mockDocument = { getText: () => 'test content' };
+			const mockDocument = {
+				getText: () => 'test content',
+			} as unknown as import('vscode').TextDocument;
 
 			const result = handleSafetyChecks(mockDocument, config);
 
@@ -60,7 +59,9 @@ describe('Safety Checks', () => {
 
 		it('should proceed when file size is within limits', () => {
 			const config = { ...mockConfig, safetyFileSizeWarnBytes: 1000 };
-			const mockDocument = { getText: () => 'small content' };
+			const mockDocument = {
+				getText: () => 'small content',
+			} as unknown as import('vscode').TextDocument;
 
 			const result = handleSafetyChecks(mockDocument, config);
 
@@ -72,7 +73,7 @@ describe('Safety Checks', () => {
 			const config = { ...mockConfig, safetyFileSizeWarnBytes: 10 };
 			const mockDocument = {
 				getText: () => 'this is a very long content that exceeds the limit',
-			};
+			} as unknown as import('vscode').TextDocument;
 
 			const result = handleSafetyChecks(mockDocument, config);
 

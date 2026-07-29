@@ -16,10 +16,10 @@ describe('URL Extraction', () => {
 			const result = await extractUrls(content, 'markdown');
 
 			expect(result.urls).toHaveLength(4);
-			expect(result.urls[0].value).toBe('https://example.com');
-			expect(result.urls[1].value).toBe('https://example.com/image.png');
-			expect(result.urls[2].value).toBe('https://example.com/direct');
-			expect(result.urls[3].value).toBe('https://example.com/reference');
+			expect(result.urls[0]?.value).toBe('https://example.com');
+			expect(result.urls[1]?.value).toBe('https://example.com/image.png');
+			expect(result.urls[2]?.value).toBe('https://example.com/direct');
+			expect(result.urls[3]?.value).toBe('https://example.com/reference');
 			expect(result.fileType).toBe('markdown');
 		});
 
@@ -41,10 +41,10 @@ describe('URL Extraction', () => {
 			const result = await extractUrls(content, 'html');
 
 			expect(result.urls).toHaveLength(4);
-			expect(result.urls[0].value).toBe('https://example.com/style.css');
-			expect(result.urls[1].value).toBe('https://example.com');
-			expect(result.urls[2].value).toBe('https://example.com/image.png');
-			expect(result.urls[3].value).toBe('https://example.com/script.js');
+			expect(result.urls[0]?.value).toBe('https://example.com/style.css');
+			expect(result.urls[1]?.value).toBe('https://example.com');
+			expect(result.urls[2]?.value).toBe('https://example.com/image.png');
+			expect(result.urls[3]?.value).toBe('https://example.com/script.js');
 			expect(result.fileType).toBe('html');
 		});
 
@@ -62,9 +62,9 @@ describe('URL Extraction', () => {
 			const result = await extractUrls(content, 'css');
 
 			expect(result.urls).toHaveLength(3);
-			expect(result.urls[0].value).toBe('https://example.com/bg.jpg');
-			expect(result.urls[1].value).toBe('https://example.com/import.css');
-			expect(result.urls[2].value).toBe('https://example.com/footer.png');
+			expect(result.urls[0]?.value).toBe('https://example.com/bg.jpg');
+			expect(result.urls[1]?.value).toBe('https://example.com/import.css');
+			expect(result.urls[2]?.value).toBe('https://example.com/footer.png');
 			expect(result.fileType).toBe('css');
 		});
 
@@ -81,10 +81,10 @@ describe('URL Extraction', () => {
 			const result = await extractUrls(content, 'javascript');
 
 			expect(result.urls).toHaveLength(4);
-			expect(result.urls[0].value).toBe('https://api.example.com/endpoint');
-			expect(result.urls[1].value).toBe('https://cdn.example.com/image.png');
-			expect(result.urls[2].value).toBe('https://example.com');
-			expect(result.urls[3].value).toBe('https://api.example.com/v1');
+			expect(result.urls[0]?.value).toBe('https://api.example.com/endpoint');
+			expect(result.urls[1]?.value).toBe('https://cdn.example.com/image.png');
+			expect(result.urls[2]?.value).toBe('https://example.com');
+			expect(result.urls[3]?.value).toBe('https://api.example.com/v1');
 			expect(result.fileType).toBe('javascript');
 		});
 
@@ -103,10 +103,10 @@ describe('URL Extraction', () => {
 			const result = await extractUrls(content, 'json');
 
 			expect(result.urls).toHaveLength(4);
-			expect(result.urls[0].value).toBe('https://example.com');
-			expect(result.urls[1].value).toBe('https://api.example.com');
-			expect(result.urls[2].value).toBe('https://cdn.example.com');
-			expect(result.urls[3].value).toBe('https://nested.example.com');
+			expect(result.urls[0]?.value).toBe('https://example.com');
+			expect(result.urls[1]?.value).toBe('https://api.example.com');
+			expect(result.urls[2]?.value).toBe('https://cdn.example.com');
+			expect(result.urls[3]?.value).toBe('https://nested.example.com');
 			expect(result.fileType).toBe('json');
 		});
 
@@ -122,10 +122,10 @@ describe('URL Extraction', () => {
 			const result = await extractUrls(content, 'yaml');
 
 			expect(result.urls).toHaveLength(4);
-			expect(result.urls[0].value).toBe('https://example.com');
-			expect(result.urls[1].value).toBe('https://api.example.com');
-			expect(result.urls[2].value).toBe('https://docs.example.com');
-			expect(result.urls[3].value).toBe('https://cdn.example.com');
+			expect(result.urls[0]?.value).toBe('https://example.com');
+			expect(result.urls[1]?.value).toBe('https://api.example.com');
+			expect(result.urls[2]?.value).toBe('https://docs.example.com');
+			expect(result.urls[3]?.value).toBe('https://cdn.example.com');
 			expect(result.fileType).toBe('yaml');
 		});
 
@@ -160,8 +160,8 @@ describe('URL Extraction', () => {
 			const result = await extractUrls(content, 'markdown');
 
 			expect(result.urls).toHaveLength(2);
-			expect(result.urls[0].value).toBe('https://example.com');
-			expect(result.urls[1].value).toBe('https://test.com');
+			expect(result.urls[0]?.value).toBe('https://example.com');
+			expect(result.urls[1]?.value).toBe('https://test.com');
 		});
 
 		it('should include line and column information', async () => {
@@ -173,10 +173,10 @@ describe('URL Extraction', () => {
 			const result = await extractUrls(content, 'markdown');
 
 			expect(result.urls).toHaveLength(2);
-			expect(result.urls[0].position?.line).toBe(2);
-			expect(result.urls[0].position?.column).toBeGreaterThan(0);
-			expect(result.urls[1].position?.line).toBe(3);
-			expect(result.urls[1].position?.column).toBeGreaterThan(0);
+			expect(result.urls[0]?.position?.line).toBe(2);
+			expect(result.urls[0]?.position?.column).toBeGreaterThan(0);
+			expect(result.urls[1]?.position?.line).toBe(3);
+			expect(result.urls[1]?.position?.column).toBeGreaterThan(0);
 		});
 
 		it('should handle large content efficiently', async () => {
@@ -208,11 +208,11 @@ describe('URL Extraction', () => {
 
 			// Should extract 5 URLs (relative URL not supported)
 			expect(result.urls).toHaveLength(5);
-			expect(result.urls[0].value).toBe('http://example.com');
-			expect(result.urls[1].value).toBe('https://example.com');
-			expect(result.urls[2].value).toBe('ftp://files.example.com');
-			expect(result.urls[3].value).toBe('mailto:user@example.com');
-			expect(result.urls[4].value).toBe('tel:+1234567890');
+			expect(result.urls[0]?.value).toBe('http://example.com');
+			expect(result.urls[1]?.value).toBe('https://example.com');
+			expect(result.urls[2]?.value).toBe('ftp://files.example.com');
+			expect(result.urls[3]?.value).toBe('mailto:user@example.com');
+			expect(result.urls[4]?.value).toBe('tel:+1234567890');
 		});
 
 		it('should handle URLs with query parameters and fragments', async () => {
@@ -225,11 +225,11 @@ describe('URL Extraction', () => {
 			const result = await extractUrls(content, 'markdown');
 
 			expect(result.urls).toHaveLength(3);
-			expect(result.urls[0].value).toBe(
+			expect(result.urls[0]?.value).toBe(
 				'https://example.com/search?q=test&page=1',
 			);
-			expect(result.urls[1].value).toBe('https://example.com/page#section');
-			expect(result.urls[2].value).toBe(
+			expect(result.urls[1]?.value).toBe('https://example.com/page#section');
+			expect(result.urls[2]?.value).toBe(
 				'https://example.com/path?param=value#fragment',
 			);
 		});
