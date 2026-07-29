@@ -15,66 +15,32 @@ export function registerHelpCommand(
 		deps.telemetry.event('command-help');
 
 		const helpText = `
-# ${'URLs-LE Help'}
+# URLs-LE Help
 
-## ${'Quick Start'}
-${'1. Open a file with URLs (Markdown, HTML, JSON, etc.)\n2. Run "URLs-LE: Extract URLs"\n3. View extracted URLs in results'}
+## Quick Start
+1. Open a file with URLs (Markdown, HTML, JSON, etc.)
+2. Run "URLs-LE: Extract URLs"
+3. Extracted URLs open in a new document
 
 ## Commands
-${'**Extract URLs**: Extract from current document\n**Sort URLs**: Sort alphabetically, by domain, or by length\n**Deduplicate URLs**: Remove duplicate URLs\n**Toggle CSV Streaming**: Enable for large CSV files\n**Settings**: Configure options'}
+- **Extract URLs**: Extract from the current document
+- **Deduplicate URLs**: Remove duplicate lines in the current document
+- **Sort URLs**: Sort lines alphabetically, by domain, or by length
+- **Open Settings**: Open the URLs-LE settings
+- **Help**: Show this document
 
-## ${'Supported Formats'}
-${'**Supported**: Markdown, HTML, JSON, YAML, XML, JavaScript, CSS, Plain text\n**URL Formats**: HTTP/HTTPS, FTP, File, Data URLs, Mailto, Tel, Relative, Absolute'}
+## Supported Formats
+Markdown, HTML, CSS, JavaScript, TypeScript, JSON, YAML, Properties, TOML, INI, XML
 
-## Extraction Features
-- Automatically detects all URL formats
-- Preserves original URL structure
-- Extracts from multiple file types
-- Handles encoded URLs
-- Supports internationalized domain names (IDN)
+## Extracted URL Types
+http, https, ftp, file, mailto, tel
 
-## ${'Troubleshooting'}
-${'**No URLs found?** Check file format and URL patterns\n**Performance issues?** Enable safety settings for large files\n**Need help?** Check Output panel for details'}
+## Troubleshooting
+- **No URLs found?** Check the file's language mode matches a supported format
+- **Large file warning?** Adjust the safety file-size threshold in settings
 
-## ${'Settings'}
-${'Access via Command Palette: "URLs-LE: Open Settings"\nKey settings: Copy to clipboard, CSV streaming, side-by-side view, safety checks, notification levels'}
-
-## Common Use Cases
-
-### Extract All Links from Markdown
-1. Open a Markdown file
-2. Run "URLs-LE: Extract URLs"
-3. All URLs from links and references are extracted
-
-### Find URLs in Source Code
-1. Open JavaScript/TypeScript file
-2. Run extraction command
-3. All string URLs are found (API endpoints, CDN links, etc.)
-
-### Audit HTML Resources
-1. Open HTML file
-2. Extract URLs to find all external resources
-3. Review for security or optimization
-
-### Convert Relative to Absolute URLs
-1. Extract all relative URLs
-2. Use find/replace to add base domain
-3. Update source file with absolute URLs
-
-## Performance Tips
-- Safety warnings help prevent processing very large files
-- Adjust file size threshold for your use case
-- Use clipboard mode for large outputs
-- Process files in smaller chunks if needed
-
-## Planned Features
-- **Deduplicate URLs**: Remove duplicate URLs (coming soon)
-- **Sort URLs**: Sort by domain, path, or protocol (coming soon)
-- **URL validation**: Check if URLs are reachable (coming soon)
-- **Format URLs**: Normalize URL formatting (coming soon)
-
-## ${'Support'}
-${'GitHub Issues: https://github.com/OffensiveEdge/urls-le/issues'}
+## Support
+GitHub Issues: https://github.com/nolindnaidoo/urls-le/issues
 		`.trim();
 
 		const doc = await vscode.workspace.openTextDocument({

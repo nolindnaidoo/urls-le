@@ -173,15 +173,3 @@ export interface Configuration {
 	readonly statusBarEnabled: boolean;
 	readonly telemetryEnabled: boolean;
 }
-
-// Re-export utility types for easier access
-export type {
-	ErrorHandler,
-	ErrorLogger,
-	ErrorNotifier,
-} from './utils/errorHandling';
-export type {
-	PerformanceMetrics,
-	PerformanceMonitor,
-	PerformanceThresholds,
-} from './utils/performance';

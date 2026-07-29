@@ -17,7 +17,6 @@
         "@vscode/test-electron": "^2.3.0",
         "@vscode/vsce": "^3.6.2",
         "esbuild": "^0.28.1",
-        "tsx": "^4.20.6",
         "typescript": "^5.9.3",
         "vitest": "^3.2.4",
       },

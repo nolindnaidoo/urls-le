@@ -69,7 +69,6 @@
 		"onCommand:urls-le.extractUrls",
 		"onCommand:urls-le.postProcess.dedupe",
 		"onCommand:urls-le.postProcess.sort",
-		"onCommand:urls-le.csv.toggleStreaming",
 		"onCommand:urls-le.openSettings",
 		"onCommand:urls-le.help"
 	],
@@ -98,11 +97,6 @@
 			{
 				"command": "urls-le.postProcess.sort",
 				"title": "%manifest.command.sort.title%",
-				"category": "%manifest.command.category%"
-			},
-			{
-				"command": "urls-le.csv.toggleStreaming",
-				"title": "%manifest.command.csv.toggle-streaming.title%",
 				"category": "%manifest.command.category%"
 			},
 			{
@@ -143,9 +137,6 @@
 					"command": "urls-le.postProcess.sort"
 				},
 				{
-					"command": "urls-le.csv.toggleStreaming"
-				},
-				{
 					"command": "urls-le.openSettings"
 				},
 				{
@@ -160,11 +151,6 @@
 					"type": "boolean",
 					"default": false,
 					"description": "%manifest.settings.copy.clipboard.desc%"
-				},
-				"urls-le.csv.streamingEnabled": {
-					"type": "boolean",
-					"default": false,
-					"description": "%manifest.settings.csv.streaming.desc%"
 				},
 				"urls-le.dedupeEnabled": {
 					"type": "boolean",
@@ -353,7 +339,6 @@
 		"@vscode/test-electron": "^2.3.0",
 		"@vscode/vsce": "^3.6.2",
 		"esbuild": "^0.28.1",
-		"tsx": "^4.20.6",
 		"typescript": "^5.9.3",
 		"vitest": "^3.2.4"
 	},
