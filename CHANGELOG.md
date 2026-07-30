@@ -66,8 +66,8 @@ integration suite on every CI run.
 
 ### Removed
 
-- 16 settings that were never read by any code path (`analysis.*`,
-  `performance.*`, `keyboard.*`, `presets.*`, `showParseErrors`,
+- 16 settings with no live consumer (`analysis.*`, `performance.*`,
+  `keyboard.*`, `presets.*`, `showParseErrors`,
   `safety.manyDocumentsThreshold`). 10 real settings remain, each with
   a consumer: `dedupeEnabled` and `safety.largeOutputLinesThreshold`
   are newly wired, and `notificationsLevel` now applies to every
@@ -99,6 +99,6 @@ Condensed: iterative development of the original template
 (1.0.0–1.8.1). These entries claimed extensive security hardening,
 "enterprise-grade reliability", and performance figures; the 2.0.0
 audit found the shipped artifact could not activate, runtime
-localization never functioned, 16 of 26 settings were inert, and the
+localization never functioned, 18 of 27 settings were inert, and the
 documented metrics were not reproducible from the repo. Treat pre-2.0
 entries as historical record only.

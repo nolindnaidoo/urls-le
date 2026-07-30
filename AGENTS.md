@@ -38,7 +38,7 @@ Conventions: factory functions + `Object.freeze` (no classes), early returns, de
 
 - **The bundle must be self-contained.** The VSIX ships `dist/extension.js` only; `scripts/check-bundle.js` (run in `vscode:prepublish` and CI) does a static require scan AND loads the bundle with `vscode` stubbed. esbuild uses `--main-fields=module,main` because jsonc-parser's UMD build smuggles `require` through a factory parameter.
 - **`CONFIG_DEFAULTS` must equal package.json defaults.** `config.test.ts` asserts parity over every declared setting; add new settings to both plus the KEY_MAP in the test.
-- **Every declared setting must have a consumer.** v1 shipped 16 no-op settings; don't add a setting without wiring it.
+- **Every declared setting must have a consumer.** v1 shipped 18 no-op settings (of 27 declared); don't add a setting without wiring it.
 - **Extractor behavior is pinned by golden snapshots** (`extraction/characterization.test.ts` + `__fixtures__/`). Any output change must update goldens in the same commit and be listed in the CHANGELOG.
 - **nls catalogues stay in key-parity:** all 12 locale files carry exactly the keys of `package.nls.json`.
 - **URL patterns live in one place** (`extraction/heuristics.ts`). Never re-declare the protocol regexes inside a format extractor — that is exactly how v1 ended up labeling http URLs as https in three formats.
@@ -62,7 +62,7 @@ Conventions: factory functions + `Object.freeze` (no classes), early returns, de
 
 ## Known limitations (documented, not bugs)
 
-- A URL ends at whitespace or any of `< > " { } | \ ^ ` [ ] ; ) '` — URLs containing raw spaces extract as space-terminated partials; trailing `.`/`,` are kept (legal URL characters).
+- A URL ends at whitespace or any of ``< > " { } | \ ^ ` [ ] ; ) '`` — URLs containing raw spaces extract as space-terminated partials; trailing `.`/`,` are kept (legal URL characters).
 - YAML and JS/TS extraction includes comments by design (a URL in a commented-out line is still discoverable); Markdown code blocks, HTML comments, and Properties comment lines are excluded.
 - TOML/INI positions come from forward-locate over the source (no offsets from @iarna/toml or ini); repeated identical values resolve to successive occurrences, and values whose raw form differs from the parsed form (escape sequences) are reported without a position.
 - JSON escaped URL forms (`https:\/\/…`) don't match — the scan runs over raw string tokens.
