@@ -26,25 +26,27 @@ async function executeDedupeCommand(): Promise<void> {
 
 async function performDedupe(editor: vscode.TextEditor): Promise<void> {
 	const document = editor.document;
-	const lines = extractLines(document);
+	// Blank lines are dropped from the output but must not be reported as
+	// removed duplicates.
+	const lines = extractNonEmptyLines(document);
 	const deduped = deduplicateLines(lines);
 
 	await replaceDocumentContent(document, deduped);
 	showSuccessMessage(lines.length, deduped.length);
 }
 
-function extractLines(document: vscode.TextDocument): string[] {
+function extractNonEmptyLines(document: vscode.TextDocument): string[] {
 	return document
 		.getText()
 		.split('\n')
-		.map((line) => line.trim());
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0);
 }
 
 function deduplicateLines(lines: string[]): string[] {
 	const seen = new Set<string>();
 	return lines.filter((line) => {
-		// Skip empty lines and duplicates
-		if (line === '' || seen.has(line)) {
+		if (seen.has(line)) {
 			return false;
 		}
 		seen.add(line);
@@ -57,12 +59,15 @@ async function replaceDocumentContent(
 	lines: string[],
 ): Promise<void> {
 	const edit = new vscode.WorkspaceEdit();
-	edit.replace(
-		document.uri,
-		new vscode.Range(0, 0, document.lineCount, 0),
-		lines.join('\n'),
-	);
+	edit.replace(document.uri, fullDocumentRange(document), lines.join('\n'));
 	await vscode.workspace.applyEdit(edit);
+}
+
+function fullDocumentRange(document: vscode.TextDocument): vscode.Range {
+	return new vscode.Range(
+		document.positionAt(0),
+		document.lineAt(document.lineCount - 1).range.end,
+	);
 }
 
 function showNoEditorWarning(): void {

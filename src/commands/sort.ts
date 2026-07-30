@@ -138,12 +138,15 @@ async function replaceDocumentContent(
 	lines: string[],
 ): Promise<void> {
 	const edit = new vscode.WorkspaceEdit();
-	edit.replace(
-		document.uri,
-		new vscode.Range(0, 0, document.lineCount, 0),
-		lines.join('\n'),
-	);
+	edit.replace(document.uri, fullDocumentRange(document), lines.join('\n'));
 	await vscode.workspace.applyEdit(edit);
+}
+
+function fullDocumentRange(document: vscode.TextDocument): vscode.Range {
+	return new vscode.Range(
+		document.positionAt(0),
+		document.lineAt(document.lineCount - 1).range.end,
+	);
 }
 
 function showNoEditorWarning(): void {

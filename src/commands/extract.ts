@@ -211,7 +211,10 @@ async function replaceDocumentContent(
 		const edit = new vscode.WorkspaceEdit();
 		edit.replace(
 			document.uri,
-			new vscode.Range(0, 0, document.lineCount, 0),
+			new vscode.Range(
+				document.positionAt(0),
+				document.lineAt(document.lineCount - 1).range.end,
+			),
 			content,
 		);
 
