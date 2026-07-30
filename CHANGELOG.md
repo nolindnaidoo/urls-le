@@ -5,77 +5,100 @@ All notable changes to URLs-LE will be documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.8.1] - 2025-11-02
+## [2.0.0] - 2026-07-29
 
-### Documentation
+Full rehabilitation release. The headline: **v1.x VSIXes built from this
+repo could not activate** — the build had no bundler while the package
+excluded `node_modules`, so the extension crashed on load with
+`Cannot find module 'vscode-nls'`. 2.0.0 ships a self-contained esbuild
+bundle, verified by a packaging gate and a real extension-host
+integration suite on every CI run.
 
-- **LE Family Updates** - Added Regex-LE and Secrets-LE to the "More from the LE Family" section in README
+### Fixed
 
-## [1.8.0] - 2025-10-26
+- **Packaging**: `dist/extension.js` is now a single self-contained
+  bundle (VSIX: 66 files → 21). A bundle gate (static require scan +
+  loading the bundle with `vscode` stubbed) blocks any regression.
+- **Config**: non-numeric setting overrides no longer produce `NaN`
+  thresholds; the string `"false"` no longer reads as `true`; the code
+  fallbacks for `postProcess.openInNewFile` / `openResultsSideBySide`
+  said `false` while the manifest says `true` — `CONFIG_DEFAULTS` now
+  provably matches manifest defaults (asserted by a test), and the
+  phantom `notificationLevel` (singular) lookup is gone.
+- **Dedupe/Sort/Extract**: whole-document replacement overshot the last
+  line; dedupe counted removed blank lines as "duplicates".
+- **Status bar**: reacts to `statusBar.enabled` changes without reload
+  (was created once from a config snapshot, and re-showed itself even
+  when disabled).
+- **Context menu**: the `resourceExtname in …` when-clause never
+  matched — the entry had never appeared; replaced with an
+  `editorLangId` regex.
+- **Runtime localization**: removed. It never worked — `vscode-nls` was
+  configured without a filename and no language bundles were ever
+  generated, so every locale saw English. Runtime strings are plain
+  English now; manifest/settings translations (13 catalogues) keep
+  working and are pruned to exact key parity.
 
-### Security & Enterprise Readiness
+### Changed — extraction output
 
-- **URL Injection Prevention** - Added 83 comprehensive security tests covering:
-  - JavaScript protocol injection (`javascript:`, `data:`, `vbscript:`)
-  - SSRF prevention (internal networks, cloud metadata endpoints)
-  - File protocol exploitation (`file://`)
-  - Browser extension protocol abuse
-  - URL encoding attack vectors
-  - Open redirect prevention
-  - CRLF injection protection
-- **Edge Case Hardening** - Added 71 tests for production reliability:
-  - Content size limits (prevents memory exhaustion)
-  - URL count limits (prevents DoS)
-  - Cancellation token support
-  - Malformed input handling
-  - Performance edge cases
-- **Test Suite Expansion** - Increased from 193 to 347 unit tests (+80%)
-  - 95% function coverage, 86% line coverage
-  - Zero critical vulnerabilities
-  - Enterprise-grade reliability
+- **Protocols are real everywhere**: CSS labeled every http URL
+  `https`; JSON and YAML did the same. The scheme decides now.
+- **Real line/column positions everywhere**: TOML/INI previously
+  returned no positions at all (and TOML context was a key path, now
+  the source line); JSON positions come from jsonc-parser token
+  offsets; columns point at the URL itself, including inside
+  `[text](url)` and `<url>` in Markdown.
+- **Every occurrence is reported**: markdown/html/javascript silently
+  dropped repeated URL values. Value-level dedup belongs to the dedupe
+  command and the (now actually wired) `dedupeEnabled` setting.
+- **One scanner** (`extraction/heuristics.ts`) replaces five protocol
+  regexes copy-pasted into ten files: XML no longer emits attribute
+  URLs twice, JS/TS template-literal URLs no longer double-emit, HTML
+  comments spanning multiple lines are now excluded, and mailto/tel
+  well-formedness (`@` required, non-empty subject) applies in every
+  format instead of two.
+- **Unknown languages return a format error** instead of silently
+  running the markdown extractor.
+- Documented limitations: URLs with raw spaces extract as
+  space-terminated partials; trailing `.`/`,` are kept; YAML/JS
+  comments contribute URLs by design; JSON escaped forms
+  (`https:\/\/…`) don't match.
 
-### Quality Improvements
+### Removed
 
-- **Type Safety** - 100% TypeScript strict mode compliance
-- **Immutability** - All exports frozen with `Object.freeze()`
-- **Dependency Security** - Zero vulnerabilities in dependency chain
+- 16 settings that were never read by any code path (`analysis.*`,
+  `performance.*`, `keyboard.*`, `presets.*`, `showParseErrors`,
+  `safety.manyDocumentsThreshold`). 10 real settings remain, each with
+  a consumer: `dedupeEnabled` and `safety.largeOutputLinesThreshold`
+  are newly wired, and `notificationsLevel` now applies to every
+  command (`all` / `important` / `silent`, default `silent`).
+- The `Toggle CSV Streaming` command — it toggled a setting nothing
+  read, for a format this extension does not parse.
+- Eleven dead modules (analysis, validation, url-validation service,
+  accessibility, performance monitoring, config validator, webview,
+  prompts, large-output UI, URL provider, settings schema) and the
+  three services built for them that no command ever consumed.
+- The fabricated documentation set: `ENTERPRISE_QUALITY.md`, `docs/`
+  (including performance results for a CSV format that never existed)
+  and README claims ("10,000+ URLs per second", "95% coverage",
+  "Fortune 10 quality") that nothing in the repo substantiated.
 
-## [1.7.0] - 2025-01-27
+### Development
 
-### Initial Public Release
+- esbuild toolchain; `tsc --noEmit` typechecks tests too; Biome.
+- 242 unit tests (90% line coverage, thresholds enforced at 80/80/75/80)
+  against a stateful `vscode` mock; characterization goldens pin every
+  extractor's output; 4 integration tests run in a real extension host.
+- CI on 3 OSes: lint → typecheck → coverage → build → bundle gate →
+  package → integration; manual-dispatch release workflow publishes to
+  the VS Code Marketplace and Open VSX.
 
-URLs-LE brings zero-hassle URL extraction to VS Code. Simple, reliable, focused.
+## [1.8.1] and earlier - 2025
 
-#### Supported File Types
-
-- **HTML** - Web pages and templates
-- **CSS** - Stylesheets with asset references
-- **JavaScript** - JS files with API calls and imports
-- **TypeScript** - TS files with API calls and imports
-- **JSON** - API responses and configuration files
-- **YAML** - Configuration and data files
-- **XML** - Structured data and metadata
-- **TOML** - Configuration files
-- **INI** - Configuration files
-- **Properties** - Java properties files
-- **Markdown** - Documentation and README files
-
-#### Features
-
-- **Multi-language support** - Comprehensive localization for 12+ languages
-- **Intelligent URL detection** - Detects HTTP/HTTPS URLs while filtering out `data:` URIs and `javascript:` pseudo-protocols
-- **Automatic cleanup built-in**:
-  - **Sort** for stable analysis and reviews
-  - **Dedupe** to eliminate noise
-  - **Filter** by protocol or domain
-- **Stream processing** - Work with large numbers of URLs without locking VS Code
-- **High-performance** - Benchmarked for 10,000+ URLs per second
-- **One-command extraction** - `Ctrl+Alt+U` (`Cmd+Alt+U` on macOS)
-- **Developer-friendly** - 193 passing tests (94.99% function coverage, 85.94% line coverage), TypeScript strict mode, functional programming, MIT licensed
-
-#### Use Cases
-
-- **Web Auditing** - Extract all links and resources from HTML/CSS for validation
-- **API Documentation** - Pull API endpoints from docs and code for cataloging
-- **Link Validation** - Find all external URLs for broken link checking
-- **Resource Tracking** - Audit CDN and asset URLs across your project
+Condensed: iterative development of the original template
+(1.0.0–1.8.1). These entries claimed extensive security hardening,
+"enterprise-grade reliability", and performance figures; the 2.0.0
+audit found the shipped artifact could not activate, runtime
+localization never functioned, 16 of 26 settings were inert, and the
+documented metrics were not reproducible from the repo. Treat pre-2.0
+entries as historical record only.
