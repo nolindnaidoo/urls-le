@@ -168,8 +168,6 @@ export interface Configuration {
 	readonly safetyEnabled: boolean;
 	readonly safetyFileSizeWarnBytes: number;
 	readonly safetyLargeOutputLinesThreshold: number;
-	readonly safetyManyDocumentsThreshold: number;
-	readonly showParseErrors: boolean;
 	readonly statusBarEnabled: boolean;
 	readonly telemetryEnabled: boolean;
 }

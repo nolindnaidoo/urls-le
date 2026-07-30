@@ -37,8 +37,6 @@ const mockConfig: Configuration = {
 	safetyEnabled: true,
 	safetyFileSizeWarnBytes: 1000,
 	safetyLargeOutputLinesThreshold: 100,
-	safetyManyDocumentsThreshold: 50,
-	showParseErrors: false,
 	statusBarEnabled: true,
 	telemetryEnabled: false,
 };

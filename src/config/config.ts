@@ -1,100 +1,115 @@
 import * as vscode from 'vscode';
 import type { Configuration } from '../types';
 
-export type NotificationLevel = 'all' | 'important' | 'silent';
-
-const CONFIG_NAMESPACE = 'urls-le';
-
-const DEFAULTS = Object.freeze({
+/**
+ * Fallback values, kept identical to the defaults declared in
+ * package.json contributes.configuration. A unit test asserts parity so
+ * the two can never drift again.
+ */
+export const CONFIG_DEFAULTS = Object.freeze({
 	copyToClipboardEnabled: false,
 	dedupeEnabled: false,
-	notificationsLevel: 'silent' as NotificationLevel,
-	postProcessOpenInNewFile: false,
-	openResultsSideBySide: false,
+	notificationsLevel: 'silent' as const,
+	postProcessOpenInNewFile: true,
+	openResultsSideBySide: true,
 	safetyEnabled: true,
 	safetyFileSizeWarnBytes: 1_000_000,
 	safetyLargeOutputLinesThreshold: 50_000,
-	safetyManyDocumentsThreshold: 8,
-	showParseErrors: false,
 	statusBarEnabled: true,
 	telemetryEnabled: false,
 });
 
-const CONSTRAINTS = Object.freeze({
-	minFileSizeBytes: 1000,
-	minLargeOutputLines: 100,
-	minDocumentsThreshold: 1,
-});
-
 export function getConfiguration(): Configuration {
-	const config = vscode.workspace.getConfiguration(CONFIG_NAMESPACE);
+	const config = vscode.workspace.getConfiguration('urls-le');
 
 	return Object.freeze({
-		copyToClipboardEnabled: getBooleanConfig(config, 'copyToClipboardEnabled'),
-		dedupeEnabled: getBooleanConfig(config, 'dedupeEnabled'),
-		notificationsLevel: getNotificationLevel(config),
-		postProcessOpenInNewFile: getBooleanConfig(
+		copyToClipboardEnabled: readBoolean(
+			config,
+			'copyToClipboardEnabled',
+			CONFIG_DEFAULTS.copyToClipboardEnabled,
+		),
+		dedupeEnabled: readBoolean(
+			config,
+			'dedupeEnabled',
+			CONFIG_DEFAULTS.dedupeEnabled,
+		),
+		notificationsLevel: readNotificationLevel(config),
+		postProcessOpenInNewFile: readBoolean(
 			config,
 			'postProcess.openInNewFile',
+			CONFIG_DEFAULTS.postProcessOpenInNewFile,
 		),
-		openResultsSideBySide: getBooleanConfig(config, 'openResultsSideBySide'),
-		safetyEnabled: getBooleanConfig(config, 'safety.enabled', true),
-		safetyFileSizeWarnBytes: getConstrainedNumber(
+		openResultsSideBySide: readBoolean(
+			config,
+			'openResultsSideBySide',
+			CONFIG_DEFAULTS.openResultsSideBySide,
+		),
+		safetyEnabled: readBoolean(
+			config,
+			'safety.enabled',
+			CONFIG_DEFAULTS.safetyEnabled,
+		),
+		safetyFileSizeWarnBytes: readNumber(
 			config,
 			'safety.fileSizeWarnBytes',
-			DEFAULTS.safetyFileSizeWarnBytes,
-			CONSTRAINTS.minFileSizeBytes,
+			CONFIG_DEFAULTS.safetyFileSizeWarnBytes,
+			1000,
 		),
-		safetyLargeOutputLinesThreshold: getConstrainedNumber(
+		safetyLargeOutputLinesThreshold: readNumber(
 			config,
 			'safety.largeOutputLinesThreshold',
-			DEFAULTS.safetyLargeOutputLinesThreshold,
-			CONSTRAINTS.minLargeOutputLines,
+			CONFIG_DEFAULTS.safetyLargeOutputLinesThreshold,
+			100,
 		),
-		safetyManyDocumentsThreshold: getConstrainedNumber(
+		statusBarEnabled: readBoolean(
 			config,
-			'safety.manyDocumentsThreshold',
-			DEFAULTS.safetyManyDocumentsThreshold,
-			CONSTRAINTS.minDocumentsThreshold,
+			'statusBar.enabled',
+			CONFIG_DEFAULTS.statusBarEnabled,
 		),
-		showParseErrors: getBooleanConfig(config, 'showParseErrors'),
-		statusBarEnabled: getBooleanConfig(config, 'statusBar.enabled', true),
-		telemetryEnabled: getBooleanConfig(config, 'telemetryEnabled'),
+		telemetryEnabled: readBoolean(
+			config,
+			'telemetryEnabled',
+			CONFIG_DEFAULTS.telemetryEnabled,
+		),
 	});
 }
 
-function getBooleanConfig(
+function readBoolean(
 	config: vscode.WorkspaceConfiguration,
 	key: string,
-	defaultValue = false,
+	defaultValue: boolean,
 ): boolean {
-	return Boolean(config.get(key, defaultValue));
+	const value = config.get(key, defaultValue);
+	return typeof value === 'boolean' ? value : defaultValue;
 }
 
-function getConstrainedNumber(
+function readNumber(
 	config: vscode.WorkspaceConfiguration,
 	key: string,
 	defaultValue: number,
 	minValue: number,
 ): number {
 	const value = Number(config.get(key, defaultValue));
+	if (!Number.isFinite(value)) {
+		return defaultValue;
+	}
 	return Math.max(minValue, value);
 }
 
-function getNotificationLevel(
-	config: vscode.WorkspaceConfiguration,
-): NotificationLevel {
-	// Backward-compat: support both `notificationLevel` (preferred) and legacy `notificationsLevel`
-	const notifRaw = config.get(
-		'notificationLevel',
-		config.get('notificationsLevel', DEFAULTS.notificationsLevel),
-	) as unknown;
-
-	return isValidNotificationLevel(notifRaw)
-		? notifRaw
-		: DEFAULTS.notificationsLevel;
-}
+export type NotificationLevel = 'all' | 'important' | 'silent';
 
 export function isValidNotificationLevel(v: unknown): v is NotificationLevel {
 	return v === 'all' || v === 'important' || v === 'silent';
+}
+
+function readNotificationLevel(
+	config: vscode.WorkspaceConfiguration,
+): NotificationLevel {
+	const raw = config.get<string>(
+		'notificationsLevel',
+		CONFIG_DEFAULTS.notificationsLevel,
+	);
+	return isValidNotificationLevel(raw)
+		? raw
+		: CONFIG_DEFAULTS.notificationsLevel;
 }

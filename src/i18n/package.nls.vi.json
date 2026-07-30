@@ -14,11 +14,9 @@
 	"manifest.settings.notifications.level.option.silent": "Ẩn tất cả thông báo",
 	"manifest.settings.open.new-file.desc": "Mở nội dung đã xử lý trong trình soạn thảo mới",
 	"manifest.settings.open.side-by-side.desc": "Mở kết quả trích xuất trong trình soạn thảo mới bên cạnh",
-	"manifest.settings.parse-errors.desc": "Hiển thị lỗi phân tích dưới dạng thông báo VS Code khi phân tích thất bại",
 	"manifest.settings.safety.enabled.desc": "Bật kiểm tra an toàn cho tệp và thao tác lớn",
 	"manifest.settings.safety.warn.file-size.desc": "Cảnh báo khi kích thước tệp đầu vào vượt quá ngưỡng này (byte)",
 	"manifest.settings.safety.warn.large-output.desc": "Cảnh báo trước khi mở/sao chép khi số dòng kết quả vượt quá ngưỡng này",
-	"manifest.settings.safety.warn.many-documents.desc": "Cảnh báo trước khi mở nhiều tài liệu kết quả khi số lượng vượt quá ngưỡng này",
 	"manifest.settings.statusbar.enabled.desc": "Hiển thị mục trạng thái URLs-LE trên thanh trạng thái để truy cập nhanh",
 	"manifest.settings.telemetry.desc": "Bật nhật ký telemetry chỉ cục bộ vào bảng điều khiển Output",
 	"manifest.settings.title": "Cài đặt URLs-LE"

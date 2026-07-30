@@ -193,17 +193,6 @@
 					"minimum": 100,
 					"description": "%manifest.settings.safety.warn.large-output.desc%"
 				},
-				"urls-le.safety.manyDocumentsThreshold": {
-					"type": "number",
-					"default": 8,
-					"minimum": 1,
-					"description": "%manifest.settings.safety.warn.many-documents.desc%"
-				},
-				"urls-le.showParseErrors": {
-					"type": "boolean",
-					"default": false,
-					"description": "%manifest.settings.parse-errors.desc%"
-				},
 				"urls-le.statusBar.enabled": {
 					"type": "boolean",
 					"default": true,

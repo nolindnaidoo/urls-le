@@ -14,11 +14,9 @@
 	"manifest.settings.notifications.level.option.silent": "Suppress all notifications",
 	"manifest.settings.open.new-file.desc": "Open post-processed content in a new editor",
 	"manifest.settings.open.side-by-side.desc": "Open extraction results in a new editor to the side",
-	"manifest.settings.parse-errors.desc": "Show parse errors as VS Code notifications when parsing fails",
 	"manifest.settings.safety.enabled.desc": "Enable safety checks for large files and operations",
 	"manifest.settings.safety.warn.file-size.desc": "Warn when input file size exceeds this threshold in bytes",
 	"manifest.settings.safety.warn.large-output.desc": "Warn before opening/copying when result lines exceed this threshold",
-	"manifest.settings.safety.warn.many-documents.desc": "Warn before opening multiple result documents when count exceeds this threshold",
 	"manifest.settings.statusbar.enabled.desc": "Show URLs-LE status bar entry for quick access",
 	"manifest.settings.telemetry.desc": "Enable local-only telemetry logs to the Output panel",
 	"manifest.settings.title": "URLs-LE Settings"

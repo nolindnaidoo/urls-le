@@ -14,11 +14,9 @@
 	"manifest.settings.notifications.level.option.silent": "Придушити всі повідомлення",
 	"manifest.settings.open.new-file.desc": "Відкрити оброблений вміст у новому редакторі",
 	"manifest.settings.open.side-by-side.desc": "Відкрити результати вилучення в новому редакторі збоку",
-	"manifest.settings.parse-errors.desc": "Показати помилки аналізу як повідомлення VS Code, коли аналіз не вдається",
 	"manifest.settings.safety.enabled.desc": "Увімкнути перевірки безпеки для великих файлів та операцій",
 	"manifest.settings.safety.warn.file-size.desc": "Попереджати, коли розмір вхідного файлу перевищує цей поріг у байтах",
 	"manifest.settings.safety.warn.large-output.desc": "Попереджати перед відкриттям/копіюванням, коли рядки результатів перевищують цей поріг",
-	"manifest.settings.safety.warn.many-documents.desc": "Попереджати перед відкриттям декількох документів результатів, коли кількість перевищує цей поріг",
 	"manifest.settings.statusbar.enabled.desc": "Показати запис статусної панелі URL-LE для швидкого доступу",
 	"manifest.settings.telemetry.desc": "Увімкнути локальні журнали телеметрії на панелі виводу",
 	"manifest.settings.title": "Налаштування URLs-LE"
