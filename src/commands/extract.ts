@@ -5,6 +5,7 @@ import type { Telemetry } from '../telemetry/telemetry';
 import type { Configuration, ExtractionResult } from '../types';
 import type { Notifier } from '../ui/notifier';
 import type { StatusBar } from '../ui/statusBar';
+import { sanitizeErrorMessage } from '../utils/errors';
 import { handleSafetyChecks } from '../utils/safety';
 
 const MAX_CLIPBOARD_SIZE = 1_000_000; // 1MB
@@ -117,7 +118,7 @@ function handleExtractionFailure(
 	result: ExtractionResult,
 	deps: CommandDependencies,
 ): void {
-	const errorMessage = extractErrorMessage(result);
+	const errorMessage = sanitizeErrorMessage(extractErrorMessage(result));
 	deps.notifier.showError(`Failed to extract URLs: ${errorMessage}`);
 }
 
@@ -300,8 +301,9 @@ function handleExtractionError(
 	error: unknown,
 	deps: CommandDependencies,
 ): void {
-	const message =
-		error instanceof Error ? error.message : 'Unknown error occurred';
+	const message = sanitizeErrorMessage(
+		error instanceof Error ? error.message : 'Unknown error occurred',
+	);
 
 	deps.notifier.showError(`Failed to extract URLs: ${message}`);
 	deps.telemetry.event('extract-error', { error: message });

@@ -1,56 +1,21 @@
 export interface ExtractionResult {
 	success: boolean;
 	urls: readonly Url[];
-	errors: readonly ParseError[];
+	errors: readonly ExtractionError[];
 	fileType?: FileType;
 }
 
-export type ErrorCategory =
-	| 'parsing'
-	| 'validation'
-	| 'file-system'
-	| 'configuration'
-	| 'url-validation'
-	| 'format'
-	| 'analysis'
-	| 'performance'
-	| 'unknown';
-
-export type ErrorSeverity = 'info' | 'warning' | 'error' | 'critical';
-
-export type RecoveryAction =
-	| 'retry'
-	| 'fallback'
-	| 'user-action'
-	| 'skip'
-	| 'abort'
-	| 'truncate';
-
-export interface UrlsLeError {
-	readonly category: ErrorCategory;
-	readonly severity: ErrorSeverity;
-	readonly message: string;
-	readonly context?: string;
-	readonly recoverable: boolean;
-	readonly recoveryAction: RecoveryAction;
-	readonly timestamp?: number;
-	readonly stack?: string;
-	readonly metadata?: Readonly<Record<string, unknown>>;
-}
-
-export interface ParseError extends UrlsLeError {
+export interface ExtractionError {
 	readonly category: 'parsing' | 'format';
-	readonly filepath?: string;
-	readonly position?: {
-		readonly line: number;
-		readonly column: number;
-	};
+	readonly severity: 'warning' | 'error';
+	readonly message: string;
+	readonly recoverable: boolean;
+	readonly recoveryAction: 'skip' | 'abort' | 'truncate';
 }
 
 export interface Url {
 	readonly value: string;
 	readonly protocol: UrlProtocol;
-	readonly type?: string;
 	readonly domain?: string;
 	readonly path?: string;
 	readonly position?: {
@@ -60,90 +25,7 @@ export interface Url {
 	readonly context?: string;
 }
 
-export type UrlProtocol =
-	| 'http'
-	| 'https'
-	| 'ftp'
-	| 'file'
-	| 'mailto'
-	| 'tel'
-	| 'unknown';
-
-export interface AnalysisResult {
-	count: number;
-	protocols: Record<UrlProtocol, number>;
-	unique: number;
-	duplicates: number;
-	security?: SecurityAnalysis;
-	accessibility?: AccessibilityAnalysis;
-	domains?: DomainAnalysis;
-	// Additional properties for compatibility
-	secure?: number;
-	insecure?: number;
-	suspicious?: number;
-	uniqueDomains?: number;
-	// Index signature for compatibility
-	readonly [key: string]: unknown;
-}
-
-export interface SecurityAnalysis {
-	readonly secure: number;
-	readonly insecure: number;
-	readonly suspicious: number;
-	readonly issues: readonly SecurityIssue[];
-}
-
-export interface SecurityIssue {
-	readonly url: string;
-	readonly issue: string;
-	readonly severity: 'warning' | 'error';
-}
-
-export interface AccessibilityAnalysis {
-	readonly accessible: number;
-	readonly inaccessible: number;
-	readonly issues: readonly AccessibilityIssue[];
-}
-
-export interface AccessibilityIssue {
-	readonly url: string;
-	readonly issue: string;
-	readonly severity: 'warning' | 'error';
-	// Index signature for compatibility
-	readonly [key: string]: unknown;
-}
-
-export interface AccessibilityResult {
-	readonly url: string;
-	readonly accessible: boolean;
-	readonly issues: readonly string[];
-	readonly severity: 'warning' | 'error';
-	// Index signature for compatibility
-	readonly [key: string]: unknown;
-}
-
-export interface DomainAnalysis {
-	readonly uniqueDomains: number;
-	readonly commonDomains: readonly CommonDomain[];
-	readonly expiredDomains: readonly string[];
-	readonly suspiciousDomains: readonly string[];
-}
-
-export interface CommonDomain {
-	readonly domain: string;
-	readonly count: number;
-	readonly percentage: number;
-}
-
-export interface ValidationResult {
-	readonly url: string;
-	readonly status: 'valid' | 'invalid' | 'timeout' | 'error';
-	readonly statusCode?: number;
-	readonly redirects?: readonly string[];
-	readonly error?: string;
-	// Index signature for compatibility
-	readonly [key: string]: unknown;
-}
+export type UrlProtocol = 'http' | 'https' | 'ftp' | 'file' | 'mailto' | 'tel';
 
 export type FileType =
 	| 'markdown'
@@ -153,7 +35,6 @@ export type FileType =
 	| 'typescript'
 	| 'json'
 	| 'yaml'
-	| 'yml'
 	| 'properties'
 	| 'toml'
 	| 'ini'

@@ -1,30 +1,38 @@
 import * as vscode from 'vscode';
+import type { Notifier } from '../ui/notifier';
+import { sanitizeErrorMessage } from '../utils/errors';
 
-export function registerDedupeCommand(context: vscode.ExtensionContext): void {
+export function registerDedupeCommand(
+	context: vscode.ExtensionContext,
+	notifier: Notifier,
+): void {
 	const command = vscode.commands.registerCommand(
 		'urls-le.postProcess.dedupe',
-		async () => executeDedupeCommand(),
+		async () => executeDedupeCommand(notifier),
 	);
 
 	context.subscriptions.push(command);
 }
 
-async function executeDedupeCommand(): Promise<void> {
+async function executeDedupeCommand(notifier: Notifier): Promise<void> {
 	// Fail fast: Check for active editor
 	const editor = vscode.window.activeTextEditor;
 	if (!editor) {
-		showNoEditorWarning();
+		notifier.showWarning('No active editor found');
 		return;
 	}
 
 	try {
-		await performDedupe(editor);
+		await performDedupe(editor, notifier);
 	} catch (error) {
-		handleDedupeError(error);
+		handleDedupeError(error, notifier);
 	}
 }
 
-async function performDedupe(editor: vscode.TextEditor): Promise<void> {
+async function performDedupe(
+	editor: vscode.TextEditor,
+	notifier: Notifier,
+): Promise<void> {
 	const document = editor.document;
 	// Blank lines are dropped from the output but must not be reported as
 	// removed duplicates.
@@ -32,7 +40,10 @@ async function performDedupe(editor: vscode.TextEditor): Promise<void> {
 	const deduped = deduplicateLines(lines);
 
 	await replaceDocumentContent(document, deduped);
-	showSuccessMessage(lines.length, deduped.length);
+	const removed = lines.length - deduped.length;
+	notifier.showInfo(
+		`Removed ${removed} duplicate URLs (${deduped.length} remaining)`,
+	);
 }
 
 function extractNonEmptyLines(document: vscode.TextDocument): string[] {
@@ -70,20 +81,9 @@ function fullDocumentRange(document: vscode.TextDocument): vscode.Range {
 	);
 }
 
-function showNoEditorWarning(): void {
-	vscode.window.showWarningMessage('No active editor found');
-}
-
-function showSuccessMessage(originalCount: number, dedupedCount: number): void {
-	const removedCount = originalCount - dedupedCount;
-	vscode.window.showInformationMessage(
-		`Removed ${removedCount} duplicate URLs (${dedupedCount} remaining)`,
+function handleDedupeError(error: unknown, notifier: Notifier): void {
+	const message = sanitizeErrorMessage(
+		error instanceof Error ? error.message : 'Unknown error occurred',
 	);
-}
-
-function handleDedupeError(error: unknown): void {
-	const message =
-		error instanceof Error ? error.message : 'Unknown error occurred';
-
-	vscode.window.showErrorMessage(`Deduplication failed: ${message}`);
+	notifier.showError(`Deduplication failed: ${message}`);
 }

@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import type { Notifier } from '../ui/notifier';
+import { sanitizeErrorMessage } from '../utils/errors';
 
 type SortOrder = 'asc' | 'desc' | 'domain' | 'length-asc' | 'length-desc';
 
@@ -7,20 +9,23 @@ interface SortOption {
 	readonly value: SortOrder;
 }
 
-export function registerSortCommand(context: vscode.ExtensionContext): void {
+export function registerSortCommand(
+	context: vscode.ExtensionContext,
+	notifier: Notifier,
+): void {
 	const command = vscode.commands.registerCommand(
 		'urls-le.postProcess.sort',
-		async () => executeSortCommand(),
+		async () => executeSortCommand(notifier),
 	);
 
 	context.subscriptions.push(command);
 }
 
-async function executeSortCommand(): Promise<void> {
+async function executeSortCommand(notifier: Notifier): Promise<void> {
 	// Fail fast: Check for active editor
 	const editor = vscode.window.activeTextEditor;
 	if (!editor) {
-		showNoEditorWarning();
+		notifier.showWarning('No active editor found');
 		return;
 	}
 
@@ -32,9 +37,9 @@ async function executeSortCommand(): Promise<void> {
 	}
 
 	try {
-		await performSort(editor, sortOption);
+		await performSort(editor, sortOption, notifier);
 	} catch (error) {
-		handleSortError(error);
+		handleSortError(error, notifier);
 	}
 }
 
@@ -72,13 +77,14 @@ function createSortOptions(): SortOption[] {
 async function performSort(
 	editor: vscode.TextEditor,
 	sortOption: SortOption,
+	notifier: Notifier,
 ): Promise<void> {
 	const document = editor.document;
 	const lines = extractNonEmptyLines(document);
 	const sorted = sortLines(lines, sortOption.value);
 
 	await replaceDocumentContent(document, sorted);
-	showSuccessMessage(sorted.length, sortOption.label);
+	notifier.showInfo(`Sorted ${sorted.length} URLs (${sortOption.label})`);
 }
 
 function extractNonEmptyLines(document: vscode.TextDocument): string[] {
@@ -149,17 +155,9 @@ function fullDocumentRange(document: vscode.TextDocument): vscode.Range {
 	);
 }
 
-function showNoEditorWarning(): void {
-	vscode.window.showWarningMessage('No active editor found');
-}
-
-function showSuccessMessage(count: number, sortLabel: string): void {
-	vscode.window.showInformationMessage(`Sorted ${count} URLs (${sortLabel})`);
-}
-
-function handleSortError(error: unknown): void {
-	const message =
-		error instanceof Error ? error.message : 'Unknown error occurred';
-
-	vscode.window.showErrorMessage(`Sorting failed: ${message}`);
+function handleSortError(error: unknown, notifier: Notifier): void {
+	const message = sanitizeErrorMessage(
+		error instanceof Error ? error.message : 'Unknown error occurred',
+	);
+	notifier.showError(`Sorting failed: ${message}`);
 }

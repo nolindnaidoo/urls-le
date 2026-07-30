@@ -1,5 +1,10 @@
 import type * as vscode from 'vscode';
-import type { ExtractionResult, FileType, ParseError, Url } from '../types';
+import type {
+	ExtractionError,
+	ExtractionResult,
+	FileType,
+	Url,
+} from '../types';
 import { extractFromCss } from './formats/css';
 import { extractFromHtml } from './formats/html';
 import { extractFromIni } from './formats/ini';
@@ -63,9 +68,9 @@ export async function extractUrls(
 function extractUrlsByFileType(
 	content: string,
 	fileType: FileType,
-): { urls: Url[]; errors: ParseError[] } {
+): { urls: Url[]; errors: ExtractionError[] } {
 	const urls: Url[] = [];
-	const errors: ParseError[] = [];
+	const errors: ExtractionError[] = [];
 
 	try {
 		const extractedUrls = selectExtractor(fileType)(content);
@@ -91,7 +96,6 @@ function selectExtractor(fileType: FileType): (content: string) => Url[] {
 		case 'json':
 			return extractFromJson;
 		case 'yaml':
-		case 'yml':
 			return extractFromYaml;
 		case 'properties':
 			return extractFromProperties;
@@ -176,7 +180,7 @@ function createTruncatedResult(
 
 function createSuccessResult(
 	urls: Url[],
-	errors: ParseError[],
+	errors: ExtractionError[],
 	fileType: FileType,
 ): ExtractionResult {
 	return Object.freeze({
@@ -187,7 +191,7 @@ function createSuccessResult(
 	});
 }
 
-function createParseError(error: unknown): ParseError {
+function createParseError(error: unknown): ExtractionError {
 	return {
 		category: 'parsing' as const,
 		severity: 'warning' as const,

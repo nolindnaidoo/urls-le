@@ -1,5 +1,4 @@
 import type { Url, UrlProtocol } from '../types';
-import { extractUrlComponents } from '../utils/urlValidation';
 import { createPositionIndex } from './position';
 
 /**
@@ -164,4 +163,19 @@ export function toUnpositionedUrls(matches: readonly UrlMatch[]): Url[] {
 			...(components?.path && { path: components.path }),
 		});
 	});
+}
+
+/** domain/path enrichment for values that parse as URLs. */
+function extractUrlComponents(
+	value: string,
+): { domain?: string; path?: string } | null {
+	try {
+		const parsed = new URL(value);
+		return {
+			domain: parsed.hostname,
+			path: parsed.pathname + parsed.search + parsed.hash,
+		};
+	} catch {
+		return null;
+	}
 }
