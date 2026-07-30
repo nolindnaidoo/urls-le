@@ -4,40 +4,45 @@ import type { Configuration } from '../types';
 export interface SafetyResult {
 	readonly proceed: boolean;
 	readonly message: string;
+	readonly warnings: readonly string[];
 }
 
+/**
+ * Pre-extraction guardrails: refuse files over the configured size
+ * threshold and warn on line counts over the large-output threshold.
+ * Pure string checks — no filesystem access.
+ */
 export function handleSafetyChecks(
 	document: vscode.TextDocument,
 	config: Configuration,
 ): SafetyResult {
 	// Fail fast: Skip checks if safety is disabled
 	if (!config.safetyEnabled) {
-		return createSafeResult();
+		return Object.freeze({ proceed: true, message: '', warnings: [] });
 	}
 
-	const contentSize = getContentSize(document);
-	const exceedsLimit = contentSize > config.safetyFileSizeWarnBytes;
+	const content = document.getText();
 
 	// Fail fast: Check file size
-	if (exceedsLimit) {
-		return createUnsafeResult(contentSize, config.safetyFileSizeWarnBytes);
+	if (content.length > config.safetyFileSizeWarnBytes) {
+		return Object.freeze({
+			proceed: false,
+			message: `File size (${content.length} bytes) exceeds safety threshold (${config.safetyFileSizeWarnBytes} bytes)`,
+			warnings: [],
+		});
 	}
 
-	return createSafeResult();
-}
+	const warnings: string[] = [];
+	const lineCount = content.split('\n').length;
+	if (lineCount > config.safetyLargeOutputLinesThreshold) {
+		warnings.push(
+			`Large file: ${lineCount} lines (threshold: ${config.safetyLargeOutputLinesThreshold}); extraction may be slow`,
+		);
+	}
 
-function getContentSize(document: vscode.TextDocument): number {
-	return document.getText().length;
-}
-
-function createSafeResult(): SafetyResult {
-	return Object.freeze({ proceed: true, message: '' });
-}
-
-function createUnsafeResult(
-	actualSize: number,
-	threshold: number,
-): SafetyResult {
-	const message = `File size (${actualSize} bytes) exceeds safety threshold (${threshold} bytes)`;
-	return Object.freeze({ proceed: false, message });
+	return Object.freeze({
+		proceed: true,
+		message: '',
+		warnings: Object.freeze(warnings),
+	});
 }

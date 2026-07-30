@@ -46,6 +46,9 @@ async function executeExtractCommand(deps: CommandDependencies): Promise<void> {
 		deps.notifier.showWarning(safetyResult.message);
 		return;
 	}
+	for (const warning of safetyResult.warnings) {
+		deps.notifier.showWarning(warning);
+	}
 
 	const cancellationToken = new vscode.CancellationTokenSource();
 
@@ -95,7 +98,7 @@ async function performExtraction(
 		return;
 	}
 
-	const formattedUrls = formatUrls(result);
+	const formattedUrls = formatUrls(result, config);
 	await displayResults(formattedUrls, document, config, token, deps);
 	await handleClipboard(formattedUrls, config, token, deps);
 
@@ -103,10 +106,11 @@ async function performExtraction(
 	deps.telemetry.event('extract-success', { count: result.urls.length });
 }
 
-function formatUrls(result: ExtractionResult): string[] {
-	return result.urls
+function formatUrls(result: ExtractionResult, config: Configuration): string[] {
+	const values = result.urls
 		.filter((url) => url?.value && typeof url.value === 'string')
 		.map((url) => url.value);
+	return config.dedupeEnabled ? [...new Set(values)] : values;
 }
 
 function handleExtractionFailure(
