@@ -186,12 +186,13 @@ describe('Extract.ts Edge Cases', () => {
 			expect(result.fileType).toBe('unknown');
 		});
 
-		it('should fallback to markdown for unknown types', async () => {
+		it('returns a format error for unknown types', async () => {
 			const content = '[link](https://example.com)';
 			const result = await extractUrls(content, 'unknown-type');
 
-			// Should still extract URLs using markdown parser as fallback
-			expect(result.urls.length).toBeGreaterThan(0);
+			expect(result.success).toBe(false);
+			expect(result.urls).toHaveLength(0);
+			expect(result.errors[0]?.category).toBe('format');
 		});
 	});
 

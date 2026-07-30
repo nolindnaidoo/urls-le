@@ -1,101 +1,40 @@
 import * as toml from '@iarna/toml';
-import type { Url, UrlProtocol } from '../../types';
-
-// Regex patterns for different URL formats
-const URL_PATTERN = /(https?:\/\/[^\s<>"{}|\\^`[\];)']+)/g;
-const FTP_PATTERN = /(ftp:\/\/[^\s<>"{}|\\^`[\];)']+)/g;
-const MAILTO_PATTERN = /(mailto:[^\s<>"{}|\\^`[\];)']+)/g;
-const TEL_PATTERN = /(tel:[^\s<>"{}|\\^`[\];)']+)/g;
-const FILE_PATTERN = /(file:\/\/[^\s<>"{}|\\^`[\];)']+)/g;
+import type { Url } from '../../types';
+import {
+	locateParsedValues,
+	scanUrls,
+	toUnpositionedUrls,
+	toUrls,
+} from '../heuristics';
 
 /**
- * Extract URLs from TOML files (e.g., Cargo.toml, pyproject.toml)
- * Recursively walks through TOML structure to find URL values
+ * TOML (Cargo.toml, pyproject.toml): parse, walk string values, then
+ * forward-locate each URL in the source for a real position — v1.x
+ * returned no positions at all from this path. Comments never
+ * contribute (the parser drops them). On a parse error the whole
+ * content is scanned instead, now with positions.
  */
 export function extractFromToml(content: string): Url[] {
 	try {
 		const parsed = toml.parse(content);
-		return collectUrls(parsed);
+		const strings = collectStrings(parsed);
+		const { located, unlocated } = locateParsedValues(content, strings);
+		return [...toUrls(content, located), ...toUnpositionedUrls(unlocated)];
 	} catch (error) {
-		// If TOML parsing fails, fall back to regex extraction
 		console.warn('[URLs-LE] TOML parsing failed, using fallback:', error);
-		return extractUrlsFromText(content);
+		return toUrls(content, scanUrls(content));
 	}
 }
 
-function collectUrls(obj: unknown, lineContext = ''): Url[] {
-	const urls: Url[] = [];
-
-	if (typeof obj === 'string') {
-		urls.push(...extractUrlsFromText(obj, lineContext));
-	} else if (Array.isArray(obj)) {
-		for (const item of obj) {
-			urls.push(...collectUrls(item, lineContext));
-		}
-	} else if (obj && typeof obj === 'object') {
-		for (const [key, value] of Object.entries(obj)) {
-			urls.push(...collectUrls(value, `${lineContext}${key}: `));
-		}
+function collectStrings(node: unknown): string[] {
+	if (typeof node === 'string') {
+		return [node];
 	}
-
-	return urls;
-}
-
-function extractUrlsFromText(text: string, context = ''): Url[] {
-	const urls: Url[] = [];
-
-	// Extract HTTP/HTTPS URLs - reset regex lastIndex
-	URL_PATTERN.lastIndex = 0;
-	let match;
-	while ((match = URL_PATTERN.exec(text)) !== null) {
-		urls.push({
-			value: match[0],
-			protocol: match[0].startsWith('https')
-				? ('https' as UrlProtocol)
-				: ('http' as UrlProtocol),
-			context: context || text,
-		});
+	if (Array.isArray(node)) {
+		return node.flatMap(collectStrings);
 	}
-
-	// Extract FTP URLs - reset regex lastIndex
-	FTP_PATTERN.lastIndex = 0;
-	while ((match = FTP_PATTERN.exec(text)) !== null) {
-		urls.push({
-			value: match[0],
-			protocol: 'ftp' as UrlProtocol,
-			context: context || text,
-		});
+	if (node && typeof node === 'object') {
+		return Object.values(node).flatMap(collectStrings);
 	}
-
-	// Extract mailto URLs - reset regex lastIndex
-	MAILTO_PATTERN.lastIndex = 0;
-	while ((match = MAILTO_PATTERN.exec(text)) !== null) {
-		urls.push({
-			value: match[0],
-			protocol: 'mailto' as UrlProtocol,
-			context: context || text,
-		});
-	}
-
-	// Extract tel URLs - reset regex lastIndex
-	TEL_PATTERN.lastIndex = 0;
-	while ((match = TEL_PATTERN.exec(text)) !== null) {
-		urls.push({
-			value: match[0],
-			protocol: 'tel' as UrlProtocol,
-			context: context || text,
-		});
-	}
-
-	// Extract file URLs - reset regex lastIndex
-	FILE_PATTERN.lastIndex = 0;
-	while ((match = FILE_PATTERN.exec(text)) !== null) {
-		urls.push({
-			value: match[0],
-			protocol: 'file' as UrlProtocol,
-			context: context || text,
-		});
-	}
-
-	return urls;
+	return [];
 }

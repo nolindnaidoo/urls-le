@@ -122,15 +122,16 @@ describe('JavaScript URL Extraction', () => {
 			expect(urls).toHaveLength(0);
 		});
 
-		it('should deduplicate identical URLs', () => {
+		it('reports every occurrence of a repeated URL', () => {
 			const content = `
         const url1 = 'https://example.com';
         const url2 = 'https://example.com';
       `;
 			const urls = extractFromJavaScript(content);
 
-			expect(urls).toHaveLength(1);
+			expect(urls).toHaveLength(2);
 			expect(urls[0]?.value).toBe('https://example.com');
+			expect(urls[1]?.position?.line).toBe(3);
 		});
 
 		it('should handle URLs with query parameters', () => {

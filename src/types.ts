@@ -11,6 +11,7 @@ export type ErrorCategory =
 	| 'file-system'
 	| 'configuration'
 	| 'url-validation'
+	| 'format'
 	| 'analysis'
 	| 'performance'
 	| 'unknown';
@@ -32,13 +33,13 @@ export interface UrlsLeError {
 	readonly context?: string;
 	readonly recoverable: boolean;
 	readonly recoveryAction: RecoveryAction;
-	readonly timestamp: number;
+	readonly timestamp?: number;
 	readonly stack?: string;
 	readonly metadata?: Readonly<Record<string, unknown>>;
 }
 
 export interface ParseError extends UrlsLeError {
-	readonly category: 'parsing';
+	readonly category: 'parsing' | 'format';
 	readonly filepath?: string;
 	readonly position?: {
 		readonly line: number;

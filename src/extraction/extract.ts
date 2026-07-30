@@ -33,6 +33,9 @@ export async function extractUrls(
 	}
 
 	const fileType = determineFileType(languageId);
+	if (fileType === 'unknown') {
+		return createUnsupportedResult(languageId);
+	}
 
 	// Fail fast: Check cancellation before extraction
 	if (cancellationToken?.isCancellationRequested) {
@@ -99,8 +102,25 @@ function selectExtractor(fileType: FileType): (content: string) => Url[] {
 		case 'xml':
 			return extractFromXml;
 		default:
-			return extractFromMarkdown; // Fallback
+			return extractFromMarkdown; // Unreachable: 'unknown' is rejected upstream
 	}
+}
+
+function createUnsupportedResult(languageId: string): ExtractionResult {
+	return Object.freeze({
+		success: false,
+		urls: Object.freeze([]),
+		errors: Object.freeze([
+			{
+				category: 'format' as const,
+				severity: 'warning' as const,
+				message: `Unsupported language: ${languageId}`,
+				recoverable: false,
+				recoveryAction: 'abort' as const,
+			},
+		]),
+		fileType: 'unknown' as const,
+	});
 }
 
 function createEmptyResult(fileType: FileType): ExtractionResult {
@@ -126,7 +146,6 @@ function createErrorResult(
 				message,
 				recoverable: true,
 				recoveryAction: 'truncate' as const,
-				timestamp: Date.now(),
 			},
 		]),
 		fileType,
@@ -149,7 +168,6 @@ function createTruncatedResult(
 				message: `URL count (${originalCount}) exceeds limit (${MAX_URL_COUNT}), truncated results`,
 				recoverable: true,
 				recoveryAction: 'truncate' as const,
-				timestamp: Date.now(),
 			},
 		]),
 		fileType,
@@ -176,7 +194,6 @@ function createParseError(error: unknown): ParseError {
 		message: error instanceof Error ? error.message : 'Unknown parsing error',
 		recoverable: true,
 		recoveryAction: 'skip' as const,
-		timestamp: Date.now(),
 	};
 }
 

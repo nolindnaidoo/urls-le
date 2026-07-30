@@ -7,18 +7,24 @@ exports[`extraction characterization > broken.toml as toml 1`] = `
   "success": true,
   "urls": [
     {
-      "context": "[package
-homepage = "https://fallback.example.com/after-parse-error"
-docs = "http://fallback-docs.example.com"
-",
+      "context": "homepage = "https://fallback.example.com/after-parse-error"",
+      "domain": "fallback.example.com",
+      "path": "/after-parse-error",
+      "position": {
+        "column": 13,
+        "line": 2,
+      },
       "protocol": "https",
       "value": "https://fallback.example.com/after-parse-error",
     },
     {
-      "context": "[package
-homepage = "https://fallback.example.com/after-parse-error"
-docs = "http://fallback-docs.example.com"
-",
+      "context": "docs = "http://fallback-docs.example.com"",
+      "domain": "fallback-docs.example.com",
+      "path": "/",
+      "position": {
+        "column": 9,
+        "line": 3,
+      },
       "protocol": "http",
       "value": "http://fallback-docs.example.com",
     },
@@ -26,24 +32,20 @@ docs = "http://fallback-docs.example.com"
 }
 `;
 
-exports[`extraction characterization > unknown language falls back to the markdown extractor 1`] = `
+exports[`extraction characterization > unknown language returns a format error 1`] = `
 {
-  "errors": [],
-  "fileType": "unknown",
-  "success": true,
-  "urls": [
+  "errors": [
     {
-      "context": "see https://fallback.example.com/plain",
-      "domain": "fallback.example.com",
-      "path": "/plain",
-      "position": {
-        "column": 5,
-        "line": 1,
-      },
-      "protocol": "https",
-      "value": "https://fallback.example.com/plain",
+      "category": "format",
+      "message": "Unsupported language: python",
+      "recoverable": false,
+      "recoveryAction": "abort",
+      "severity": "warning",
     },
   ],
+  "fileType": "unknown",
+  "success": false,
+  "urls": [],
 }
 `;
 
@@ -55,6 +57,8 @@ exports[`extraction characterization > urls.css as css 1`] = `
   "urls": [
     {
       "context": "@import url("https://fonts.example.com/css?family=Inter");",
+      "domain": "fonts.example.com",
+      "path": "/css?family=Inter",
       "position": {
         "column": 14,
         "line": 1,
@@ -64,15 +68,19 @@ exports[`extraction characterization > urls.css as css 1`] = `
     },
     {
       "context": "background-image: url("http://images.example.com/hero.jpg");",
+      "domain": "images.example.com",
+      "path": "/hero.jpg",
       "position": {
         "column": 26,
         "line": 4,
       },
-      "protocol": "https",
+      "protocol": "http",
       "value": "http://images.example.com/hero.jpg",
     },
     {
       "context": "background: url("ftp://assets.example.com/icons/star.svg");",
+      "domain": "assets.example.com",
+      "path": "/icons/star.svg",
       "position": {
         "column": 20,
         "line": 8,
@@ -82,6 +90,7 @@ exports[`extraction characterization > urls.css as css 1`] = `
     },
     {
       "context": "src: url("file:///opt/fonts/custom.woff2");",
+      "path": "/opt/fonts/custom.woff2",
       "position": {
         "column": 13,
         "line": 12,
@@ -104,7 +113,7 @@ exports[`extraction characterization > urls.html as html 1`] = `
       "domain": "cdn.example.com",
       "path": "/style.css",
       "position": {
-        "column": 11,
+        "column": 17,
         "line": 4,
       },
       "protocol": "https",
@@ -115,7 +124,7 @@ exports[`extraction characterization > urls.html as html 1`] = `
       "domain": "scripts.example.com",
       "path": "/app.js",
       "position": {
-        "column": 13,
+        "column": 18,
         "line": 5,
       },
       "protocol": "http",
@@ -126,7 +135,7 @@ exports[`extraction characterization > urls.html as html 1`] = `
       "domain": "example.com",
       "path": "/docs",
       "position": {
-        "column": 8,
+        "column": 14,
         "line": 8,
       },
       "protocol": "https",
@@ -137,7 +146,7 @@ exports[`extraction characterization > urls.html as html 1`] = `
       "domain": "forms.example.com",
       "path": "/submit",
       "position": {
-        "column": 11,
+        "column": 19,
         "line": 10,
       },
       "protocol": "https",
@@ -148,11 +157,22 @@ exports[`extraction characterization > urls.html as html 1`] = `
       "domain": "images.example.com",
       "path": "/logo.png",
       "position": {
-        "column": 10,
+        "column": 15,
         "line": 11,
       },
       "protocol": "https",
       "value": "https://images.example.com/logo.png",
+    },
+    {
+      "context": "<p>Visit https://example.com/docs for details, or ftp://ftp.example.com/pub</p>",
+      "domain": "example.com",
+      "path": "/docs",
+      "position": {
+        "column": 14,
+        "line": 13,
+      },
+      "protocol": "https",
+      "value": "https://example.com/docs",
     },
     {
       "context": "<p>Visit https://example.com/docs for details, or ftp://ftp.example.com/pub</p>",
@@ -196,27 +216,56 @@ exports[`extraction characterization > urls.ini as ini 1`] = `
   "success": true,
   "urls": [
     {
-      "context": "homepage",
+      "context": "homepage = https://example.com",
+      "domain": "example.com",
+      "path": "/",
+      "position": {
+        "column": 12,
+        "line": 2,
+      },
       "protocol": "https",
       "value": "https://example.com",
     },
     {
-      "context": "server.endpoint",
+      "context": "endpoint = https://api.example.com/v1",
+      "domain": "api.example.com",
+      "path": "/v1",
+      "position": {
+        "column": 12,
+        "line": 5,
+      },
       "protocol": "https",
       "value": "https://api.example.com/v1",
     },
     {
-      "context": "server.legacy",
+      "context": "legacy = http://legacy.example.com/api",
+      "domain": "legacy.example.com",
+      "path": "/api",
+      "position": {
+        "column": 10,
+        "line": 6,
+      },
       "protocol": "http",
       "value": "http://legacy.example.com/api",
     },
     {
-      "context": "support.email",
+      "context": "email = mailto:help@example.com",
+      "path": "help@example.com",
+      "position": {
+        "column": 9,
+        "line": 9,
+      },
       "protocol": "mailto",
       "value": "mailto:help@example.com",
     },
     {
-      "context": "support.mirror",
+      "context": "mirror = ftp://mirror.example.com/pub",
+      "domain": "mirror.example.com",
+      "path": "/pub",
+      "position": {
+        "column": 10,
+        "line": 10,
+      },
       "protocol": "ftp",
       "value": "ftp://mirror.example.com/pub",
     },
@@ -232,8 +281,10 @@ exports[`extraction characterization > urls.js as javascript 1`] = `
   "urls": [
     {
       "context": "const api = 'https://api.example.com/v1';",
+      "domain": "api.example.com",
+      "path": "/v1",
       "position": {
-        "column": 13,
+        "column": 14,
         "line": 1,
       },
       "protocol": "https",
@@ -241,8 +292,10 @@ exports[`extraction characterization > urls.js as javascript 1`] = `
     },
     {
       "context": "const insecure = 'http://legacy.example.com/endpoint';",
+      "domain": "legacy.example.com",
+      "path": "/endpoint",
       "position": {
-        "column": 18,
+        "column": 19,
         "line": 2,
       },
       "protocol": "http",
@@ -250,15 +303,8 @@ exports[`extraction characterization > urls.js as javascript 1`] = `
     },
     {
       "context": "const tpl = \`https://tpl.example.com/\${'id'}\`;",
-      "position": {
-        "column": 13,
-        "line": 4,
-      },
-      "protocol": "https",
-      "value": "https://tpl.example.com/\${",
-    },
-    {
-      "context": "const tpl = \`https://tpl.example.com/\${'id'}\`;",
+      "domain": "tpl.example.com",
+      "path": "/$",
       "position": {
         "column": 14,
         "line": 4,
@@ -268,6 +314,8 @@ exports[`extraction characterization > urls.js as javascript 1`] = `
     },
     {
       "context": "// See https://comment.example.com/docs for details",
+      "domain": "comment.example.com",
+      "path": "/docs",
       "position": {
         "column": 8,
         "line": 5,
@@ -277,8 +325,9 @@ exports[`extraction characterization > urls.js as javascript 1`] = `
     },
     {
       "context": "const mail = 'mailto:dev@example.com';",
+      "path": "dev@example.com",
       "position": {
-        "column": 14,
+        "column": 15,
         "line": 6,
       },
       "protocol": "mailto",
@@ -286,8 +335,9 @@ exports[`extraction characterization > urls.js as javascript 1`] = `
     },
     {
       "context": "const phone = 'tel:+15550001111';",
+      "path": "+15550001111",
       "position": {
-        "column": 15,
+        "column": 16,
         "line": 7,
       },
       "protocol": "tel",
@@ -295,15 +345,30 @@ exports[`extraction characterization > urls.js as javascript 1`] = `
     },
     {
       "context": "const ftpMirror = 'ftp://mirror.example.com/iso';",
+      "domain": "mirror.example.com",
+      "path": "/iso",
       "position": {
-        "column": 19,
+        "column": 20,
         "line": 8,
       },
       "protocol": "ftp",
       "value": "ftp://mirror.example.com/iso",
     },
     {
+      "context": "const dupe = 'https://api.example.com/v1';",
+      "domain": "api.example.com",
+      "path": "/v1",
+      "position": {
+        "column": 15,
+        "line": 9,
+      },
+      "protocol": "https",
+      "value": "https://api.example.com/v1",
+    },
+    {
       "context": "https://multiline.example.com/inside-template",
+      "domain": "multiline.example.com",
+      "path": "/inside-template",
       "position": {
         "column": 3,
         "line": 11,
@@ -323,8 +388,10 @@ exports[`extraction characterization > urls.js as typescript 1`] = `
   "urls": [
     {
       "context": "const api = 'https://api.example.com/v1';",
+      "domain": "api.example.com",
+      "path": "/v1",
       "position": {
-        "column": 13,
+        "column": 14,
         "line": 1,
       },
       "protocol": "https",
@@ -332,8 +399,10 @@ exports[`extraction characterization > urls.js as typescript 1`] = `
     },
     {
       "context": "const insecure = 'http://legacy.example.com/endpoint';",
+      "domain": "legacy.example.com",
+      "path": "/endpoint",
       "position": {
-        "column": 18,
+        "column": 19,
         "line": 2,
       },
       "protocol": "http",
@@ -341,15 +410,8 @@ exports[`extraction characterization > urls.js as typescript 1`] = `
     },
     {
       "context": "const tpl = \`https://tpl.example.com/\${'id'}\`;",
-      "position": {
-        "column": 13,
-        "line": 4,
-      },
-      "protocol": "https",
-      "value": "https://tpl.example.com/\${",
-    },
-    {
-      "context": "const tpl = \`https://tpl.example.com/\${'id'}\`;",
+      "domain": "tpl.example.com",
+      "path": "/$",
       "position": {
         "column": 14,
         "line": 4,
@@ -359,6 +421,8 @@ exports[`extraction characterization > urls.js as typescript 1`] = `
     },
     {
       "context": "// See https://comment.example.com/docs for details",
+      "domain": "comment.example.com",
+      "path": "/docs",
       "position": {
         "column": 8,
         "line": 5,
@@ -368,8 +432,9 @@ exports[`extraction characterization > urls.js as typescript 1`] = `
     },
     {
       "context": "const mail = 'mailto:dev@example.com';",
+      "path": "dev@example.com",
       "position": {
-        "column": 14,
+        "column": 15,
         "line": 6,
       },
       "protocol": "mailto",
@@ -377,8 +442,9 @@ exports[`extraction characterization > urls.js as typescript 1`] = `
     },
     {
       "context": "const phone = 'tel:+15550001111';",
+      "path": "+15550001111",
       "position": {
-        "column": 15,
+        "column": 16,
         "line": 7,
       },
       "protocol": "tel",
@@ -386,15 +452,30 @@ exports[`extraction characterization > urls.js as typescript 1`] = `
     },
     {
       "context": "const ftpMirror = 'ftp://mirror.example.com/iso';",
+      "domain": "mirror.example.com",
+      "path": "/iso",
       "position": {
-        "column": 19,
+        "column": 20,
         "line": 8,
       },
       "protocol": "ftp",
       "value": "ftp://mirror.example.com/iso",
     },
     {
+      "context": "const dupe = 'https://api.example.com/v1';",
+      "domain": "api.example.com",
+      "path": "/v1",
+      "position": {
+        "column": 15,
+        "line": 9,
+      },
+      "protocol": "https",
+      "value": "https://api.example.com/v1",
+    },
+    {
       "context": "https://multiline.example.com/inside-template",
+      "domain": "multiline.example.com",
+      "path": "/inside-template",
       "position": {
         "column": 3,
         "line": 11,
@@ -414,6 +495,8 @@ exports[`extraction characterization > urls.json as json 1`] = `
   "urls": [
     {
       "context": ""homepage": "https://example.com",",
+      "domain": "example.com",
+      "path": "/",
       "position": {
         "column": 16,
         "line": 2,
@@ -423,15 +506,19 @@ exports[`extraction characterization > urls.json as json 1`] = `
     },
     {
       "context": ""insecure": "http://legacy.example.com/api",",
+      "domain": "legacy.example.com",
+      "path": "/api",
       "position": {
         "column": 16,
         "line": 3,
       },
-      "protocol": "https",
+      "protocol": "http",
       "value": "http://legacy.example.com/api",
     },
     {
       "context": ""url": "https://github.com/example/repo.git"",
+      "domain": "github.com",
+      "path": "/example/repo.git",
       "position": {
         "column": 13,
         "line": 5,
@@ -441,6 +528,8 @@ exports[`extraction characterization > urls.json as json 1`] = `
     },
     {
       "context": ""https://mirror-a.example.com",",
+      "domain": "mirror-a.example.com",
+      "path": "/",
       "position": {
         "column": 6,
         "line": 8,
@@ -450,6 +539,8 @@ exports[`extraction characterization > urls.json as json 1`] = `
     },
     {
       "context": ""https://mirror-a.example.com"",
+      "domain": "mirror-a.example.com",
+      "path": "/",
       "position": {
         "column": 6,
         "line": 9,
@@ -459,6 +550,7 @@ exports[`extraction characterization > urls.json as json 1`] = `
     },
     {
       "context": ""contact": "mailto:team@example.com",",
+      "path": "team@example.com",
       "position": {
         "column": 15,
         "line": 11,
@@ -468,6 +560,7 @@ exports[`extraction characterization > urls.json as json 1`] = `
     },
     {
       "context": ""phone": "tel:+15551230000",",
+      "path": "+15551230000",
       "position": {
         "column": 13,
         "line": 12,
@@ -477,6 +570,8 @@ exports[`extraction characterization > urls.json as json 1`] = `
     },
     {
       "context": ""ftp": "ftp://files.example.com/pub"",
+      "domain": "files.example.com",
+      "path": "/pub",
       "position": {
         "column": 11,
         "line": 13,
@@ -499,7 +594,7 @@ exports[`extraction characterization > urls.md as markdown 1`] = `
       "domain": "example.com",
       "path": "/page",
       "position": {
-        "column": 3,
+        "column": 19,
         "line": 3,
       },
       "protocol": "https",
@@ -510,7 +605,7 @@ exports[`extraction characterization > urls.md as markdown 1`] = `
       "domain": "autolink.example.com",
       "path": "/",
       "position": {
-        "column": 61,
+        "column": 62,
         "line": 3,
       },
       "protocol": "https",
@@ -568,6 +663,17 @@ exports[`extraction characterization > urls.md as markdown 1`] = `
       "protocol": "file",
       "value": "file:///Users/dev/notes.txt",
     },
+    {
+      "context": "Duplicate of the first link: https://example.com/page appears again here.",
+      "domain": "example.com",
+      "path": "/page",
+      "position": {
+        "column": 30,
+        "line": 16,
+      },
+      "protocol": "https",
+      "value": "https://example.com/page",
+    },
   ],
 }
 `;
@@ -580,6 +686,8 @@ exports[`extraction characterization > urls.properties as properties 1`] = `
   "urls": [
     {
       "context": "service.endpoint=https://api.example.com/v2",
+      "domain": "api.example.com",
+      "path": "/v2",
       "position": {
         "column": 18,
         "line": 3,
@@ -589,6 +697,8 @@ exports[`extraction characterization > urls.properties as properties 1`] = `
     },
     {
       "context": "legacy.endpoint=http://legacy.example.com/soap",
+      "domain": "legacy.example.com",
+      "path": "/soap",
       "position": {
         "column": 17,
         "line": 4,
@@ -598,6 +708,7 @@ exports[`extraction characterization > urls.properties as properties 1`] = `
     },
     {
       "context": "support.email=mailto:support@example.com",
+      "path": "support@example.com",
       "position": {
         "column": 15,
         "line": 5,
@@ -607,6 +718,7 @@ exports[`extraction characterization > urls.properties as properties 1`] = `
     },
     {
       "context": "support.phone=tel:+15554443333",
+      "path": "+15554443333",
       "position": {
         "column": 15,
         "line": 6,
@@ -616,6 +728,8 @@ exports[`extraction characterization > urls.properties as properties 1`] = `
     },
     {
       "context": "mirror.ftp=ftp://mirror.example.com/pub",
+      "domain": "mirror.example.com",
+      "path": "/pub",
       "position": {
         "column": 12,
         "line": 7,
@@ -625,6 +739,8 @@ exports[`extraction characterization > urls.properties as properties 1`] = `
     },
     {
       "context": "continued.value=https://continued.example.com/one \\",
+      "domain": "continued.example.com",
+      "path": "/one",
       "position": {
         "column": 17,
         "line": 8,
@@ -634,6 +750,8 @@ exports[`extraction characterization > urls.properties as properties 1`] = `
     },
     {
       "context": "https://continued.example.com/two",
+      "domain": "continued.example.com",
+      "path": "/two",
       "position": {
         "column": 5,
         "line": 9,
@@ -652,32 +770,67 @@ exports[`extraction characterization > urls.toml as toml 1`] = `
   "success": true,
   "urls": [
     {
-      "context": "package: homepage: ",
+      "context": "homepage = "https://example.com"",
+      "domain": "example.com",
+      "path": "/",
+      "position": {
+        "column": 13,
+        "line": 2,
+      },
       "protocol": "https",
       "value": "https://example.com",
     },
     {
-      "context": "package: repository: ",
+      "context": "repository = "https://github.com/example/repo"",
+      "domain": "github.com",
+      "path": "/example/repo",
+      "position": {
+        "column": 15,
+        "line": 3,
+      },
       "protocol": "https",
       "value": "https://github.com/example/repo",
     },
     {
-      "context": "package: documentation: ",
+      "context": "documentation = "http://docs.example.com/book"",
+      "domain": "docs.example.com",
+      "path": "/book",
+      "position": {
+        "column": 18,
+        "line": 4,
+      },
       "protocol": "http",
       "value": "http://docs.example.com/book",
     },
     {
-      "context": "contact: email: ",
+      "context": "email = "mailto:team@example.com"",
+      "path": "team@example.com",
+      "position": {
+        "column": 10,
+        "line": 7,
+      },
       "protocol": "mailto",
       "value": "mailto:team@example.com",
     },
     {
-      "context": "contact: mirrors: ",
+      "context": "mirrors = ["https://mirror-a.example.com", "ftp://mirror-b.example.com/pub"]",
+      "domain": "mirror-a.example.com",
+      "path": "/",
+      "position": {
+        "column": 13,
+        "line": 8,
+      },
       "protocol": "https",
       "value": "https://mirror-a.example.com",
     },
     {
-      "context": "contact: mirrors: ",
+      "context": "mirrors = ["https://mirror-a.example.com", "ftp://mirror-b.example.com/pub"]",
+      "domain": "mirror-b.example.com",
+      "path": "/pub",
+      "position": {
+        "column": 45,
+        "line": 8,
+      },
       "protocol": "ftp",
       "value": "ftp://mirror-b.example.com/pub",
     },
@@ -693,15 +846,8 @@ exports[`extraction characterization > urls.xml as xml 1`] = `
   "urls": [
     {
       "context": "<project xmlns="http://maven.apache.org/POM/4.0.0">",
-      "position": {
-        "column": 10,
-        "line": 2,
-      },
-      "protocol": "http",
-      "value": "http://maven.apache.org/POM/4.0.0",
-    },
-    {
-      "context": "<project xmlns="http://maven.apache.org/POM/4.0.0">",
+      "domain": "maven.apache.org",
+      "path": "/POM/4.0.0",
       "position": {
         "column": 17,
         "line": 2,
@@ -711,6 +857,8 @@ exports[`extraction characterization > urls.xml as xml 1`] = `
     },
     {
       "context": "<url>https://example.com/project</url>",
+      "domain": "example.com",
+      "path": "/project",
       "position": {
         "column": 8,
         "line": 3,
@@ -720,6 +868,8 @@ exports[`extraction characterization > urls.xml as xml 1`] = `
     },
     {
       "context": "<url>https://github.com/example/repo</url>",
+      "domain": "github.com",
+      "path": "/example/repo",
       "position": {
         "column": 10,
         "line": 5,
@@ -729,6 +879,8 @@ exports[`extraction characterization > urls.xml as xml 1`] = `
     },
     {
       "context": "<connection>scm:git:https://github.com/example/repo.git</connection>",
+      "domain": "github.com",
+      "path": "/example/repo.git",
       "position": {
         "column": 25,
         "line": 6,
@@ -738,15 +890,8 @@ exports[`extraction characterization > urls.xml as xml 1`] = `
     },
     {
       "context": "<repository url="https://repo.example.com/maven2"/>",
-      "position": {
-        "column": 15,
-        "line": 8,
-      },
-      "protocol": "https",
-      "value": "https://repo.example.com/maven2",
-    },
-    {
-      "context": "<repository url="https://repo.example.com/maven2"/>",
+      "domain": "repo.example.com",
+      "path": "/maven2",
       "position": {
         "column": 20,
         "line": 8,
@@ -756,15 +901,8 @@ exports[`extraction characterization > urls.xml as xml 1`] = `
     },
     {
       "context": "<link href="http://legacy.example.com/feed"/>",
-      "position": {
-        "column": 9,
-        "line": 9,
-      },
-      "protocol": "http",
-      "value": "http://legacy.example.com/feed",
-    },
-    {
-      "context": "<link href="http://legacy.example.com/feed"/>",
+      "domain": "legacy.example.com",
+      "path": "/feed",
       "position": {
         "column": 15,
         "line": 9,
@@ -774,6 +912,7 @@ exports[`extraction characterization > urls.xml as xml 1`] = `
     },
     {
       "context": "<contact>mailto:team@example.com</contact>",
+      "path": "team@example.com",
       "position": {
         "column": 12,
         "line": 10,
@@ -783,6 +922,7 @@ exports[`extraction characterization > urls.xml as xml 1`] = `
     },
     {
       "context": "<phone>tel:+15557778888</phone>",
+      "path": "+15557778888",
       "position": {
         "column": 10,
         "line": 11,
@@ -792,6 +932,8 @@ exports[`extraction characterization > urls.xml as xml 1`] = `
     },
     {
       "context": "<mirror>ftp://mirror.example.com/pub</mirror>",
+      "domain": "mirror.example.com",
+      "path": "/pub",
       "position": {
         "column": 11,
         "line": 12,
@@ -811,6 +953,8 @@ exports[`extraction characterization > urls.yaml as yaml 1`] = `
   "urls": [
     {
       "context": "homepage: https://example.com",
+      "domain": "example.com",
+      "path": "/",
       "position": {
         "column": 11,
         "line": 1,
@@ -820,15 +964,19 @@ exports[`extraction characterization > urls.yaml as yaml 1`] = `
     },
     {
       "context": "insecure: http://legacy.example.com/api",
+      "domain": "legacy.example.com",
+      "path": "/api",
       "position": {
         "column": 11,
         "line": 2,
       },
-      "protocol": "https",
+      "protocol": "http",
       "value": "http://legacy.example.com/api",
     },
     {
       "context": "# comment with https://commented.example.com/still-extracted",
+      "domain": "commented.example.com",
+      "path": "/still-extracted",
       "position": {
         "column": 16,
         "line": 3,
@@ -838,6 +986,8 @@ exports[`extraction characterization > urls.yaml as yaml 1`] = `
     },
     {
       "context": "url: https://github.com/example/repo.git",
+      "domain": "github.com",
+      "path": "/example/repo.git",
       "position": {
         "column": 8,
         "line": 5,
@@ -847,6 +997,8 @@ exports[`extraction characterization > urls.yaml as yaml 1`] = `
     },
     {
       "context": "- https://mirror-a.example.com",
+      "domain": "mirror-a.example.com",
+      "path": "/",
       "position": {
         "column": 5,
         "line": 7,
@@ -856,6 +1008,8 @@ exports[`extraction characterization > urls.yaml as yaml 1`] = `
     },
     {
       "context": "- https://mirror-a.example.com",
+      "domain": "mirror-a.example.com",
+      "path": "/",
       "position": {
         "column": 5,
         "line": 8,
@@ -865,6 +1019,7 @@ exports[`extraction characterization > urls.yaml as yaml 1`] = `
     },
     {
       "context": "contact: mailto:team@example.com",
+      "path": "team@example.com",
       "position": {
         "column": 10,
         "line": 9,
@@ -874,6 +1029,7 @@ exports[`extraction characterization > urls.yaml as yaml 1`] = `
     },
     {
       "context": "phone: tel:+15551230000",
+      "path": "+15551230000",
       "position": {
         "column": 8,
         "line": 10,
@@ -883,6 +1039,8 @@ exports[`extraction characterization > urls.yaml as yaml 1`] = `
     },
     {
       "context": "ftp: ftp://files.example.com/pub",
+      "domain": "files.example.com",
+      "path": "/pub",
       "position": {
         "column": 6,
         "line": 11,

@@ -209,9 +209,14 @@ describe('extractFromMarkdown', () => {
 
 		const result = extractFromMarkdown(markdown);
 
-		// Should deduplicate URLs
-		expect(result.length).toBe(1);
-		expect(result[0]?.value).toBe('https://example.com');
+		// Every occurrence is reported with its own position
+		expect(result.length).toBe(3);
+		expect(result.map((url) => url.value)).toEqual([
+			'https://example.com',
+			'https://example.com',
+			'https://example.com',
+		]);
+		expect(result[0]?.position?.line).not.toBe(result[1]?.position?.line);
 	});
 
 	it('extractFromMarkdown: URLs with special characters', () => {
@@ -223,12 +228,11 @@ describe('extractFromMarkdown', () => {
 
 		const result = extractFromMarkdown(markdown);
 
-		// Should extract all 3 markdown link URLs + 1 partial from plain text (space terminates URL regex)
-		expect(result.length).toBe(4);
-		expect(result[0]?.value).toBe('https://example.com/path with spaces');
-		expect(result[1]?.value).toBe('https://example.com/path'); // Partial from plain text extraction
-		expect(result[2]?.value).toBe('https://example.com/path-with-dashes');
-		expect(result[3]?.value).toBe('https://example.com/path_with_underscores');
+		// Space terminates a URL: link targets with spaces extract as partials
+		expect(result.length).toBe(3);
+		expect(result[0]?.value).toBe('https://example.com/path');
+		expect(result[1]?.value).toBe('https://example.com/path-with-dashes');
+		expect(result[2]?.value).toBe('https://example.com/path_with_underscores');
 	});
 
 	it('extractFromMarkdown: mixed markdown and plain URLs', () => {

@@ -39,7 +39,7 @@ describe('extraction characterization', () => {
 		});
 	}
 
-	it('unknown language falls back to the markdown extractor', async () => {
+	it('unknown language returns a format error', async () => {
 		const result = await extractUrls(
 			'see https://fallback.example.com/plain',
 			'python',
