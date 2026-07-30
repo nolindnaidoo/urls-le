@@ -112,3 +112,4 @@ dist/
 # Release packages
 release/
 src/extraction/__performance__/
+out-test/
