@@ -1,13 +1,11 @@
 {
-	"manifest.ext.name": "URLs-LE",
-	"manifest.ext.description": "Estrazione URL senza problemi da documentazione, configurazioni e codice",
+	"manifest.capability.untrusted-workspaces.desc": "Funzionalità limitate in aree di lavoro non attendibili",
 	"manifest.command.category": "URLs-LE",
-	"manifest.command.extract.title": "Estrai URL",
 	"manifest.command.dedupe.title": "Deduplica URL",
-	"manifest.command.sort.title": "Ordina URL",
+	"manifest.command.extract.title": "Estrai URL",
 	"manifest.command.help.title": "Aiuto e risoluzione dei problemi",
 	"manifest.command.settings.title": "Apri impostazioni",
-	"manifest.settings.title": "Impostazioni URLs-LE",
+	"manifest.command.sort.title": "Ordina URL",
 	"manifest.settings.copy.clipboard.desc": "Copia automaticamente i risultati dell'estrazione negli appunti",
 	"manifest.settings.dedupe.desc": "Abilita la deduplicazione automatica degli URL estratti",
 	"manifest.settings.notifications.level.desc": "Controlla la verbosità delle notifiche",
@@ -16,12 +14,12 @@
 	"manifest.settings.notifications.level.option.silent": "Sopprime tutte le notifiche",
 	"manifest.settings.open.new-file.desc": "Apri i contenuti post-elaborati in un nuovo editor",
 	"manifest.settings.open.side-by-side.desc": "Apri i risultati dell'estrazione in un nuovo editor a lato",
+	"manifest.settings.parse-errors.desc": "Mostra gli errori di analisi come notifiche VS Code quando l'analisi fallisce",
 	"manifest.settings.safety.enabled.desc": "Abilita i controlli di sicurezza per file e operazioni di grandi dimensioni",
 	"manifest.settings.safety.warn.file-size.desc": "Avvisa quando la dimensione del file di input supera questa soglia in byte",
 	"manifest.settings.safety.warn.large-output.desc": "Avvisa prima di aprire/copiare quando le righe dei risultati superano questa soglia",
 	"manifest.settings.safety.warn.many-documents.desc": "Avvisa prima di aprire più documenti di risultati quando il conteggio supera questa soglia",
-	"manifest.settings.parse-errors.desc": "Mostra gli errori di analisi come notifiche VS Code quando l'analisi fallisce",
 	"manifest.settings.statusbar.enabled.desc": "Mostra la voce della barra di stato URL-LE per un accesso rapido",
 	"manifest.settings.telemetry.desc": "Abilita i log di telemetria solo locali nel pannello Output",
-	"manifest.capability.untrusted-workspaces.desc": "Funzionalità limitate in aree di lavoro non attendibili"
+	"manifest.settings.title": "Impostazioni URLs-LE"
 }

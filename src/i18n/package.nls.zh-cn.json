@@ -1,13 +1,11 @@
 {
-	"manifest.ext.name": "URLs-LE",
-	"manifest.ext.description": "从文档、配置和代码中轻松提取URL",
+	"manifest.capability.untrusted-workspaces.desc": "不受信任工作区功能受限",
 	"manifest.command.category": "URLs-LE",
-	"manifest.command.extract.title": "提取URL",
 	"manifest.command.dedupe.title": "去重URL",
-	"manifest.command.sort.title": "排序URL",
+	"manifest.command.extract.title": "提取URL",
 	"manifest.command.help.title": "帮助与故障排除",
 	"manifest.command.settings.title": "打开设置",
-	"manifest.settings.title": "URLs-LE设置",
+	"manifest.command.sort.title": "排序URL",
 	"manifest.settings.copy.clipboard.desc": "自动将提取结果复制到剪贴板",
 	"manifest.settings.dedupe.desc": "启用提取URL的自动去重功能",
 	"manifest.settings.notifications.level.desc": "控制通知详细程度",
@@ -16,12 +14,12 @@
 	"manifest.settings.notifications.level.option.silent": "屏蔽所有通知",
 	"manifest.settings.open.new-file.desc": "在新编辑器中打开后处理内容",
 	"manifest.settings.open.side-by-side.desc": "在新侧边编辑器中打开提取结果",
+	"manifest.settings.parse-errors.desc": "解析失败时以 VS Code 通知形式显示解析错误",
 	"manifest.settings.safety.enabled.desc": "启用大文件及操作的安全检查",
 	"manifest.settings.safety.warn.file-size.desc": "当输入文件大小超过此字节阈值时发出警告",
 	"manifest.settings.safety.warn.large-output.desc": "当结果行数超过此阈值时在打开/复制前发出警告",
 	"manifest.settings.safety.warn.many-documents.desc": "当结果文档数量超过此阈值时在打开前发出警告",
-	"manifest.settings.parse-errors.desc": "解析失败时以 VS Code 通知形式显示解析错误",
 	"manifest.settings.statusbar.enabled.desc": "显示URL-LE状态栏入口以便快速访问",
 	"manifest.settings.telemetry.desc": "启用仅本地遥测日志至输出面板",
-	"manifest.capability.untrusted-workspaces.desc": "不受信任工作区功能受限"
+	"manifest.settings.title": "URLs-LE设置"
 }

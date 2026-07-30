@@ -1,13 +1,11 @@
 {
-	"manifest.ext.name": "URLs-LE",
-	"manifest.ext.description": "ドキュメント、設定ファイル、コードからの手間いらずURL抽出",
+	"manifest.capability.untrusted-workspaces.desc": "信頼されていないワークスペースでの機能制限",
 	"manifest.command.category": "URLs-LE",
-	"manifest.command.extract.title": "URL抽出",
 	"manifest.command.dedupe.title": "URL重複排除",
-	"manifest.command.sort.title": "URLソート",
+	"manifest.command.extract.title": "URL抽出",
 	"manifest.command.help.title": "ヘルプとトラブルシューティング",
 	"manifest.command.settings.title": "設定を開く",
-	"manifest.settings.title": "URLs-LE設定",
+	"manifest.command.sort.title": "URLソート",
 	"manifest.settings.copy.clipboard.desc": "抽出結果を自動的にクリップボードにコピー",
 	"manifest.settings.dedupe.desc": "抽出URLの自動重複排除を有効化",
 	"manifest.settings.notifications.level.desc": "通知の詳細度を制御",
@@ -16,12 +14,12 @@
 	"manifest.settings.notifications.level.option.silent": "すべての通知を抑制",
 	"manifest.settings.open.new-file.desc": "後処理済みコンテンツを新規エディターで開く",
 	"manifest.settings.open.side-by-side.desc": "抽出結果を横に新規エディターで開く",
+	"manifest.settings.parse-errors.desc": "解析失敗時にVS Code通知として解析エラーを表示",
 	"manifest.settings.safety.enabled.desc": "大容量ファイルと操作の安全チェックを有効化",
 	"manifest.settings.safety.warn.file-size.desc": "入力ファイルサイズがバイト単位でこの閾値を超えた場合に警告",
 	"manifest.settings.safety.warn.large-output.desc": "結果行数がこの閾値を超えた場合に開く/コピー前に警告",
 	"manifest.settings.safety.warn.many-documents.desc": "結果ドキュメント数がこの閾値を超えた場合に複数開く前に警告",
-	"manifest.settings.parse-errors.desc": "解析失敗時にVS Code通知として解析エラーを表示",
 	"manifest.settings.statusbar.enabled.desc": "URL-LEステータスバー項目を表示（クイックアクセス用）",
 	"manifest.settings.telemetry.desc": "出力パネルへのローカル専用テレメトリログを有効化",
-	"manifest.capability.untrusted-workspaces.desc": "信頼されていないワークスペースでの機能制限"
+	"manifest.settings.title": "URLs-LE設定"
 }

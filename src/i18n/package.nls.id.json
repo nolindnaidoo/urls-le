@@ -1,13 +1,11 @@
 {
-	"manifest.ext.name": "URLs-LE",
-	"manifest.ext.description": "Ekstraksi URL Tanpa Repot dari Dokumen, Konfigurasi, dan Kode",
+	"manifest.capability.untrusted-workspaces.desc": "Fungsi terbatas di ruang kerja yang tidak tepercaya",
 	"manifest.command.category": "URLs-LE",
-	"manifest.command.extract.title": "Ekstraksi URL",
 	"manifest.command.dedupe.title": "Hapus duplikat URL",
-	"manifest.command.sort.title": "Urutkan URL",
+	"manifest.command.extract.title": "Ekstraksi URL",
 	"manifest.command.help.title": "Bantuan & Pemecahan Masalah",
 	"manifest.command.settings.title": "Buka Pengaturan",
-	"manifest.settings.title": "Pengaturan URLs-LE",
+	"manifest.command.sort.title": "Urutkan URL",
 	"manifest.settings.copy.clipboard.desc": "Salin hasil ekstraksi secara otomatis ke clipboard",
 	"manifest.settings.dedupe.desc": "Aktifkan penghapusan duplikat URL secara otomatis",
 	"manifest.settings.notifications.level.desc": "Kontrol tingkat detail notifikasi",
@@ -16,12 +14,12 @@
 	"manifest.settings.notifications.level.option.silent": "Nonaktifkan semua notifikasi",
 	"manifest.settings.open.new-file.desc": "Buka konten yang diproses di editor baru",
 	"manifest.settings.open.side-by-side.desc": "Buka hasil ekstraksi di editor baru di samping",
+	"manifest.settings.parse-errors.desc": "Tampilkan kesalahan parsing sebagai notifikasi VS Code saat parsing gagal",
 	"manifest.settings.safety.enabled.desc": "Aktifkan pemeriksaan keamanan untuk file besar dan operasi",
 	"manifest.settings.safety.warn.file-size.desc": "Peringatkan saat ukuran file input melebihi ambang batas ini dalam byte",
 	"manifest.settings.safety.warn.large-output.desc": "Peringatkan sebelum membuka/menyalin saat baris hasil melebihi ambang batas ini",
 	"manifest.settings.safety.warn.many-documents.desc": "Peringatkan sebelum membuka dokumen hasil multiple saat jumlah melebihi ambang batas ini",
-	"manifest.settings.parse-errors.desc": "Tampilkan kesalahan parsing sebagai notifikasi VS Code saat parsing gagal",
 	"manifest.settings.statusbar.enabled.desc": "Tampilkan entri bilah status URLs-LE untuk akses cepat",
 	"manifest.settings.telemetry.desc": "Aktifkan log telemetri lokal ke panel Output",
-	"manifest.capability.untrusted-workspaces.desc": "Fungsi terbatas di ruang kerja yang tidak tepercaya"
+	"manifest.settings.title": "Pengaturan URLs-LE"
 }

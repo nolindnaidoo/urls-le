@@ -18,7 +18,7 @@
 	},
 	"homepage": "https://github.com/OffensiveEdge/urls-le#readme",
 	"engines": {
-		"vscode": "^1.70.0",
+		"vscode": "^1.90.0",
 		"node": ">=20.0.0"
 	},
 	"categories": [
@@ -61,16 +61,10 @@
 		"onLanguage:typescript",
 		"onLanguage:json",
 		"onLanguage:yaml",
-		"onLanguage:yml",
 		"onLanguage:properties",
 		"onLanguage:toml",
 		"onLanguage:ini",
-		"onLanguage:xml",
-		"onCommand:urls-le.extractUrls",
-		"onCommand:urls-le.postProcess.dedupe",
-		"onCommand:urls-le.postProcess.sort",
-		"onCommand:urls-le.openSettings",
-		"onCommand:urls-le.help"
+		"onLanguage:xml"
 	],
 	"capabilities": {
 		"virtualWorkspaces": {
@@ -122,7 +116,7 @@
 			"editor/context": [
 				{
 					"command": "urls-le.extractUrls",
-					"when": "resourceExtname in .md || resourceExtname in .html || resourceExtname in .css || resourceExtname in .js || resourceExtname in .ts || resourceExtname in .json || resourceExtname in .yaml || resourceExtname in .yml || resourceExtname in .properties || resourceExtname in .toml || resourceExtname in .ini || resourceExtname in .xml",
+					"when": "editorLangId =~ /^(markdown|html|css|javascript|typescript|json|yaml|properties|toml|ini|xml)$/",
 					"group": "1_modification@1"
 				}
 			],
@@ -219,95 +213,6 @@
 					"type": "boolean",
 					"default": false,
 					"description": "%manifest.settings.telemetry.desc%"
-				},
-				"urls-le.analysis.enabled": {
-					"type": "boolean",
-					"default": true,
-					"description": "%manifest.settings.analysis.enabled.desc%"
-				},
-				"urls-le.analysis.includeStats": {
-					"type": "boolean",
-					"default": true,
-					"description": "%manifest.settings.analysis.stats.desc%"
-				},
-				"urls-le.performance.enabled": {
-					"type": "boolean",
-					"default": true,
-					"description": "%manifest.settings.performance.enabled.desc%"
-				},
-				"urls-le.performance.maxDuration": {
-					"type": "number",
-					"default": 5000,
-					"minimum": 1000,
-					"description": "%manifest.settings.performance.max-duration.desc%"
-				},
-				"urls-le.performance.maxMemoryUsage": {
-					"type": "number",
-					"default": 104857600,
-					"minimum": 1048576,
-					"description": "%manifest.settings.performance.max-memory.desc%"
-				},
-				"urls-le.performance.maxCpuUsage": {
-					"type": "number",
-					"default": 1000000,
-					"minimum": 100000,
-					"description": "%manifest.settings.performance.max-cpu.desc%"
-				},
-				"urls-le.performance.minThroughput": {
-					"type": "number",
-					"default": 1000,
-					"minimum": 100,
-					"description": "%manifest.settings.performance.min-throughput.desc%"
-				},
-				"urls-le.performance.maxCacheSize": {
-					"type": "number",
-					"default": 1000,
-					"minimum": 100,
-					"description": "%manifest.settings.performance.max-cache.desc%"
-				},
-				"urls-le.keyboard.shortcuts.enabled": {
-					"type": "boolean",
-					"default": true,
-					"description": "%manifest.settings.keyboard.shortcuts.enabled.desc%"
-				},
-				"urls-le.keyboard.extractShortcut": {
-					"type": "string",
-					"default": "ctrl+alt+u",
-					"description": "%manifest.settings.keyboard.extract.shortcut.desc%"
-				},
-				"urls-le.keyboard.dedupeShortcut": {
-					"type": "string",
-					"default": "ctrl+alt+d",
-					"description": "%manifest.settings.keyboard.dedupe.shortcut.desc%"
-				},
-				"urls-le.keyboard.sortShortcut": {
-					"type": "string",
-					"default": "ctrl+alt+s",
-					"description": "%manifest.settings.keyboard.sort.shortcut.desc%"
-				},
-				"urls-le.presets.enabled": {
-					"type": "boolean",
-					"default": true,
-					"description": "%manifest.settings.presets.enabled.desc%"
-				},
-				"urls-le.presets.defaultPreset": {
-					"type": "string",
-					"default": "balanced",
-					"enum": [
-						"minimal",
-						"balanced",
-						"comprehensive",
-						"performance",
-						"urls"
-					],
-					"enumDescriptions": [
-						"%manifest.settings.presets.default.option.minimal%",
-						"%manifest.settings.presets.default.option.balanced%",
-						"%manifest.settings.presets.default.option.comprehensive%",
-						"%manifest.settings.presets.default.option.performance%",
-						"%manifest.settings.presets.default.option.urls%"
-					],
-					"description": "%manifest.settings.presets.default.desc%"
 				}
 			}
 		}
@@ -334,7 +239,7 @@
 		"@biomejs/biome": "^2.2.5",
 		"@types/ini": "^4.1.1",
 		"@types/node": "^24.7.1",
-		"@types/vscode": "^1.70.0",
+		"@types/vscode": "^1.90.0",
 		"@vitest/coverage-v8": "^3.2.4",
 		"@vscode/test-electron": "^2.3.0",
 		"@vscode/vsce": "^3.6.2",
