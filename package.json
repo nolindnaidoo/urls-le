@@ -1,22 +1,22 @@
 {
 	"name": "urls-le",
-	"publisher": "OffensiveEdge",
+	"publisher": "nolindnaidoo",
 	"displayName": "URLs-LE",
 	"description": "Zero Hassle URL Extraction from Documentation, Configs, and Code",
 	"version": "2.0.0",
 	"license": "MIT",
 	"author": {
-		"name": "OffensiveEdge",
-		"url": "https://github.com/OffensiveEdge"
+		"name": "nolindnaidoo",
+		"url": "https://github.com/nolindnaidoo"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/OffensiveEdge/urls-le.git"
+		"url": "https://github.com/nolindnaidoo/urls-le.git"
 	},
 	"bugs": {
-		"url": "https://github.com/OffensiveEdge/urls-le/issues"
+		"url": "https://github.com/nolindnaidoo/urls-le/issues"
 	},
-	"homepage": "https://github.com/OffensiveEdge/urls-le#readme",
+	"homepage": "https://github.com/nolindnaidoo/urls-le#readme",
 	"engines": {
 		"vscode": "^1.90.0",
 		"node": ">=20.0.0"
