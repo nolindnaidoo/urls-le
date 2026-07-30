@@ -32,7 +32,6 @@ lerna-debug.log*
 
 # Coverage - ignore all except main summary
 coverage/*
-!coverage/index.html
 
 # Dependency directories
 node_modules/
