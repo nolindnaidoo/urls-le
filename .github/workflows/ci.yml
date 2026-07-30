@@ -54,7 +54,7 @@ jobs:
 
       - name: Upload VSIX artifact
         if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: urls-le-vsix
           path: release/*.vsix
