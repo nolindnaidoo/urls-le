@@ -40,7 +40,11 @@ http, https, ftp, file, mailto, tel
 - **Large file warning?** Adjust the safety file-size threshold in settings
 
 ## Support
-GitHub Issues: https://github.com/nolindnaidoo/urls-le/issues
+- GitHub Issues: https://github.com/nolindnaidoo/urls-le/issues
+- Documentation: https://github.com/nolindnaidoo/urls-le#readme
+- LE Tools: https://letools.dev
+
+Built by nolindnaidoo (https://github.com/nolindnaidoo) — MIT licensed.
 		`.trim();
 
 		const doc = await vscode.workspace.openTextDocument({
