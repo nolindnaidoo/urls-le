@@ -93,6 +93,23 @@ bun run package          # VSIX into release/
 
 Architecture and conventions live in [AGENTS.md](AGENTS.md). Changes are tracked in [CHANGELOG.md](CHANGELOG.md).
 
+## Performance
+
+<!-- performance:start -->
+| Input | Size | Found | Time | Rate | Scan speed |
+| --- | --- | --- | --- | --- | --- |
+| Markdown docs | 2.63 MB | 50,000 | 61.14 ms | 817,802/sec | 43 MB/s |
+| HTML page | 1.25 MB | 30,000 | 21.88 ms | 1,370,972/sec | 57 MB/s |
+| JSON config | 1.52 MB | 40,000 | 39.01 ms | 1,025,358/sec | 38.8 MB/s |
+
+Median of 7 runs after warmup, on Apple M5 Pro, 24 GB RAM, Node 24.3.0. Inputs are generated
+by `scripts/benchmark.ts` rather than checked in, so the sizes above are
+exactly what was measured. Reproduce with `bun run benchmark`.
+
+These are machine-specific and are not asserted in CI — a benchmark that gates
+a build only tells you how busy the runner was.
+<!-- performance:end -->
+
 ## Testing
 
 <!-- coverage:start -->

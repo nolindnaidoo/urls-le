@@ -112,3 +112,4 @@ dist/
 release/
 src/extraction/__performance__/
 out-test/
+benchmark-results.json
