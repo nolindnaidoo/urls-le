@@ -1,0 +1,11 @@
+{
+  "baseUrl": "https://api.example.com/v1",
+  "endpoints": {
+    "users": "https://api.example.com/v1/users",
+    "billing": "https://api.example.com/v1/billing",
+    "search": "https://api.example.com/v1/search"
+  },
+  "cdn": "https://cdn.example.com",
+  "docs": "https://docs.example.com/reference",
+  "repo": "https://github.com/acme/platform"
+}
