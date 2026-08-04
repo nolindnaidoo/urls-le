@@ -54,10 +54,14 @@ describe('URLs-LE integration', function () {
 		await vscode.commands.executeCommand('urls-le.extractUrls');
 
 		// Results open in a new plaintext document (side-by-side default).
+		// Identify it by an exact first-line match rather than a substring
+		// search: content-sniffing could latch onto an unrelated document that
+		// merely mentions the URL, and the assertion below gives a clearer
+		// diff than a failed lookup would.
 		const resultDoc = vscode.workspace.textDocuments.find(
 			(doc) =>
 				doc.languageId === 'plaintext' &&
-				doc.getText().includes('https://docs.example.com/guide'),
+				doc.getText().split('\n')[0] === 'https://docs.example.com/guide',
 		);
 		assert.ok(resultDoc, 'no results document found');
 		const lines = resultDoc.getText().split('\n');

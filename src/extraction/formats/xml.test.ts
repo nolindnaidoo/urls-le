@@ -86,8 +86,14 @@ describe('extractFromXml', () => {
 </project>
 `;
 		const urls = extractFromXml(content);
-		expect(urls.length).toBeGreaterThan(0);
-		expect(urls.some((u) => u.value.includes('github.com'))).toBe(true);
+		// Assert the exact values in document order. A substring check for
+		// 'github.com' would also pass on https://evil.com/?ref=github.com,
+		// so it could not catch an extractor regression.
+		expect(urls.map((u) => u.value)).toEqual([
+			'https://github.com/user/project',
+			'https://github.com/user/project',
+			'https://github.com/user/project/issues',
+		]);
 	});
 
 	it('should handle empty content', () => {
