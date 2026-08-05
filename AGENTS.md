@@ -306,7 +306,9 @@ push are checked, so history predating the gate is left alone.
 
 **Open VSX defaults off deliberately.** `ovsx publish` takes no namespace argument; it derives the namespace from `publisher` in the VSIX. Enabling it publishes to whatever `package.json` currently names, with no confirmation.
 
-**The npm package ships from the same tag**, via `bun run publish:npm` (build → assemble → gate → `npm publish ./mcp --access public`). Order matters beyond this repo: npm must be published *before* any Zed registry PR merges, because Zed's shim resolves the package at runtime — a merged extension pointing at an unpublished version is broken for everyone who installs it.
+**The npm package ships from the same tag**, as a third opt-in on the `Release` workflow. It publishes by **trusted publishing** — GitHub mints a short-lived OIDC identity token and npm verifies it against the publisher configured on the package — so there is no npm credential in this repo, in Doppler, or in CI. That is why `id-token: write` is scoped to that job alone, and why it cannot run from a laptop. `bun run publish:npm` exists for a bootstrap publish only (a package must exist before a trusted publisher can be attached to it) and needs a token.
+
+Order matters beyond this repo: npm must be published *before* any Zed registry PR merges, because Zed's shim resolves the package at runtime — a merged extension pointing at an unpublished version is broken for everyone who installs it.
 
 ## Known limitations (documented, not bugs)
 
