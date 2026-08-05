@@ -108,6 +108,10 @@ describe('output routes', () => {
 		openMarkdown();
 		await runExtract(events);
 		expect(events.some((e) => e.startsWith('error:'))).toBe(true);
+		// The error is already on screen; a success count after it would
+		// report both outcomes for one action.
+		expect(events.some((e) => e.startsWith('info:Extracted'))).toBe(false);
+		expect(events).not.toContain('extract-success');
 	});
 
 	it('reports a failure when the side-by-side document cannot be opened', async () => {
@@ -116,6 +120,10 @@ describe('output routes', () => {
 		openMarkdown();
 		await runExtract(events);
 		expect(events.some((e) => e.startsWith('error:'))).toBe(true);
+		// The error is already on screen; a success count after it would
+		// report both outcomes for one action.
+		expect(events.some((e) => e.startsWith('info:Extracted'))).toBe(false);
+		expect(events).not.toContain('extract-success');
 	});
 
 	it('reports a failure when the new file cannot be opened', async () => {
@@ -126,6 +134,10 @@ describe('output routes', () => {
 		openMarkdown();
 		await runExtract(events);
 		expect(events.some((e) => e.startsWith('error:'))).toBe(true);
+		// The error is already on screen; a success count after it would
+		// report both outcomes for one action.
+		expect(events.some((e) => e.startsWith('info:Extracted'))).toBe(false);
+		expect(events).not.toContain('extract-success');
 	});
 });
 

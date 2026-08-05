@@ -26,9 +26,9 @@ export function createStatusBar(context: vscode.ExtensionContext): StatusBar {
 	const applyVisibility = (): void => {
 		if (getConfiguration().statusBarEnabled) {
 			item.show();
-		} else {
-			item.hide();
+			return;
 		}
+		item.hide();
 	};
 	applyVisibility();
 

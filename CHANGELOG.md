@@ -26,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The extract command reported a count after an output route had failed. A
+  document that would not open, or an edit the workspace rejected, showed an
+  error and was then followed by "Extracted N URLs" — a failure and a success
+  for one action. Delivery is now checked before anything is announced.
 - Three setting descriptions were left in English in all twelve catalogues
   because their wording had changed during the 2.0 rehab — from "warn" to
   "refuse" on the file-size threshold, and from suppressing all
@@ -57,7 +61,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Test coverage raised to 86.79% of branches and 95.98% of statements. The
+- `commands/extract.ts` no longer holds orchestration, output routing,
+  clipboard handling and error mapping in one 354-line file. Routing moved to
+  `commands/output.ts` and the clipboard to `utils/clipboard.ts`, leaving the
+  command at 171 lines. The private `replaceDocumentContent` it carried — a
+  second copy of the shared helper, hand-building the same full-document range
+  — is gone; there is one implementation again.
+- Guard clauses replace the two remaining `else` blocks (`ui/statusBar.ts`,
+  `extraction/position.ts`), per the fleet standard in `../AGENTS.md`.
+
+- Test coverage raised to 87.61% of branches and 95.85% of statements. The
   sort command offers five orderings and only the default was exercised, so
   four comparators and the rejected-edit guard never ran; opening results in a
   new file, replacing the document in place, and every failure arm behind them

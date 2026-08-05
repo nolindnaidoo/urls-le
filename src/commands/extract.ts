@@ -1,20 +1,12 @@
 import * as vscode from 'vscode';
 import { getConfiguration } from '../config/config';
 import { extractUrls } from '../extraction/extract';
-import type { Telemetry } from '../telemetry/telemetry';
 import type { Configuration, ExtractionResult } from '../types';
-import type { Notifier } from '../ui/notifier';
-import type { StatusBar } from '../ui/statusBar';
+import { copyResultsToClipboard } from '../utils/clipboard';
 import { sanitizeErrorMessage } from '../utils/errors';
 import { handleSafetyChecks } from '../utils/safety';
-
-const MAX_CLIPBOARD_SIZE = 1_000_000; // 1MB
-
-interface CommandDependencies {
-	readonly telemetry: Telemetry;
-	readonly notifier: Notifier;
-	readonly statusBar: StatusBar;
-}
+import type { CommandDependencies } from './dependencies';
+import { displayResults } from './output';
 
 export function registerExtractCommand(
 	context: vscode.ExtensionContext,
@@ -112,13 +104,30 @@ async function performExtraction(
 	}
 
 	const formattedUrls = formatUrls(result, config);
-	await displayResults(formattedUrls, document, config, token, deps);
-	await handleClipboard(formattedUrls, config, token, deps);
+	const delivered = await displayResults(
+		formattedUrls,
+		document,
+		config,
+		token,
+		deps,
+	);
+	await copyResultsToClipboard(
+		formattedUrls,
+		config.copyToClipboardEnabled,
+		token,
+		deps.notifier,
+	);
 
 	// A cancel that lands between the extraction and the output route leaves
 	// displayResults a no-op — no document opened, no edit applied. Announcing
 	// "Extracted N URLs" after that reports a result the user never received.
 	if (token.isCancellationRequested) {
+		return;
+	}
+
+	// Same for a route that failed outright: the error is already on screen,
+	// and following it with a success count would report both for one action.
+	if (!delivered) {
 		return;
 	}
 
@@ -156,186 +165,6 @@ function showNoUrlsFound(deps: CommandDependencies): void {
 	deps.notifier.showInfo(
 		vscode.l10n.t('No URLs found in the current document'),
 	);
-}
-
-async function displayResults(
-	formattedUrls: string[],
-	document: vscode.TextDocument,
-	config: Configuration,
-	token: vscode.CancellationToken,
-	deps: CommandDependencies,
-): Promise<void> {
-	const content = formattedUrls.join('\n');
-
-	if (config.openResultsSideBySide) {
-		await openSideBySide(content, token, deps);
-		return;
-	}
-
-	if (config.postProcessOpenInNewFile) {
-		await openInNewFile(content, token, deps);
-		return;
-	}
-
-	await replaceDocumentContent(document, content, token, deps);
-}
-
-async function openSideBySide(
-	content: string,
-	token: vscode.CancellationToken,
-	deps: CommandDependencies,
-): Promise<void> {
-	// Fail fast: Check cancellation
-	if (token.isCancellationRequested) {
-		return;
-	}
-
-	try {
-		const doc = await vscode.workspace.openTextDocument({
-			content,
-			language: 'plaintext',
-		});
-		await vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside);
-	} catch (error) {
-		deps.notifier.showError(
-			vscode.l10n.t(
-				'Failed to open results side by side: {0}',
-				error instanceof Error ? error.message : vscode.l10n.t('Unknown error'),
-			),
-		);
-	}
-}
-
-async function openInNewFile(
-	content: string,
-	token: vscode.CancellationToken,
-	deps: CommandDependencies,
-): Promise<void> {
-	// Fail fast: Check cancellation
-	if (token.isCancellationRequested) {
-		return;
-	}
-
-	try {
-		const doc = await vscode.workspace.openTextDocument({
-			content,
-			language: 'plaintext',
-		});
-		await vscode.window.showTextDocument(doc);
-	} catch (error) {
-		deps.notifier.showError(
-			vscode.l10n.t(
-				'Failed to open results in new file: {0}',
-				error instanceof Error ? error.message : vscode.l10n.t('Unknown error'),
-			),
-		);
-	}
-}
-
-async function replaceDocumentContent(
-	document: vscode.TextDocument,
-	content: string,
-	token: vscode.CancellationToken,
-	deps: CommandDependencies,
-): Promise<void> {
-	// Fail fast: Check cancellation
-	if (token.isCancellationRequested) {
-		return;
-	}
-
-	try {
-		const edit = new vscode.WorkspaceEdit();
-		edit.replace(
-			document.uri,
-			new vscode.Range(
-				document.positionAt(0),
-				document.lineAt(document.lineCount - 1).range.end,
-			),
-			content,
-		);
-
-		const success = await vscode.workspace.applyEdit(edit);
-		if (!success) {
-			deps.notifier.showError(
-				vscode.l10n.t('Failed to apply edits to document'),
-			);
-		}
-	} catch (error) {
-		deps.notifier.showError(
-			vscode.l10n.t(
-				'Failed to replace document content: {0}',
-				error instanceof Error ? error.message : vscode.l10n.t('Unknown error'),
-			),
-		);
-	}
-}
-
-async function handleClipboard(
-	formattedUrls: string[],
-	config: Configuration,
-	token: vscode.CancellationToken,
-	deps: CommandDependencies,
-): Promise<void> {
-	// Fail fast: Check if clipboard is enabled
-	if (!config.copyToClipboardEnabled) {
-		return;
-	}
-
-	const clipboardText = formattedUrls.join('\n');
-	const byteSize = calculateByteSize(clipboardText);
-
-	// Fail fast: Check size limit
-	if (byteSize > MAX_CLIPBOARD_SIZE) {
-		deps.notifier.showWarning(
-			vscode.l10n.t(
-				'Results too large for clipboard ({0} bytes), skipping clipboard copy',
-				byteSize,
-			),
-		);
-		return;
-	}
-
-	// Fail fast: Check cancellation
-	if (token.isCancellationRequested) {
-		return;
-	}
-
-	await copyToClipboard(clipboardText, deps);
-}
-
-function calculateByteSize(text: string): number {
-	return new TextEncoder().encode(text).length;
-}
-
-async function copyToClipboard(
-	text: string,
-	deps: CommandDependencies,
-): Promise<void> {
-	try {
-		await vscode.env.clipboard.writeText(text);
-	} catch (error) {
-		handleClipboardError(error, deps);
-	}
-}
-
-function handleClipboardError(error: unknown, deps: CommandDependencies): void {
-	const errorMessage =
-		error instanceof Error ? error.message : 'Unknown clipboard error';
-
-	if (isPermissionError(errorMessage)) {
-		deps.notifier.showWarning(
-			'Clipboard access denied. Extracted URLs but could not copy to clipboard.',
-		);
-		return;
-	}
-
-	deps.notifier.showWarning(
-		vscode.l10n.t('Failed to copy to clipboard: {0}', errorMessage),
-	);
-}
-
-function isPermissionError(message: string): boolean {
-	return message.includes('permission') || message.includes('access');
 }
 
 function handleExtractionError(
