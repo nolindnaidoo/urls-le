@@ -34,7 +34,7 @@ async function executeExtractCommand(deps: CommandDependencies): Promise<void> {
 	// Fail fast: Check for active editor
 	const editor = vscode.window.activeTextEditor;
 	if (!editor) {
-		deps.notifier.showWarning('No active editor found');
+		deps.notifier.showWarning(vscode.l10n.t('No active editor found'));
 		return;
 	}
 
@@ -103,7 +103,9 @@ async function performExtraction(
 	await displayResults(formattedUrls, document, config, token, deps);
 	await handleClipboard(formattedUrls, config, token, deps);
 
-	deps.notifier.showInfo(`Extracted ${result.urls.length} URLs`);
+	deps.notifier.showInfo(
+		vscode.l10n.t('Extracted {0} URLs', result.urls.length),
+	);
 	deps.telemetry.event('extract-success', { count: result.urls.length });
 }
 
@@ -119,7 +121,9 @@ function handleExtractionFailure(
 	deps: CommandDependencies,
 ): void {
 	const errorMessage = sanitizeErrorMessage(extractErrorMessage(result));
-	deps.notifier.showError(`Failed to extract URLs: ${errorMessage}`);
+	deps.notifier.showError(
+		vscode.l10n.t('Failed to extract URLs: {0}', errorMessage),
+	);
 }
 
 function extractErrorMessage(result: ExtractionResult): string {
@@ -130,7 +134,9 @@ function extractErrorMessage(result: ExtractionResult): string {
 }
 
 function showNoUrlsFound(deps: CommandDependencies): void {
-	deps.notifier.showInfo('No URLs found in the current document');
+	deps.notifier.showInfo(
+		vscode.l10n.t('No URLs found in the current document'),
+	);
 }
 
 async function displayResults(
@@ -173,7 +179,10 @@ async function openSideBySide(
 		await vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside);
 	} catch (error) {
 		deps.notifier.showError(
-			`Failed to open results side by side: ${error instanceof Error ? error.message : 'Unknown error'}`,
+			vscode.l10n.t(
+				'Failed to open results side by side: {0}',
+				error instanceof Error ? error.message : vscode.l10n.t('Unknown error'),
+			),
 		);
 	}
 }
@@ -196,7 +205,10 @@ async function openInNewFile(
 		await vscode.window.showTextDocument(doc);
 	} catch (error) {
 		deps.notifier.showError(
-			`Failed to open results in new file: ${error instanceof Error ? error.message : 'Unknown error'}`,
+			vscode.l10n.t(
+				'Failed to open results in new file: {0}',
+				error instanceof Error ? error.message : vscode.l10n.t('Unknown error'),
+			),
 		);
 	}
 }
@@ -225,11 +237,16 @@ async function replaceDocumentContent(
 
 		const success = await vscode.workspace.applyEdit(edit);
 		if (!success) {
-			deps.notifier.showError('Failed to apply edits to document');
+			deps.notifier.showError(
+				vscode.l10n.t('Failed to apply edits to document'),
+			);
 		}
 	} catch (error) {
 		deps.notifier.showError(
-			`Failed to replace document content: ${error instanceof Error ? error.message : 'Unknown error'}`,
+			vscode.l10n.t(
+				'Failed to replace document content: {0}',
+				error instanceof Error ? error.message : vscode.l10n.t('Unknown error'),
+			),
 		);
 	}
 }
@@ -251,7 +268,10 @@ async function handleClipboard(
 	// Fail fast: Check size limit
 	if (byteSize > MAX_CLIPBOARD_SIZE) {
 		deps.notifier.showWarning(
-			`Results too large for clipboard (${byteSize} bytes), skipping clipboard copy`,
+			vscode.l10n.t(
+				'Results too large for clipboard ({0} bytes), skipping clipboard copy',
+				byteSize,
+			),
 		);
 		return;
 	}
@@ -290,7 +310,9 @@ function handleClipboardError(error: unknown, deps: CommandDependencies): void {
 		return;
 	}
 
-	deps.notifier.showWarning(`Failed to copy to clipboard: ${errorMessage}`);
+	deps.notifier.showWarning(
+		vscode.l10n.t('Failed to copy to clipboard: {0}', errorMessage),
+	);
 }
 
 function isPermissionError(message: string): boolean {
@@ -305,6 +327,8 @@ function handleExtractionError(
 		error instanceof Error ? error.message : 'Unknown error occurred',
 	);
 
-	deps.notifier.showError(`Failed to extract URLs: ${message}`);
+	deps.notifier.showError(
+		vscode.l10n.t('Failed to extract URLs: {0}', message),
+	);
 	deps.telemetry.event('extract-error', { error: message });
 }

@@ -77,7 +77,18 @@ Extracted protocols: `http`, `https`, `ftp`, `file`, `mailto` (requires an `@`),
 | `urls-le.statusBar.enabled` | `true` | Show the status bar item |
 | `urls-le.telemetryEnabled` | `false` | Local-only event log (see Privacy) |
 
-The settings UI is translated into 12 languages besides English.
+## Languages
+
+Twelve languages besides English:
+
+German · Spanish · French · Indonesian · Italian · Japanese · Korean ·
+Portuguese (Brazil) · Russian · Ukrainian · Vietnamese · Chinese (Simplified)
+
+Both halves are covered — the manifest (command titles, setting names and
+descriptions) and everything shown while the extension runs (notifications,
+the status bar, the sort quick-pick). The extension follows VS Code's display
+language, so it matches whatever the editor is already set to; no setting of
+its own.
 
 ## Privacy & security
 
@@ -120,12 +131,12 @@ a build only tells you how busy the runner was.
 <!-- coverage:start -->
 | Metric | Coverage |
 | --- | --- |
-| Statements | 89.49% |
-| Branches | 75.23% |
-| Functions | 94.65% |
-| Lines | 89.42% |
+| Statements | 90.67% |
+| Branches | 78.09% |
+| Functions | 94.57% |
+| Lines | 90.59% |
 
-222 test cases across 17 files, plus an integration suite that runs
+235 test cases across 18 files, plus an integration suite that runs
 in a real VS Code extension host and an end-to-end test that installs the
 built `.vsix` into a clean profile.
 

@@ -225,11 +225,19 @@ export const workspace = {
 		}),
 	applyEdit: async (edit: WorkspaceEdit) => {
 		appliedEdits.push(edit);
-		return true;
+		return applyEditResult;
 	},
 };
 
 export const appliedEdits: WorkspaceEdit[] = [];
+
+// VS Code returns false when an edit is rejected — a read-only document, or one
+// that changed underneath the command. Tests need to reach that path.
+let applyEditResult = true;
+
+export function _setApplyEditResult(value: boolean): void {
+	applyEditResult = value;
+}
 
 // ------------------------------------------------------------ window
 
@@ -406,8 +414,32 @@ export const FileType = {
 	SymbolicLink: 64,
 };
 
+
+/**
+ * `vscode.l10n` — the real API substitutes the running editor's bundle. Under
+ * test there is no bundle, and the real one falls back to the source string
+ * for exactly that reason, so the mock does the same: format the placeholders
+ * and return English. Tests then assert on the source strings, which keeps
+ * them readable and independent of translation state.
+ */
+export const l10n = {
+	t(message: string, ...args: unknown[]): string {
+		if (args.length === 1 && typeof args[0] === 'object' && args[0] !== null) {
+			const named = args[0] as Record<string, unknown>;
+			return message.replace(/\{(\w+)\}/g, (whole, key) =>
+				key in named ? String(named[key]) : whole,
+			);
+		}
+		return message.replace(/\{(\d+)\}/g, (whole, index) => {
+			const value = args[Number(index)];
+			return value === undefined ? whole : String(value);
+		});
+	},
+};
+
 /** Reset all mutable mock state between tests. */
 export function _resetMockState(): void {
+	applyEditResult = true;
 	configStore.clear();
 	configUpdates.length = 0;
 	configListeners.length = 0;

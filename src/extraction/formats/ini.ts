@@ -6,6 +6,7 @@ import {
 	toUnpositionedUrls,
 	toUrls,
 } from '../heuristics';
+import { collectStrings } from './collectStrings';
 
 /**
  * INI: parse, walk string values, then forward-locate each URL in the
@@ -23,17 +24,4 @@ export function extractFromIni(content: string): Url[] {
 		console.warn('[URLs-LE] INI parsing failed, using fallback:', error);
 		return toUrls(content, scanUrls(content));
 	}
-}
-
-function collectStrings(node: unknown): string[] {
-	if (typeof node === 'string') {
-		return [node];
-	}
-	if (Array.isArray(node)) {
-		return node.flatMap(collectStrings);
-	}
-	if (node && typeof node === 'object') {
-		return Object.values(node).flatMap(collectStrings);
-	}
-	return [];
 }

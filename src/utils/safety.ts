@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import * as vscode from 'vscode';
 import type { Configuration } from '../types';
 
 export interface SafetyResult {
@@ -27,7 +27,11 @@ export function handleSafetyChecks(
 	if (content.length > config.safetyFileSizeWarnBytes) {
 		return Object.freeze({
 			proceed: false,
-			message: `File size (${content.length} bytes) exceeds safety threshold (${config.safetyFileSizeWarnBytes} bytes)`,
+			message: vscode.l10n.t(
+				'File size ({0} bytes) exceeds safety threshold ({1} bytes)',
+				content.length,
+				config.safetyFileSizeWarnBytes,
+			),
 			warnings: [],
 		});
 	}
@@ -36,7 +40,11 @@ export function handleSafetyChecks(
 	const lineCount = content.split('\n').length;
 	if (lineCount > config.safetyLargeOutputLinesThreshold) {
 		warnings.push(
-			`Large file: ${lineCount} lines (threshold: ${config.safetyLargeOutputLinesThreshold}); extraction may be slow`,
+			vscode.l10n.t(
+				'Large file: {0} lines (threshold: {1}); extraction may be slow',
+				lineCount,
+				config.safetyLargeOutputLinesThreshold,
+			),
 		);
 	}
 

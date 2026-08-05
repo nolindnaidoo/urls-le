@@ -6,6 +6,7 @@ import {
 	toUnpositionedUrls,
 	toUrls,
 } from '../heuristics';
+import { collectStrings } from './collectStrings';
 
 /**
  * TOML (Cargo.toml, pyproject.toml): parse, walk string values, then
@@ -24,17 +25,4 @@ export function extractFromToml(content: string): Url[] {
 		console.warn('[URLs-LE] TOML parsing failed, using fallback:', error);
 		return toUrls(content, scanUrls(content));
 	}
-}
-
-function collectStrings(node: unknown): string[] {
-	if (typeof node === 'string') {
-		return [node];
-	}
-	if (Array.isArray(node)) {
-		return node.flatMap(collectStrings);
-	}
-	if (node && typeof node === 'object') {
-		return Object.values(node).flatMap(collectStrings);
-	}
-	return [];
 }

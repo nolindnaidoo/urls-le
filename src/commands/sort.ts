@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import type { Notifier } from '../ui/notifier';
+import { replaceDocumentContent } from '../utils/document';
 import { sanitizeErrorMessage } from '../utils/errors';
 
 type SortOrder = 'asc' | 'desc' | 'domain' | 'length-asc' | 'length-desc';
@@ -25,7 +26,7 @@ async function executeSortCommand(notifier: Notifier): Promise<void> {
 	// Fail fast: Check for active editor
 	const editor = vscode.window.activeTextEditor;
 	if (!editor) {
-		notifier.showWarning('No active editor found');
+		notifier.showWarning(vscode.l10n.t('No active editor found'));
 		return;
 	}
 
@@ -45,30 +46,30 @@ async function executeSortCommand(notifier: Notifier): Promise<void> {
 
 async function promptForSortOrder(): Promise<SortOption | undefined> {
 	return vscode.window.showQuickPick(createSortOptions(), {
-		placeHolder: 'Select sort order',
+		placeHolder: vscode.l10n.t('Select sort order'),
 	});
 }
 
 function createSortOptions(): SortOption[] {
 	return [
 		{
-			label: 'Alphabetical (A → Z)',
+			label: vscode.l10n.t('Alphabetical (A → Z)'),
 			value: 'asc',
 		},
 		{
-			label: 'Alphabetical (Z → A)',
+			label: vscode.l10n.t('Alphabetical (Z → A)'),
 			value: 'desc',
 		},
 		{
-			label: 'By Domain',
+			label: vscode.l10n.t('By Domain'),
 			value: 'domain',
 		},
 		{
-			label: 'By Length (Short → Long)',
+			label: vscode.l10n.t('By Length (Short → Long)'),
 			value: 'length-asc',
 		},
 		{
-			label: 'By Length (Long → Short)',
+			label: vscode.l10n.t('By Length (Long → Short)'),
 			value: 'length-desc',
 		},
 	];
@@ -83,8 +84,15 @@ async function performSort(
 	const lines = extractNonEmptyLines(document);
 	const sorted = sortLines(lines, sortOption.value);
 
-	await replaceDocumentContent(document, sorted);
-	notifier.showInfo(`Sorted ${sorted.length} URLs (${sortOption.label})`);
+	const applied = await replaceDocumentContent(document, sorted);
+	if (!applied) {
+		notifier.showError(vscode.l10n.t('Failed to apply edits to document'));
+		return;
+	}
+
+	notifier.showInfo(
+		vscode.l10n.t('Sorted {0} URLs ({1})', sorted.length, sortOption.label),
+	);
 }
 
 function extractNonEmptyLines(document: vscode.TextDocument): string[] {
@@ -139,25 +147,9 @@ function sortAlphabetically(lines: string[], order: 'asc' | 'desc'): string[] {
 	});
 }
 
-async function replaceDocumentContent(
-	document: vscode.TextDocument,
-	lines: string[],
-): Promise<void> {
-	const edit = new vscode.WorkspaceEdit();
-	edit.replace(document.uri, fullDocumentRange(document), lines.join('\n'));
-	await vscode.workspace.applyEdit(edit);
-}
-
-function fullDocumentRange(document: vscode.TextDocument): vscode.Range {
-	return new vscode.Range(
-		document.positionAt(0),
-		document.lineAt(document.lineCount - 1).range.end,
-	);
-}
-
 function handleSortError(error: unknown, notifier: Notifier): void {
 	const message = sanitizeErrorMessage(
 		error instanceof Error ? error.message : 'Unknown error occurred',
 	);
-	notifier.showError(`Sorting failed: ${message}`);
+	notifier.showError(vscode.l10n.t('Sorting failed: {0}', message));
 }

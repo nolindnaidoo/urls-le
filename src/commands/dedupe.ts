@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import type { Notifier } from '../ui/notifier';
+import { replaceDocumentContent } from '../utils/document';
 import { sanitizeErrorMessage } from '../utils/errors';
 
 export function registerDedupeCommand(
@@ -18,7 +19,7 @@ async function executeDedupeCommand(notifier: Notifier): Promise<void> {
 	// Fail fast: Check for active editor
 	const editor = vscode.window.activeTextEditor;
 	if (!editor) {
-		notifier.showWarning('No active editor found');
+		notifier.showWarning(vscode.l10n.t('No active editor found'));
 		return;
 	}
 
@@ -39,10 +40,19 @@ async function performDedupe(
 	const lines = extractNonEmptyLines(document);
 	const deduped = deduplicateLines(lines);
 
-	await replaceDocumentContent(document, deduped);
+	const applied = await replaceDocumentContent(document, deduped);
+	if (!applied) {
+		notifier.showError(vscode.l10n.t('Failed to apply edits to document'));
+		return;
+	}
+
 	const removed = lines.length - deduped.length;
 	notifier.showInfo(
-		`Removed ${removed} duplicate URLs (${deduped.length} remaining)`,
+		vscode.l10n.t(
+			'Removed {0} duplicate URLs ({1} remaining)',
+			removed,
+			deduped.length,
+		),
 	);
 }
 
@@ -65,25 +75,9 @@ function deduplicateLines(lines: string[]): string[] {
 	});
 }
 
-async function replaceDocumentContent(
-	document: vscode.TextDocument,
-	lines: string[],
-): Promise<void> {
-	const edit = new vscode.WorkspaceEdit();
-	edit.replace(document.uri, fullDocumentRange(document), lines.join('\n'));
-	await vscode.workspace.applyEdit(edit);
-}
-
-function fullDocumentRange(document: vscode.TextDocument): vscode.Range {
-	return new vscode.Range(
-		document.positionAt(0),
-		document.lineAt(document.lineCount - 1).range.end,
-	);
-}
-
 function handleDedupeError(error: unknown, notifier: Notifier): void {
 	const message = sanitizeErrorMessage(
 		error instanceof Error ? error.message : 'Unknown error occurred',
 	);
-	notifier.showError(`Deduplication failed: ${message}`);
+	notifier.showError(vscode.l10n.t('Deduplication failed: {0}', message));
 }

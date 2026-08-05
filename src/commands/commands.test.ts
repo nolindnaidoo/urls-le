@@ -6,6 +6,7 @@ import {
 	_resetMockState,
 	_respondToQuickPick,
 	_setActiveEditor,
+	_setApplyEditResult,
 	_setConfig,
 	_shownMessages,
 	appliedEdits,
@@ -49,6 +50,23 @@ beforeEach(() => {
 });
 
 describe('urls-le.postProcess.dedupe', () => {
+	it('reports a failure instead of success when the edit is rejected', async () => {
+		// applyEdit returns false for a read-only document, or one that changed
+		// underneath the command. Both post-process commands discarded that value
+		// and announced a result over a document they had not touched.
+		_setConfig('urls-le.notificationsLevel', 'all');
+		_setApplyEditResult(false);
+		registerDedupeCommand(makeContext(), createNotifier());
+		_setActiveEditor(
+			_createDocument({ content: 'https://a.com\nhttps://a.com\n' }),
+		);
+		await runCommand('urls-le.postProcess.dedupe');
+
+		const kinds = _shownMessages().map((m) => m.kind);
+		expect(kinds).toContain('error');
+		expect(kinds).not.toContain('info');
+	});
+
 	it('warns when no editor is active', async () => {
 		_setConfig('urls-le.notificationsLevel', 'important');
 		registerDedupeCommand(makeContext(), createNotifier());

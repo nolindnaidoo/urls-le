@@ -5,15 +5,72 @@ All notable changes to URLs-LE will be documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.2] - 2026-08-04
+## [2.1.0] - 2026-08-04
 
 ### Added
 
+- Runtime strings are localized again, and this time they render. All 25 of
+  them — notifications, the status bar, the sort quick-pick — go through
+  `vscode.l10n` and ship as twelve translated bundles in `l10n/`. The v1.x
+  line carried full catalogues that never reached the screen: `vscode-nls`
+  was configured without `__filename`, so every string fell back to English
+  while the VSIX looked correct. Verified on a host launched with
+  `--locale=de`, where the extension now reports `URLs-LE: Bereit`.
+- An integration test covering both localization mechanisms — manifest
+  substitution, catalogue key parity across all thirteen files, and
+  placeholder integrity in every translation. A translation that silently
+  drops `{0}` now fails the build instead of shipping a message with the
+  number missing.
 - Dependency review on pull requests, failing on a high-severity addition
   before Dependabot's auto-merge can act.
 
+### Fixed
+
+- Three setting descriptions were left in English in all twelve catalogues
+  because their wording had changed during the 2.0 rehab — from "warn" to
+  "refuse" on the file-size threshold, and from suppressing all
+  notifications to showing only errors. Reusing the old translations would
+  have described behaviour the extension no longer has, so they are
+  retranslated rather than restored.
+- The status bar resolved its idle label at module scope, which fixed the
+  string to whatever was loaded at require time rather than at activation.
+- Sort and dedupe reported success for edits that were never applied.
+  `vscode.workspace.applyEdit` returns `false` when an edit is rejected — a
+  read-only document, or one that changed underneath the command — and both
+  discarded that value, then announced "Sorted 12 URLs" or "Removed 3
+  duplicate URLs" over a document they had not touched. `extract.ts` already
+  checked the result; it is now the one behaviour, with a regression test that
+  drives a rejected edit.
+- The dedupe result message was still an interpolated template literal, so it
+  was the one runtime string in this extension that could never be translated.
+
 ### Changed
 
+- Test coverage raised to 78.09% of branches and 90.67% of statements. The
+  sort command offers five orderings and only the default was exercised, so
+  four comparators and the rejected-edit guard never ran.
+
+  Two files remain below a floor, both because the uncovered code cannot run
+  rather than because it is untested, and both are recorded rather than
+  papered over:
+
+  - `commands/extract.ts` creates a `CancellationTokenSource`, passes its
+    token down and disposes it, but nothing ever calls `cancel()` — there is
+    no cancellable progress UI wired to it. Every `isCancellationRequested`
+    check is therefore unreachable, and extraction is not actually
+    interruptible despite appearing to be.
+  - `extraction/formats/ini.ts` falls back to a plain scan when the parser
+    throws, but the `ini` package is fully lenient: unclosed sections, keys
+    with no name and conflicting nested keys all parse without error. The
+    fallback cannot fire.
+
+  Both want a decision — wire real cancellation, or drop the plumbing — rather
+  than a test that forces coverage of code that cannot execute.
+
+
+- `replaceDocumentContent`, `fullDocumentRange` and `collectStrings` are each
+  defined once. The first existed three times and the other two twice —
+  including the edit that replaces the user's entire document.
 - CI gains fleet-wide checks that no single repo can perform: shared config is
   compared across all ten extensions, and every README link is verified —
   including Open VSX links, which are checked against the API because
