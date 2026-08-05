@@ -218,12 +218,21 @@ export const workspace = {
 			},
 		};
 	},
-	openTextDocument: async (options?: { content?: string; language?: string }) =>
-		_createDocument({
+	openTextDocument: async (options?: { content?: string; language?: string }) => {
+		// Opening a document really can fail — no window, a disposed workspace.
+		// Without a way to make it fail, the error arms of every output route
+		// were unreachable.
+		if (openDocumentError) throw openDocumentError;
+		return _createDocument({
 			content: options?.content ?? '',
 			languageId: options?.language ?? 'plaintext',
-		}),
+		});
+	},
 	applyEdit: async (edit: WorkspaceEdit) => {
+		// Rejecting and throwing are different failures: applyEdit resolves false
+		// for a read-only document but rejects for a disposed one, and the two
+		// take different arms in the caller.
+		if (applyEditError) throw applyEditError;
 		appliedEdits.push(edit);
 		return applyEditResult;
 	},
@@ -234,6 +243,20 @@ export const appliedEdits: WorkspaceEdit[] = [];
 // VS Code returns false when an edit is rejected — a read-only document, or one
 // that changed underneath the command. Tests need to reach that path.
 let applyEditResult = true;
+
+let openDocumentError: Error | undefined;
+
+/** Make the next openTextDocument reject, as it does when there is no window. */
+export function _setOpenDocumentError(error: Error | undefined): void {
+	openDocumentError = error;
+}
+
+let applyEditError: Error | undefined;
+
+/** Make the next applyEdit reject, as it does for a disposed document. */
+export function _setApplyEditError(error: Error | undefined): void {
+	applyEditError = error;
+}
 
 export function _setApplyEditResult(value: boolean): void {
 	applyEditResult = value;
@@ -272,6 +295,7 @@ export function _respondToWarning(
 	warningResponder = responder;
 }
 
+export const ProgressLocation = { SourceControl: 1, Window: 10, Notification: 15 };
 export const StatusBarAlignment = { Left: 1, Right: 2 };
 export const ViewColumn = { Active: -1, Beside: -2, One: 1, Two: 2 };
 
@@ -293,6 +317,19 @@ export const window = {
 	},
 	showQuickPick: async (items: unknown[], _options?: unknown) =>
 		quickPickResponder ? quickPickResponder(items) : undefined,
+	withProgress: async <T>(
+		_options: unknown,
+		task: (
+			progress: { report: (value: unknown) => void },
+			token: { isCancellationRequested: boolean },
+		) => Promise<T>,
+	): Promise<T> =>
+		task(
+			{
+				report: () => {},
+			},
+			progressToken,
+		),
 	showTextDocument: async (_document: unknown, _column?: unknown) => undefined,
 	createOutputChannel: (_name: string) => {
 		const linesOut: string[] = [];
@@ -361,10 +398,19 @@ export const executedBuiltins: Array<{ id: string; args: unknown[] }> = [];
 // --------------------------------------------------------------- env
 
 const clipboard = { value: '' };
+let clipboardError: Error | undefined;
+
+/** Make the next clipboard write reject. */
+export function _setClipboardError(error: Error | undefined): void {
+	clipboardError = error;
+}
 
 export const env = {
 	clipboard: {
 		writeText: async (text: string) => {
+			// The clipboard is the one output that can be denied by the OS; the
+			// permission-vs-generic split in the error handler needs both shapes.
+			if (clipboardError) throw clipboardError;
 			clipboard.value = text;
 		},
 		readText: async () => clipboard.value,
@@ -438,7 +484,36 @@ export const l10n = {
 };
 
 /** Reset all mutable mock state between tests. */
+/**
+ * A token that flips partway through, the way a real one does when the user
+ * clicks Cancel on the progress notification. Counting *checks* rather than
+ * progress reports is what makes each checkpoint individually reachable:
+ * `_cancelAfterProgress(2)` cancels between the second and third check.
+ */
+let cancelAfterChecks: number | undefined;
+let checksSeen = 0;
+
+const progressToken = {
+	get isCancellationRequested(): boolean {
+		if (cancelAfterChecks === undefined) return false;
+		if (checksSeen >= cancelAfterChecks) return true;
+		checksSeen += 1;
+		return false;
+	},
+};
+
+/** Cancel once the operation has checked the token `n` times (0 = immediately). */
+export function _cancelAfterProgress(n: number | undefined): void {
+	cancelAfterChecks = n;
+	checksSeen = 0;
+}
+
 export function _resetMockState(): void {
+	cancelAfterChecks = undefined;
+	checksSeen = 0;
+	openDocumentError = undefined;
+	clipboardError = undefined;
+	applyEditError = undefined;
 	applyEditResult = true;
 	configStore.clear();
 	configUpdates.length = 0;

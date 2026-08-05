@@ -43,29 +43,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   drives a rejected edit.
 - The dedupe result message was still an interpolated template literal, so it
   was the one runtime string in this extension that could never be translated.
+- Extraction was not actually interruptible. It created its own
+  `CancellationTokenSource`, threaded the token through six
+  `isCancellationRequested` checks and disposed it — but nothing ever called
+  `cancel()`, so the token was a permanent `false` and none of those checks
+  could fire. The token now comes from a cancellable progress notification, so
+  the Cancel button on it does what it appears to do.
+- Cancelling partway through announced a success anyway. A cancel landing
+  between the extraction and the output route left nothing opened and no edit
+  applied, and the command still reported "Extracted N URLs" over a result the
+  user never received. Surfaced by the first tests that could reach those
+  checks.
 
 ### Changed
 
-- Test coverage raised to 78.09% of branches and 90.67% of statements. The
+- Test coverage raised to 86.79% of branches and 95.98% of statements. The
   sort command offers five orderings and only the default was exercised, so
-  four comparators and the rejected-edit guard never ran.
+  four comparators and the rejected-edit guard never ran; opening results in a
+  new file, replacing the document in place, and every failure arm behind them
+  — a rejected edit, a document that will not open, a denied clipboard — were
+  untested as well.
 
-  Two files remain below a floor, both because the uncovered code cannot run
-  rather than because it is untested, and both are recorded rather than
-  papered over:
-
-  - `commands/extract.ts` creates a `CancellationTokenSource`, passes its
-    token down and disposes it, but nothing ever calls `cancel()` — there is
-    no cancellable progress UI wired to it. Every `isCancellationRequested`
-    check is therefore unreachable, and extraction is not actually
-    interruptible despite appearing to be.
-  - `extraction/formats/ini.ts` falls back to a plain scan when the parser
-    throws, but the `ini` package is fully lenient: unclosed sections, keys
-    with no name and conflicting nested keys all parse without error. The
-    fallback cannot fire.
-
-  Both want a decision — wire real cancellation, or drop the plumbing — rather
-  than a test that forces coverage of code that cannot execute.
+  One file stays below a floor because the uncovered code cannot run rather
+  than because it is untested, and it is recorded rather than papered over:
+  `extraction/formats/ini.ts` falls back to a plain scan when the parser
+  throws, but the `ini` package is fully lenient — unclosed sections, keys with
+  no name and conflicting nested keys all parse without error, so the fallback
+  cannot fire.
 
 
 - `replaceDocumentContent`, `fullDocumentRange` and `collectStrings` are each

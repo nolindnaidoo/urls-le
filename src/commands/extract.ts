@@ -51,16 +51,28 @@ async function executeExtractCommand(deps: CommandDependencies): Promise<void> {
 		deps.notifier.showWarning(warning);
 	}
 
-	const cancellationToken = new vscode.CancellationTokenSource();
-
-	try {
-		await performExtraction(document, config, cancellationToken.token, deps);
-	} catch (error) {
-		handleExtractionError(error, deps);
-	} finally {
-		deps.statusBar.hideProgress();
-		cancellationToken.dispose();
-	}
+	// The token comes from a cancellable progress notification, so the user can
+	// actually interrupt a long extraction. This previously created its own
+	// CancellationTokenSource and never called cancel() on it, which meant the
+	// token was permanently false: every isCancellationRequested check below was
+	// unreachable and the extraction advertised an interruptibility it did not
+	// have.
+	await vscode.window.withProgress(
+		{
+			location: vscode.ProgressLocation.Notification,
+			title: vscode.l10n.t('Extracting URLs...'),
+			cancellable: true,
+		},
+		async (_progress, token): Promise<void> => {
+			try {
+				await performExtraction(document, config, token, deps);
+			} catch (error) {
+				handleExtractionError(error, deps);
+			} finally {
+				deps.statusBar.hideProgress();
+			}
+		},
+	);
 }
 
 async function performExtraction(
@@ -102,6 +114,13 @@ async function performExtraction(
 	const formattedUrls = formatUrls(result, config);
 	await displayResults(formattedUrls, document, config, token, deps);
 	await handleClipboard(formattedUrls, config, token, deps);
+
+	// A cancel that lands between the extraction and the output route leaves
+	// displayResults a no-op — no document opened, no edit applied. Announcing
+	// "Extracted N URLs" after that reports a result the user never received.
+	if (token.isCancellationRequested) {
+		return;
+	}
 
 	deps.notifier.showInfo(
 		vscode.l10n.t('Extracted {0} URLs', result.urls.length),
