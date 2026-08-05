@@ -117,3 +117,55 @@ jobs:
           path: release/*.vsix
           if-no-files-found: error
           retention-days: 14
+
+  # The Zed extension is a separate toolchain and would otherwise only break at
+  # submission time, days after the change that broke it. It is a thin launcher
+  # for the same npm package, so building it is the whole check — there is no
+  # extraction logic in the crate to test.
+  zed:
+    name: Zed extension
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Ubuntu runners ship a Rust toolchain; adding an action to install one
+      # would be a new dependency for a target this already has.
+      - name: Add the wasm target
+        run: rustup target add wasm32-wasip2
+
+      - name: Build
+        working-directory: zed
+        run: cargo build --release --target wasm32-wasip2 --locked
+
+      - name: Clippy
+        working-directory: zed
+        run: rustup component add clippy && cargo clippy --release --target wasm32-wasip2 --locked -- -D warnings
+
+      - name: Formatting
+        working-directory: zed
+        run: cargo fmt --check
+
+      # The manifest version, the npm package the crate installs, and the
+      # extension version must agree. They are three files, so they drift.
+      - name: Manifest agrees with the extension
+        run: |
+          extension_version=$(node -p "require('./package.json').version")
+          zed_version=$(grep -m1 '^version' zed/extension.toml | cut -d'"' -f2)
+          crate_version=$(grep -m1 '^version' zed/Cargo.toml | cut -d'"' -f2)
+          npm_name=$(node -p "require('./mcp/package.json').name")
+
+          fail=0
+          if [ "$zed_version" != "$extension_version" ]; then
+            echo "::error::zed/extension.toml is $zed_version, package.json is $extension_version"
+            fail=1
+          fi
+          if [ "$crate_version" != "$extension_version" ]; then
+            echo "::error::zed/Cargo.toml is $crate_version, package.json is $extension_version"
+            fail=1
+          fi
+          if ! grep -q "\"$npm_name\"" zed/src/lib.rs; then
+            echo "::error::zed/src/lib.rs does not install $npm_name"
+            fail=1
+          fi
+          exit $fail
