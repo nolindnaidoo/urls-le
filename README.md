@@ -11,6 +11,12 @@
   <a href="https://marketplace.visualstudio.com/items?itemName=nolindnaidoo.urls-le">
     <img src="https://img.shields.io/badge/Install%20from-VS%20Code-blue?style=for-the-badge&logo=visualstudiocode" alt="Install from VS Code Marketplace" />
   </a>
+  <a href="https://open-vsx.org/extension/OffensiveEdge/urls-le">
+    <img src="https://img.shields.io/open-vsx/dt/OffensiveEdge/urls-le?style=for-the-badge&label=Open%20VSX&color=blue" alt="Open VSX downloads" />
+  </a>
+  <a href="https://www.npmjs.com/package/urls-le-mcp">
+    <img src="https://img.shields.io/npm/v/urls-le-mcp?style=for-the-badge&label=MCP%20server&color=blue&logo=npm" alt="urls-le-mcp on npm" />
+  </a>
   <a href="https://letools.dev">
     <img src="https://img.shields.io/badge/LE%20Tools-letools.dev-blue?style=for-the-badge" alt="LE Tools" />
   </a>
@@ -34,6 +40,67 @@ Open a file, press `Ctrl+Alt+U` (`Cmd+Alt+U` on Mac), and every URL in the docum
 - **Link auditing** — every link, autolink, and plain URL in Markdown and HTML (code blocks and comments excluded)
 - **Source review** — URLs in string literals, template literals, and comments across JS/TS
 - **Config sweep** — URLs in JSON strings, YAML values, Java properties, TOML/INI values, and XML (Maven POMs, feeds)
+
+## Use it from an AI agent
+
+The same extraction engine runs as an [MCP](https://modelcontextprotocol.io) server, so an agent can call it directly instead of you running a command.
+
+| Editor | How |
+|---|---|
+| **VS Code** 1.101+ | Nothing to install — the extension registers `extract_urls` with agent mode |
+| **Zed** | [URLs-LE](https://github.com/zed-industries/extensions/pull/7077) — *pending review* |
+| **Claude Code** | `claude mcp add urls-le -- npx -y urls-le-mcp` |
+| **Cursor, Windsurf, anything else** | point it at `npx urls-le-mcp` |
+
+```
+extract_urls(content, format?, filename?, dedupe?, maxResults?)
+```
+
+Returns every URL with its protocol and 1-based line and column, capped at 500 by default with `meta.truncated` so a large file cannot flood the agent's context window.
+
+The server takes content and returns data — it reads no files and makes no network requests of its own. Published as [`urls-le-mcp`](https://www.npmjs.com/package/urls-le-mcp) on npm and as `io.github.nolindnaidoo/urls-le` in the [MCP registry](https://registry.modelcontextprotocol.io).
+
+<details>
+<summary><b>Configuring it by hand</b> — any host with an MCP config file</summary>
+
+Most hosts read a JSON config. Add one entry:
+
+```json
+{
+  "mcpServers": {
+    "urls-le": {
+      "command": "npx",
+      "args": ["-y", "urls-le-mcp"]
+    }
+  }
+}
+```
+
+`-y` skips the install prompt on first run. Pin a version if you would rather not track releases — `urls-le-mcp@2.2.1`.
+
+Prefer not to go through `npx` on every launch? Install it once and point at the binary instead:
+
+```bash
+npm install -g urls-le-mcp
+```
+
+```json
+{
+  "mcpServers": {
+    "urls-le": { "command": "urls-le-mcp" }
+  }
+}
+```
+
+It speaks MCP over stdio and needs no environment variables, no API key and no configuration of its own. To check it before wiring it into anything:
+
+```bash
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | npx -y urls-le-mcp
+```
+
+That prints the tool list and exits — if you see `extract_urls`, the server works.
+
+</details>
 
 ## Supported formats
 
@@ -93,6 +160,7 @@ its own.
 ## Privacy & security
 
 - **No network access.** The extension never fetches, validates, or pings the URLs it extracts — it only reads the text of the active document. The `telemetryEnabled` setting writes events to a local Output Channel you can inspect (`URLs-LE Telemetry`); nothing leaves your machine.
+- **The MCP server holds the same line.** It takes content as an argument and returns data: no filesystem access, no network calls, no telemetry. Your agent already has file-read tools, so duplicating them inside the server would add a path-traversal surface for no capability. `check:mcp-bundle` fails the build if the server ever imports something that could reach either.
 - Error notifications redact home directories and credential-shaped fragments.
 
 ## Development
@@ -149,6 +217,8 @@ run. Reproduce with `bun run test:coverage`.
 
 Every tool in the family, one page: **[letools.dev](https://letools.dev)**
 
+All ten also ship as MCP servers — `npx <name>-mcp` gives any agent the same engine.
+
 - **[Paths-LE](https://marketplace.visualstudio.com/items?itemName=nolindnaidoo.paths-le)** - Extract file paths from JS/TS imports, JSON, HTML, CSS, TOML, CSV, and .env
 - **[String-LE](https://marketplace.visualstudio.com/items?itemName=nolindnaidoo.string-le)** - Extract string values for i18n from JSON, YAML, CSV, TOML, INI, and .env
 - **[Numbers-LE](https://marketplace.visualstudio.com/items?itemName=nolindnaidoo.numbers-le)** - Extract numeric values from JSON, YAML, CSV, TOML, INI, and .env
@@ -161,10 +231,12 @@ Every tool in the family, one page: **[letools.dev](https://letools.dev)**
 
 ## Also by nolindnaidoo
 
-**Rust**
+**Rust** — two desktop tools that make up one loop: pixelcoords answers *where*, pixelactions *acts* there.
 
-- **[pixelcoords](https://github.com/nolindnaidoo/pixelcoords)** - Mark pixel-exact coordinates machines can use · [pixelcoords.dev](https://pixelcoords.dev)
-- **[pixelactions](https://github.com/nolindnaidoo/pixelactions)** - Perform the interaction and confirm it landed · [pixelactions.dev](https://pixelactions.dev)
+- **[pixelcoords](https://github.com/nolindnaidoo/pixelcoords)** — Freeze your screen, mark regions, get pixel-exact coordinates and crops
+  [pixelcoords.dev](https://pixelcoords.dev) · [crates.io](https://crates.io/crates/pixelcoords) · [docs.rs](https://docs.rs/pixelcoords)
+- **[pixelactions](https://github.com/nolindnaidoo/pixelactions)** — Consume human-verified coordinates, perform the interaction, confirm it landed
+  [pixelactions.dev](https://pixelactions.dev) · [crates.io](https://crates.io/crates/pixelactions) · [docs.rs](https://docs.rs/pixelactions)
 
 **Contact Developer** — [GitHub](https://github.com/nolindnaidoo) · [LinkedIn](https://www.linkedin.com/in/nolindnaidoo/)
 
