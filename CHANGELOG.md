@@ -68,7 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   second copy of the shared helper, hand-building the same full-document range
   — is gone; there is one implementation again.
 - Guard clauses replace the two remaining `else` blocks (`ui/statusBar.ts`,
-  `extraction/position.ts`), per the fleet standard in `../AGENTS.md`.
+  `extraction/position.ts`), per the code style in `AGENTS.md`.
 
 - Test coverage raised to 87.61% of branches and 95.85% of statements. The
   sort command offers five orderings and only the default was exercised, so
