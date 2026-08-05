@@ -5,6 +5,35 @@ All notable changes to URLs-LE will be documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- An MCP server, shipped inside the VSIX as `dist/mcp-server.js`. It exposes
+  `extract_urls` over stdio, so an agent can pull every URL out of a document
+  with its protocol and 1-based position. The same server is published to npm
+  for hosts outside VS Code.
+
+  It imports the extraction engine and nothing from `vscode` —
+  `check:mcp-bundle` fails the build if that stops being true, because the
+  server has to run in Zed, in Claude Code, and from `npx`.
+
+  The protocol is hand-rolled in `src/mcp/transport.ts`.
+  `@modelcontextprotocol/sdk` was measured first and rejected: 60 packages and
+  5.9 MB against a 66 KB extension bundle, and esbuild could not resolve its
+  subpath exports without marking them external, which would have broken the
+  self-contained-bundle invariant. These tools are pure functions over a
+  string, so the surface needed is five methods over newline-delimited
+  JSON-RPC. The built server is 59 KB. Everything protocol-shaped lives in one
+  file, so adopting the SDK later is a one-file change.
+
+  Two things the boundary fixes rather than the engine, whose behaviour is
+  pinned by goldens: `extractUrls` reports `success: false` for an empty run,
+  which is a true result and not a failure, so the envelope's `ok` is driven by
+  whether a diagnostic is actually an error; and `maxResults` caps output at
+  500 by default, because an unbounded extraction of up to 50,000 URLs would
+  flood an agent's context window.
+
 ## [2.1.0] - 2026-08-05
 
 ### Added

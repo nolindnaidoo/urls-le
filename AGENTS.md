@@ -12,6 +12,11 @@ A VS Code extension that extracts URLs (http/https/ftp/file/mailto/tel) from the
 extension.ts            activate(): createServices() -> registerCommands()
 services/serviceFactory createServices(context) -> { telemetry, notifier, statusBar }
 commands/               one file per command; deps injected as a frozen bag
+mcp/                    MCP server: transport.ts holds the hand-rolled
+                        protocol (one swap seam), tools.ts the tool table,
+                        envelope.ts the normalisation boundary, fileType.ts a
+                        tolerant format resolver. Imports the engine only —
+                        never vscode.
 extraction/extract.ts   dispatcher: languageId -> FileType -> extractor;
                         content-size cap (10MB), URL-count cap (50k), unknown
                         languages return a 'format' error

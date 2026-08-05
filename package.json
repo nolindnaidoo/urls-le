@@ -234,12 +234,15 @@
 		"test:e2e-vsix": "node scripts/e2e-vsix.js",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
-		"vscode:prepublish": "npm run typecheck && npm run build:prod && npm run check:bundle && npm run copy:i18n",
+		"vscode:prepublish": "npm run typecheck && npm run build:prod && npm run build:mcp:prod && npm run check:bundle && npm run check:mcp-bundle && npm run copy:i18n",
 		"package": "node -e \"require('fs').mkdirSync('release',{recursive:true})\" && vsce package --no-dependencies --out release/ && npm run clean:i18n",
 		"publish": "vsce publish",
 		"hooks:install": "node scripts/install-hooks.js",
 		"lint:commits": "node scripts/commit-lint.js --range origin/main..HEAD",
-		"prepare": "node scripts/install-hooks.js"
+		"prepare": "node scripts/install-hooks.js",
+		"build:mcp": "esbuild src/mcp/server.ts --bundle --outfile=dist/mcp-server.js --format=cjs --platform=node --target=node20 --main-fields=module,main --banner:js='#!/usr/bin/env node' --define:__MCP_NAME__=\\\"urls-le\\\" --define:__MCP_VERSION__=\\\"$(node -p \"require('./package.json').version\")\\\" --sourcemap",
+		"build:mcp:prod": "esbuild src/mcp/server.ts --bundle --outfile=dist/mcp-server.js --format=cjs --platform=node --target=node20 --main-fields=module,main --banner:js='#!/usr/bin/env node' --define:__MCP_NAME__=\\\"urls-le\\\" --define:__MCP_VERSION__=\\\"$(node -p \"require('./package.json').version\")\\\" --minify --sourcemap=external",
+		"check:mcp-bundle": "node scripts/check-mcp-bundle.js"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.5.7",
