@@ -5,7 +5,7 @@ All notable changes to URLs-LE will be documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.2.0] - 2026-08-05
+## [2.2.1] - 2026-08-05
 
 ### Changed
 
@@ -33,6 +33,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Nothing is downloaded at runtime: the server is the copy inside the VSIX.
   The registration is skipped on editors that do not implement the API, which
   is not an error — an editor without agent mode is not a broken install.
+
+- The server is on npm as [`urls-le-mcp`](https://www.npmjs.com/package/urls-le-mcp),
+  so `npx urls-le-mcp` gives the same tool to Claude Code, Cursor, Windsurf or
+  anything else that speaks MCP. It is the same build the VSIX carries, and its
+  version is written from this manifest rather than maintained separately —
+  one version number means one build, whichever host it came from.
+
+- A **Zed extension**, under `zed/`. Zed's extension API has no way to read the
+  active buffer or register a command, so the ten LE extensions could never be
+  ported to it in any language; a context server is the surface that fits. The
+  crate is a launcher — it installs `urls-le-mcp` and starts it with Zed's
+  Node — so there is no second implementation to keep in agreement with the
+  goldens.
 
   The protocol is hand-rolled in `src/mcp/transport.ts`.
   `@modelcontextprotocol/sdk` was measured first and rejected: 60 packages and

@@ -39,6 +39,35 @@ if (manifest.version !== root.version) {
 	fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, '\t')}\n`);
 }
 
+// The MCP registry hosts metadata only: it verifies a server by reading
+// `mcpName` out of the published npm package and checking it against the name
+// in server.json. They live in different files, so they are written from one
+// place — and a mismatch discovered after publishing costs a version, because
+// npm will not let the same one be republished.
+const registryPath = path.resolve('server.json');
+const registry = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
+
+if (registry.name !== manifest.mcpName) {
+	console.error(
+		`FAIL: server.json is "${registry.name}" but mcp/package.json mcpName is "${manifest.mcpName}"`,
+	);
+	process.exit(1);
+}
+
+const npmPackage = registry.packages?.find((p) => p.registryType === 'npm');
+if (npmPackage?.identifier !== manifest.name) {
+	console.error(
+		`FAIL: server.json publishes "${npmPackage?.identifier}", expected "${manifest.name}"`,
+	);
+	process.exit(1);
+}
+
+if (registry.version !== root.version || npmPackage.version !== root.version) {
+	registry.version = root.version;
+	npmPackage.version = root.version;
+	fs.writeFileSync(registryPath, `${JSON.stringify(registry, null, '\t')}\n`);
+}
+
 fs.copyFileSync(bundlePath, path.join(packageDir, 'server.js'));
 fs.copyFileSync(path.resolve('LICENSE'), path.join(packageDir, 'LICENSE'));
 

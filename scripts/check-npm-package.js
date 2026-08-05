@@ -46,6 +46,15 @@ if (JSON.stringify(shipped) !== JSON.stringify(expected)) {
 	);
 }
 
+// The registry reads mcpName out of the *published* package, so a missing one
+// is only discovered after the version is spent and cannot be republished.
+if (!manifest.mcpName) {
+	fail(
+		'mcp/package.json has no mcpName',
+		'the MCP registry verifies ownership by reading it from the published package',
+	);
+}
+
 // --- install into a clean project -------------------------------------
 const project = path.join(workspace, 'project');
 fs.mkdirSync(project);

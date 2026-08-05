@@ -1,0 +1,20 @@
+{
+	"$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+	"name": "io.github.nolindnaidoo/urls-le",
+	"description": "Extract URLs from documentation, configuration and code, with their protocol and position.",
+	"repository": {
+		"url": "https://github.com/nolindnaidoo/urls-le",
+		"source": "github"
+	},
+	"version": "2.2.1",
+	"packages": [
+		{
+			"registryType": "npm",
+			"identifier": "urls-le-mcp",
+			"version": "2.2.1",
+			"transport": {
+				"type": "stdio"
+			}
+		}
+	]
+}
