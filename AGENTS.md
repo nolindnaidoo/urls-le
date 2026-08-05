@@ -16,7 +16,9 @@ mcp/                    MCP server: transport.ts holds the hand-rolled
                         protocol (one swap seam), tools.ts the tool table,
                         envelope.ts the normalisation boundary, fileType.ts a
                         tolerant format resolver. Imports the engine only —
-                        never vscode.
+                        never vscode. provider.ts is the one exception: it is
+                        the VS Code side, offering the built server to agent
+                        mode, and is not part of the server bundle.
 extraction/extract.ts   dispatcher: languageId -> FileType -> extractor;
                         content-size cap (10MB), URL-count cap (50k), unknown
                         languages return a 'format' error
@@ -36,6 +38,17 @@ utils/                  errors (sanitizeErrorMessage), safety (size guard +
 config/config.ts        getConfiguration() snapshot; CONFIG_DEFAULTS table
 types.ts                shared types only — no logic
 ```
+
+Outside `src/`, the root **`mcp/`** directory is the npm package `urls-le-mcp`
+— manifest and README only. Its `server.js` and `LICENSE` are build output
+(gitignored), copied by `scripts/build-npm.js` from the same
+`dist/mcp-server.js` the VSIX ships. Do not confuse it with `src/mcp/`, which
+is the source it is built from.
+
+**One server, three distributions.** The VSIX bundles it and registers it with
+agent mode; npm publishes it for `npx` and for Zed's extension shim; the MCP
+registry entry points at the npm package. All three carry the same build, so
+behaviour cannot diverge between hosts.
 
 Conventions: factory functions + `Object.freeze` (no classes), guard clauses, dependency bags typed inline at the consumer — see **Code style** below. Both the manifest and the runtime strings are localized into 12 locales; see **Toolchain**.
 
@@ -205,6 +218,9 @@ most valuable line in the file, and it is what keeps the next person from
 - **nls catalogues stay in key-parity:** all 12 locale files carry exactly the keys of `package.nls.json`.
 - **URL patterns live in one place** (`extraction/heuristics.ts`). Never re-declare the protocol regexes inside a format extractor — that is exactly how v1 ended up labeling http URLs as https in three formats.
 - **All commands notify through the notifier**, so `notificationsLevel` applies uniformly; errors always show.
+- **The MCP server must never reference `vscode`.** It runs in Zed, in Claude Code and from `npx`, where the import would fail in a user's session rather than in CI. `scripts/check-mcp-bundle.js` fails the build on any non-builtin require, holds the bundle under a 600 KB ceiling, and completes a real stdio handshake asserting extracted values — the SDK was rejected at 5.9 MB and without a ceiling that decision quietly rots.
+- **Launching the server needs `ELECTRON_RUN_AS_NODE=1`.** In the extension host `process.execPath` is the editor binary, so without it the definition starts a second editor and fails silently. `scripts/e2e-vsix.js` spawns the installed server exactly as `provider.ts` does and asserts it answers.
+- **Manifest placeholders are checked across every contribution point**, not just command titles. A `%key%` with no catalogue entry reaches the user as literal text; the gate in `test/integration/l10n.test.ts` walks the whole `contributes` tree.
 
 ## Toolchain
 
@@ -214,7 +230,8 @@ most valuable line in the file, and it is what keeps the next person from
 - **Integration tests:** `bun run test:integration` — `@vscode/test-cli` launches a real VS Code (config in `.vscode-test.mjs`, tests compiled via `tsconfig.it.json` to `out-test/`). That project targets `node16` module resolution; TypeScript 7 removed `node10`, which `"Node"` resolved to.
 - **Installed-VSIX tests:** `bun run test:e2e-vsix` installs the built `.vsix` into a clean VS Code profile and drives it. This is the only test that exercises the artifact users receive, and it runs in CI.
 - **Lint/format:** Biome (tabs, single quotes). `__fixtures__`/`__snapshots__` are exempt — formatting fixtures would corrupt goldens. `biome.json` is byte-identical across all ten repos; change it in one and copy it to the rest.
-- **Packaging:** `bun run package` → `release/*.vsix`. `.vscodeignore` is an allow-list; the VSIX is 33 files. Packaging uses `--no-dependencies`: the bundle is self-contained, so walking the npm tree served no purpose and broke after any dependency change.
+- **Packaging:** `bun run package` → `release/*.vsix`. `.vscodeignore` is an allow-list; the VSIX is 34 files. Packaging uses `--no-dependencies`: the bundle is self-contained, so walking the npm tree served no purpose and broke after any dependency change.
+- **npm package:** `bun run build:npm` assembles `mcp/` and writes its version from the root manifest, so the two can never claim the same version while carrying different code. `bun run check:npm-package` packs it, installs the tarball into a throwaway project and drives the *installed* binary through a handshake — which is what `npx` does, minus the registry. Run it before publishing: a version cannot be reused, and the unpublish window is 72 hours.
 - **Localization:** two separate mechanisms. The 12 `package.nls.*.json` catalogues in `src/i18n/` localize **manifest** strings (VS Code `%key%` substitution) and are copied to the package root at prepublish, then removed by `clean:i18n`. The 12 `l10n/bundle.l10n.*.json` catalogues localize **runtime** strings via `vscode.l10n.t()`, enabled by `"l10n": "./l10n"` in package.json. They fail independently: a working manifest says nothing about the runtime bundles. The rules that keep both correct are under **Code style** above.
 
 ## Generated documentation
@@ -288,6 +305,8 @@ push are checked, so history predating the gate is left alone.
 5. Dispatch the `Release` workflow. It takes two independent opt-ins — `marketplace` (default **on**) and `openvsx` (default **off**) — because a version cannot be republished, so a run that publishes one registry and fails on the other is only recoverable by re-running with the failed target alone. It validates credentials before doing anything irreversible.
 
 **Open VSX defaults off deliberately.** `ovsx publish` takes no namespace argument; it derives the namespace from `publisher` in the VSIX. Enabling it publishes to whatever `package.json` currently names, with no confirmation.
+
+**The npm package ships from the same tag**, via `bun run publish:npm` (build → assemble → gate → `npm publish ./mcp --access public`). Order matters beyond this repo: npm must be published *before* any Zed registry PR merges, because Zed's shim resolves the package at runtime — a merged extension pointing at an unpublished version is broken for everyone who installs it.
 
 ## Known limitations (documented, not bugs)
 

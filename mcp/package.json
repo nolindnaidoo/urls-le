@@ -1,0 +1,36 @@
+{
+	"name": "urls-le-mcp",
+	"version": "2.1.0",
+	"description": "MCP server that extracts URLs from documentation, config and code — the engine behind the URLs-LE editor extension.",
+	"keywords": [
+		"mcp",
+		"modelcontextprotocol",
+		"model-context-protocol",
+		"url",
+		"urls",
+		"extract",
+		"urls-le"
+	],
+	"license": "MIT",
+	"author": {
+		"name": "nolindnaidoo",
+		"url": "https://github.com/nolindnaidoo"
+	},
+	"homepage": "https://letools.dev",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/nolindnaidoo/urls-le.git",
+		"directory": "mcp"
+	},
+	"bugs": {
+		"url": "https://github.com/nolindnaidoo/urls-le/issues"
+	},
+	"type": "commonjs",
+	"bin": {
+		"urls-le-mcp": "server.js"
+	},
+	"files": ["server.js", "README.md", "LICENSE"],
+	"engines": {
+		"node": ">=20"
+	}
+}

@@ -112,3 +112,5 @@ release/
 src/extraction/__performance__/
 out-test/
 benchmark-results.json
+mcp/server.js
+mcp/LICENSE
