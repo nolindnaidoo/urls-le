@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **VS Code 1.101 is now the minimum.** `engines.vscode` moves from `^1.90.0`
+  to `^1.101.0` and `@types/vscode` is pinned exactly to the new floor, per the
+  rule that the declared floor and the type surface must match. 1.101 is the
+  first stable release carrying `registerMcpServerDefinitionProvider`, which
+  the MCP integration needs — declaring the contribution point against an older
+  floor would be a claim the code could not honour. Cursor and VSCodium track
+  well past this; Cursor 3.6.21 reports 1.105.1.
+
 ### Added
 
 - An MCP server, shipped inside the VSIX as `dist/mcp-server.js`. It exposes
