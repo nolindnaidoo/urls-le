@@ -240,8 +240,8 @@
 		"hooks:install": "node scripts/install-hooks.js",
 		"lint:commits": "node scripts/commit-lint.js --range origin/main..HEAD",
 		"prepare": "node scripts/install-hooks.js",
-		"build:mcp": "esbuild src/mcp/server.ts --bundle --outfile=dist/mcp-server.js --format=cjs --platform=node --target=node20 --main-fields=module,main --banner:js='#!/usr/bin/env node' --define:__MCP_NAME__=\\\"urls-le\\\" --define:__MCP_VERSION__=\\\"$(node -p \"require('./package.json').version\")\\\" --sourcemap",
-		"build:mcp:prod": "esbuild src/mcp/server.ts --bundle --outfile=dist/mcp-server.js --format=cjs --platform=node --target=node20 --main-fields=module,main --banner:js='#!/usr/bin/env node' --define:__MCP_NAME__=\\\"urls-le\\\" --define:__MCP_VERSION__=\\\"$(node -p \"require('./package.json').version\")\\\" --minify --sourcemap=external",
+		"build:mcp": "node scripts/build-mcp.js",
+		"build:mcp:prod": "node scripts/build-mcp.js --prod",
 		"check:mcp-bundle": "node scripts/check-mcp-bundle.js"
 	},
 	"devDependencies": {
