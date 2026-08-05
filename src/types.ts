@@ -1,3 +1,14 @@
+/**
+ * The one thing extraction needs from a cancellation token.
+ *
+ * Declared structurally rather than importing `vscode.CancellationToken`, so
+ * the extraction engine has no dependency on the editor at all — a real token
+ * satisfies this shape, and the engine can run anywhere a string can.
+ */
+export interface CancellationSignal {
+	readonly isCancellationRequested: boolean;
+}
+
 export interface ExtractionResult {
 	readonly success: boolean;
 	readonly urls: readonly Url[];

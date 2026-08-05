@@ -1,5 +1,5 @@
-import type * as vscode from 'vscode';
 import type {
+	CancellationSignal,
 	ExtractionError,
 	ExtractionResult,
 	FileType,
@@ -22,7 +22,7 @@ const MAX_URL_COUNT = 50_000;
 export async function extractUrls(
 	content: string,
 	languageId: string,
-	cancellationToken?: vscode.CancellationToken,
+	cancellationToken?: CancellationSignal,
 ): Promise<ExtractionResult> {
 	// Fail fast: Check cancellation
 	if (cancellationToken?.isCancellationRequested) {

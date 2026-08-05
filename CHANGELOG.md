@@ -61,6 +61,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The extraction engine no longer imports `vscode`. It used the type
+  `vscode.CancellationToken` for one property, so the parameter is now a
+  structural `CancellationSignal` that a real token satisfies. Nothing about
+  the extension changes; the engine can now run anywhere a string can, which
+  is what a port to another editor — or an MCP server, or a CLI — would need.
+
 - `commands/extract.ts` no longer holds orchestration, output routing,
   clipboard handling and error mapping in one 354-line file. Routing moved to
   `commands/output.ts` and the clipboard to `utils/clipboard.ts`, leaving the
