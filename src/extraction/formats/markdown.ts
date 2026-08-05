@@ -8,7 +8,7 @@ import { createPositionIndex } from '../position';
  * scan — the URL inside [text](url) or <url> is matched at its real
  * offset. Relative link targets are not URLs and are never extracted.
  */
-export function extractFromMarkdown(content: string): Url[] {
+export function extractFromMarkdown(content: string): readonly Url[] {
 	const lines = content.split('\n');
 	const fencedLines = computeFencedLines(lines);
 	const toPosition = createPositionIndex(content);

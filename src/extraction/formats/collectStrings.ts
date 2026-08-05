@@ -4,7 +4,7 @@
  * Shared by the TOML and INI extractors, which parse into the same shape of
  * nested plain objects and arrays and each carried an identical copy.
  */
-export function collectStrings(node: unknown): string[] {
+export function collectStrings(node: unknown): readonly string[] {
 	if (typeof node === 'string') {
 		return [node];
 	}

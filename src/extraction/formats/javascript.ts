@@ -6,6 +6,6 @@ import { scanUrls, toUrls } from '../heuristics';
  * literals (multi-line included), and comments all contribute — a URL
  * in a comment is still a URL in the file.
  */
-export function extractFromJavaScript(content: string): Url[] {
+export function extractFromJavaScript(content: string): readonly Url[] {
 	return toUrls(content, scanUrls(content));
 }

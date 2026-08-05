@@ -63,7 +63,7 @@ export interface UrlMatch {
  * Scan text for every URL occurrence, in document order. `base` shifts
  * reported offsets when `text` is a slice of a larger document.
  */
-export function scanUrls(text: string, base = 0): UrlMatch[] {
+export function scanUrls(text: string, base = 0): readonly UrlMatch[] {
 	const matches: UrlMatch[] = [];
 	const claimed = new Set<number>();
 
@@ -100,7 +100,10 @@ function isWellFormed(value: string): boolean {
  * line/column, attach the trimmed source line as context, and enrich
  * with domain/path where the value parses as a URL.
  */
-export function toUrls(content: string, matches: readonly UrlMatch[]): Url[] {
+export function toUrls(
+	content: string,
+	matches: readonly UrlMatch[],
+): readonly Url[] {
 	const toPosition = createPositionIndex(content);
 	const lines = content.split('\n');
 
@@ -153,7 +156,9 @@ export function locateParsedValues(
 }
 
 /** Url objects for matches that could not be located in the source. */
-export function toUnpositionedUrls(matches: readonly UrlMatch[]): Url[] {
+export function toUnpositionedUrls(
+	matches: readonly UrlMatch[],
+): readonly Url[] {
 	return matches.map((match) => {
 		const components = extractUrlComponents(match.value);
 		return Object.freeze({

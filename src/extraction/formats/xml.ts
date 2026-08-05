@@ -7,6 +7,6 @@ import { scanUrls, toUrls } from '../heuristics';
  * emitted attribute URLs twice; a single scan reports each occurrence
  * once, at its real offset.
  */
-export function extractFromXml(content: string): Url[] {
+export function extractFromXml(content: string): readonly Url[] {
 	return toUrls(content, scanUrls(content));
 }

@@ -7,7 +7,7 @@ import { createPositionIndex } from '../position';
  * Multi-line values with backslash continuation are ordinary lines to
  * the scanner, so their URLs extract with real positions.
  */
-export function extractFromProperties(content: string): Url[] {
+export function extractFromProperties(content: string): readonly Url[] {
 	const lines = content.split('\n');
 	const toPosition = createPositionIndex(content);
 

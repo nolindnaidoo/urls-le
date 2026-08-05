@@ -9,7 +9,7 @@ import { scanUrls, toUrls } from '../heuristics';
  * misses while treating http URLs as https. Escaped URL forms
  * (https:\/\/...) do not match, exactly as before.
  */
-export function extractFromJson(content: string): Url[] {
+export function extractFromJson(content: string): readonly Url[] {
 	const scanner = createScanner(content, false);
 	const matches = [];
 

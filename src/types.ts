@@ -1,8 +1,8 @@
 export interface ExtractionResult {
-	success: boolean;
-	urls: readonly Url[];
-	errors: readonly ExtractionError[];
-	fileType?: FileType;
+	readonly success: boolean;
+	readonly urls: readonly Url[];
+	readonly errors: readonly ExtractionError[];
+	readonly fileType?: FileType;
 }
 
 export interface ExtractionError {

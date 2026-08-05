@@ -14,7 +14,7 @@ import { collectStrings } from './collectStrings';
  * this path. Comment lines (; or #) never contribute (the parser drops
  * them). On a parse error the whole content is scanned instead.
  */
-export function extractFromIni(content: string): Url[] {
+export function extractFromIni(content: string): readonly Url[] {
 	try {
 		const parsed = ini.parse(content);
 		const strings = collectStrings(parsed);

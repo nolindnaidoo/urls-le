@@ -6,6 +6,6 @@ import { scanUrls, toUrls } from '../heuristics';
  * commented-out line is still discoverable). Protocols are real; v1.x
  * labeled every http URL 'https'.
  */
-export function extractFromYaml(content: string): Url[] {
+export function extractFromYaml(content: string): readonly Url[] {
 	return toUrls(content, scanUrls(content));
 }

@@ -9,7 +9,7 @@ import { scanUrls, toUrls } from '../heuristics';
  */
 const COMMENT_PATTERN = /<!--[\s\S]*?(?:-->|$)/g;
 
-export function extractFromHtml(content: string): Url[] {
+export function extractFromHtml(content: string): readonly Url[] {
 	const commentSpans = computeCommentSpans(content);
 
 	const matches = scanUrls(content).filter(

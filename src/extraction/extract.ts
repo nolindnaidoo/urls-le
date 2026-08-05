@@ -82,7 +82,9 @@ function extractUrlsByFileType(
 	return { urls, errors };
 }
 
-function selectExtractor(fileType: FileType): (content: string) => Url[] {
+function selectExtractor(
+	fileType: FileType,
+): (content: string) => readonly Url[] {
 	switch (fileType) {
 		case 'markdown':
 			return extractFromMarkdown;

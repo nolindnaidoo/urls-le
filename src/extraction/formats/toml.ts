@@ -15,7 +15,7 @@ import { collectStrings } from './collectStrings';
  * contribute (the parser drops them). On a parse error the whole
  * content is scanned instead, now with positions.
  */
-export function extractFromToml(content: string): Url[] {
+export function extractFromToml(content: string): readonly Url[] {
 	try {
 		const parsed = toml.parse(content);
 		const strings = collectStrings(parsed);
