@@ -19,5 +19,6 @@
 	"manifest.settings.safety.warn.large-output.desc": "Vor der Extraktion warnen, wenn die Zeilenanzahl des Dokuments diesen Schwellenwert überschreitet",
 	"manifest.settings.statusbar.enabled.desc": "URLs-LE-Statusleisten-Eintrag für schnellen Zugriff anzeigen",
 	"manifest.settings.telemetry.desc": "Nur lokale Telemetrieprotokolle im Ausgabefenster aktivieren",
-	"manifest.settings.title": "URLs-LE-Einstellungen"
+	"manifest.settings.title": "URLs-LE-Einstellungen",
+	"manifest.mcp.label": "URLs-LE – Tools zur URL-Extraktion für den Agent-Modus"
 }

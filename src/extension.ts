@@ -1,6 +1,7 @@
 import type * as vscode from 'vscode';
 import { registerCommands } from './commands';
 import { registerOpenSettingsCommand } from './config/settings';
+import { registerMcpProvider } from './mcp/provider';
 import { createServices } from './services/serviceFactory';
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -16,6 +17,10 @@ export function activate(context: vscode.ExtensionContext): void {
 
 	// Register settings command
 	registerOpenSettingsCommand(context, services.telemetry);
+
+	// Offer the bundled MCP server to agent mode. Returns undefined on hosts
+	// without the API, which is not an error.
+	registerMcpProvider(context);
 
 	services.telemetry.event('extension-activated');
 }

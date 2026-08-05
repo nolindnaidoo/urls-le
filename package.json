@@ -212,7 +212,13 @@
 					"description": "%manifest.settings.telemetry.desc%"
 				}
 			}
-		}
+		},
+		"mcpServerDefinitionProviders": [
+			{
+				"id": "urls-le",
+				"label": "%manifest.mcp.label%"
+			}
+		]
 	},
 	"scripts": {
 		"clean": "node -e \"const fs=require('fs');['dist','coverage','release'].forEach(d=>fs.rmSync(d,{recursive:true,force:true}))\"",

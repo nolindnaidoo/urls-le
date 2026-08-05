@@ -19,5 +19,6 @@
 	"manifest.settings.safety.warn.large-output.desc": "Advertir antes de extraer cuando el número de líneas del documento supere este umbral",
 	"manifest.settings.statusbar.enabled.desc": "Mostrar la entrada de la barra de estado de URL-LE para un acceso rápido.",
 	"manifest.settings.telemetry.desc": "Habilitar los registros de telemetría solo locales en el panel de salida.",
-	"manifest.settings.title": "Configuración de URLs-LE"
+	"manifest.settings.title": "Configuración de URLs-LE",
+	"manifest.mcp.label": "URLs-LE: herramientas de extracción de URL para el modo agente"
 }

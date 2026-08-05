@@ -19,5 +19,6 @@
 	"manifest.settings.safety.warn.large-output.desc": "Cảnh báo trước khi trích xuất khi số dòng của tài liệu vượt quá ngưỡng này",
 	"manifest.settings.statusbar.enabled.desc": "Hiển thị mục trạng thái URLs-LE trên thanh trạng thái để truy cập nhanh",
 	"manifest.settings.telemetry.desc": "Bật nhật ký telemetry chỉ cục bộ vào bảng điều khiển Output",
-	"manifest.settings.title": "Cài đặt URLs-LE"
+	"manifest.settings.title": "Cài đặt URLs-LE",
+	"manifest.mcp.label": "URLs-LE – Công cụ trích xuất URL cho chế độ tác nhân"
 }

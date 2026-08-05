@@ -19,5 +19,6 @@
 	"manifest.settings.safety.warn.large-output.desc": "Warn before extracting when the document's line count exceeds this threshold",
 	"manifest.settings.statusbar.enabled.desc": "Show URLs-LE status bar entry for quick access",
 	"manifest.settings.telemetry.desc": "Enable local-only telemetry logs to the Output panel",
-	"manifest.settings.title": "URLs-LE Settings"
+	"manifest.settings.title": "URLs-LE Settings",
+	"manifest.mcp.label": "URLs-LE URL extraction tools for agent mode"
 }

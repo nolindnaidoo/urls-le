@@ -28,6 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `check:mcp-bundle` fails the build if that stops being true, because the
   server has to run in Zed, in Claude Code, and from `npx`.
 
+- The extension now offers that server to VS Code's agent mode, so installing
+  it adds `extract_urls` to the agent's tools alongside the existing commands.
+  Nothing is downloaded at runtime: the server is the copy inside the VSIX.
+  The registration is skipped on editors that do not implement the API, which
+  is not an error — an editor without agent mode is not a broken install.
+
   The protocol is hand-rolled in `src/mcp/transport.ts`.
   `@modelcontextprotocol/sdk` was measured first and rejected: 60 packages and
   5.9 MB against a 66 KB extension bundle, and esbuild could not resolve its

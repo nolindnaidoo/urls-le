@@ -19,5 +19,6 @@
 	"manifest.settings.safety.warn.large-output.desc": "ドキュメントの行数がこのしきい値を超えた場合は抽出前に警告します",
 	"manifest.settings.statusbar.enabled.desc": "URL-LEステータスバー項目を表示（クイックアクセス用）",
 	"manifest.settings.telemetry.desc": "出力パネルへのローカル専用テレメトリログを有効化",
-	"manifest.settings.title": "URLs-LE設定"
+	"manifest.settings.title": "URLs-LE設定",
+	"manifest.mcp.label": "URLs-LE：エージェントモード用のURL抽出ツール"
 }

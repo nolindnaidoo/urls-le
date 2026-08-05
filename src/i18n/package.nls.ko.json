@@ -19,5 +19,6 @@
 	"manifest.settings.safety.warn.large-output.desc": "문서의 줄 수가 이 임계값을 초과하면 추출 전에 경고합니다",
 	"manifest.settings.statusbar.enabled.desc": "빠른 접근을 위한 URL-LE 상태 표시줄 항목 표시",
 	"manifest.settings.telemetry.desc": "출력 패널에 로컬 전용 텔레메트리 로그 활성화",
-	"manifest.settings.title": "URLs-LE 설정"
+	"manifest.settings.title": "URLs-LE 설정",
+	"manifest.mcp.label": "URLs-LE: 에이전트 모드용 URL 추출 도구"
 }

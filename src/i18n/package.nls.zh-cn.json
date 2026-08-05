@@ -19,5 +19,6 @@
 	"manifest.settings.safety.warn.large-output.desc": "当文档行数超过此阈值时在提取前发出警告",
 	"manifest.settings.statusbar.enabled.desc": "显示URL-LE状态栏入口以便快速访问",
 	"manifest.settings.telemetry.desc": "启用仅本地遥测日志至输出面板",
-	"manifest.settings.title": "URLs-LE设置"
+	"manifest.settings.title": "URLs-LE设置",
+	"manifest.mcp.label": "URLs-LE 适用于代理模式的 URL 提取工具"
 }
