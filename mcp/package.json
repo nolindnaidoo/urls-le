@@ -1,6 +1,6 @@
 {
 	"name": "urls-le-mcp",
-	"version": "2.1.0",
+	"version": "2.2.0",
 	"description": "MCP server that extracts URLs from documentation, config and code — the engine behind the URLs-LE editor extension.",
 	"keywords": [
 		"mcp",
@@ -29,7 +29,11 @@
 	"bin": {
 		"urls-le-mcp": "server.js"
 	},
-	"files": ["server.js", "README.md", "LICENSE"],
+	"files": [
+		"server.js",
+		"README.md",
+		"LICENSE"
+	],
 	"engines": {
 		"node": ">=20"
 	}
