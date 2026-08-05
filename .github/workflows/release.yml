@@ -186,3 +186,25 @@ jobs:
 
       - name: Publish to npm
         run: npm publish ./mcp --access public
+
+      # The registry hosts metadata pointing at the npm package, so it can only
+      # be correct once that version exists. Same OIDC identity as the publish
+      # above — no registry credential either.
+      #
+      # Pinned by version AND checksum: this is a binary fetched over the
+      # network into a job that holds an identity token, and `latest` would
+      # make that whatever was released this morning.
+      - name: Publish to the MCP registry
+        env:
+          PUBLISHER_VERSION: v1.8.0
+          PUBLISHER_SHA256: 1370446bbe74d562608e8005a6ccce02d146a661fbd78674e11cc70b9618d6cf
+        run: |
+          url="https://github.com/modelcontextprotocol/registry/releases/download/${PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz"
+          curl -fsSL "$url" -o publisher.tar.gz
+          echo "${PUBLISHER_SHA256}  publisher.tar.gz" | sha256sum --check --status || {
+            echo "::error::mcp-publisher checksum mismatch — refusing to run it."
+            exit 1
+          }
+          tar xzf publisher.tar.gz mcp-publisher
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish
