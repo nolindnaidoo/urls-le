@@ -20,8 +20,19 @@ import type { ToolDefinition } from './transport';
  *
  * No tool touches the filesystem. The agent already has file-read tools;
  * duplicating them here would add a path-traversal surface for no capability.
+ *
+ * **The description is the API.** A model reads it to decide whether to call
+ * this tool at all, so it names the formats explicitly rather than saying
+ * "many formats" — a model cannot reason about a vague claim, and the cost of
+ * that vagueness is either a call that returns nothing or a tool that is never
+ * tried. The same reasoning governs argument descriptions: each says what the
+ * value does, not what type it is, because the type is already in the schema.
  */
 
+// Advertised in the schema with its default visible, rather than silently
+// enforced. A model that can see the cap can raise it when it genuinely needs
+// more, and can read `meta.truncated` to know it should. A hidden cap just
+// produces quietly incomplete answers.
 const MAX_RESULTS_SCHEMA = {
 	type: 'integer',
 	minimum: 1,
@@ -55,6 +66,12 @@ async function extract(args: Record<string, unknown>): Promise<unknown> {
 		column: u.position?.column,
 	}));
 
+	// Dedupe is opt-in, and deliberately so. Two occurrences of the same URL is
+	// a fact about the document — it is exactly what a link audit counts — and
+	// collapsing them by default would silently discard that with no way for the
+	// caller to know it happened. Keeping first occurrence rather than last
+	// preserves document order, so positions stay ascending and a model can
+	// still reason about where in the file something appeared.
 	const deduped =
 		args.dedupe === true
 			? values.filter(
@@ -62,6 +79,9 @@ async function extract(args: Record<string, unknown>): Promise<unknown> {
 				)
 			: values;
 
+	// Capped after dedupe, not before: capping first would return 500 rows that
+	// collapse to 30, which is neither the first 500 unique URLs nor an honest
+	// truncation.
 	const { items, truncated } = capped(deduped, maxResults);
 
 	return envelope(
