@@ -1,0 +1,1024 @@
+{
+	"documents": [
+		{
+			"name": "broken.toml as toml",
+			"file": "broken.toml",
+			"languageId": "toml",
+			"success": true,
+			"errors": [],
+			"expected": [
+				{
+					"value": "https://fallback.example.com/after-parse-error",
+					"protocol": "https",
+					"domain": "fallback.example.com",
+					"path": "/after-parse-error",
+					"line": 2,
+					"column": 13,
+					"context": "homepage = \"https://fallback.example.com/after-parse-error\""
+				},
+				{
+					"value": "http://fallback-docs.example.com",
+					"protocol": "http",
+					"domain": "fallback-docs.example.com",
+					"path": "/",
+					"line": 3,
+					"column": 9,
+					"context": "docs = \"http://fallback-docs.example.com\""
+				}
+			]
+		},
+		{
+			"name": "urls.css as css",
+			"file": "urls.css",
+			"languageId": "css",
+			"success": true,
+			"errors": [],
+			"expected": [
+				{
+					"value": "https://fonts.example.com/css?family=Inter",
+					"protocol": "https",
+					"domain": "fonts.example.com",
+					"path": "/css?family=Inter",
+					"line": 1,
+					"column": 14,
+					"context": "@import url(\"https://fonts.example.com/css?family=Inter\");"
+				},
+				{
+					"value": "http://images.example.com/hero.jpg",
+					"protocol": "http",
+					"domain": "images.example.com",
+					"path": "/hero.jpg",
+					"line": 4,
+					"column": 26,
+					"context": "background-image: url(\"http://images.example.com/hero.jpg\");"
+				},
+				{
+					"value": "ftp://assets.example.com/icons/star.svg",
+					"protocol": "ftp",
+					"domain": "assets.example.com",
+					"path": "/icons/star.svg",
+					"line": 8,
+					"column": 20,
+					"context": "background: url(\"ftp://assets.example.com/icons/star.svg\");"
+				},
+				{
+					"value": "file:///opt/fonts/custom.woff2",
+					"protocol": "file",
+					"domain": null,
+					"path": "/opt/fonts/custom.woff2",
+					"line": 12,
+					"column": 13,
+					"context": "src: url(\"file:///opt/fonts/custom.woff2\");"
+				}
+			]
+		},
+		{
+			"name": "urls.html as html",
+			"file": "urls.html",
+			"languageId": "html",
+			"success": true,
+			"errors": [],
+			"expected": [
+				{
+					"value": "https://cdn.example.com/style.css",
+					"protocol": "https",
+					"domain": "cdn.example.com",
+					"path": "/style.css",
+					"line": 4,
+					"column": 17,
+					"context": "<link href=\"https://cdn.example.com/style.css\" rel=\"stylesheet\" />"
+				},
+				{
+					"value": "http://scripts.example.com/app.js",
+					"protocol": "http",
+					"domain": "scripts.example.com",
+					"path": "/app.js",
+					"line": 5,
+					"column": 18,
+					"context": "<script src=\"http://scripts.example.com/app.js\"></script>"
+				},
+				{
+					"value": "https://example.com/docs",
+					"protocol": "https",
+					"domain": "example.com",
+					"path": "/docs",
+					"line": 8,
+					"column": 14,
+					"context": "<a href=\"https://example.com/docs\">Docs</a>"
+				},
+				{
+					"value": "https://forms.example.com/submit",
+					"protocol": "https",
+					"domain": "forms.example.com",
+					"path": "/submit",
+					"line": 10,
+					"column": 19,
+					"context": "<form action=\"https://forms.example.com/submit\"></form>"
+				},
+				{
+					"value": "https://images.example.com/logo.png",
+					"protocol": "https",
+					"domain": "images.example.com",
+					"path": "/logo.png",
+					"line": 11,
+					"column": 15,
+					"context": "<img src=\"https://images.example.com/logo.png\" />"
+				},
+				{
+					"value": "https://example.com/docs",
+					"protocol": "https",
+					"domain": "example.com",
+					"path": "/docs",
+					"line": 13,
+					"column": 14,
+					"context": "<p>Visit https://example.com/docs for details, or ftp://ftp.example.com/pub</p>"
+				},
+				{
+					"value": "ftp://ftp.example.com/pub",
+					"protocol": "ftp",
+					"domain": "ftp.example.com",
+					"path": "/pub",
+					"line": 13,
+					"column": 55,
+					"context": "<p>Visit https://example.com/docs for details, or ftp://ftp.example.com/pub</p>"
+				},
+				{
+					"value": "mailto:info@example.com",
+					"protocol": "mailto",
+					"domain": null,
+					"path": "info@example.com",
+					"line": 14,
+					"column": 17,
+					"context": "<p>Write to mailto:info@example.com or call tel:+15559876543</p>"
+				},
+				{
+					"value": "tel:+15559876543",
+					"protocol": "tel",
+					"domain": null,
+					"path": "+15559876543",
+					"line": 14,
+					"column": 49,
+					"context": "<p>Write to mailto:info@example.com or call tel:+15559876543</p>"
+				}
+			]
+		},
+		{
+			"name": "urls.ini as ini",
+			"file": "urls.ini",
+			"languageId": "ini",
+			"success": true,
+			"errors": [],
+			"expected": [
+				{
+					"value": "https://example.com",
+					"protocol": "https",
+					"domain": "example.com",
+					"path": "/",
+					"line": 2,
+					"column": 12,
+					"context": "homepage = https://example.com"
+				},
+				{
+					"value": "https://api.example.com/v1",
+					"protocol": "https",
+					"domain": "api.example.com",
+					"path": "/v1",
+					"line": 5,
+					"column": 12,
+					"context": "endpoint = https://api.example.com/v1"
+				},
+				{
+					"value": "http://legacy.example.com/api",
+					"protocol": "http",
+					"domain": "legacy.example.com",
+					"path": "/api",
+					"line": 6,
+					"column": 10,
+					"context": "legacy = http://legacy.example.com/api"
+				},
+				{
+					"value": "mailto:help@example.com",
+					"protocol": "mailto",
+					"domain": null,
+					"path": "help@example.com",
+					"line": 9,
+					"column": 9,
+					"context": "email = mailto:help@example.com"
+				},
+				{
+					"value": "ftp://mirror.example.com/pub",
+					"protocol": "ftp",
+					"domain": "mirror.example.com",
+					"path": "/pub",
+					"line": 10,
+					"column": 10,
+					"context": "mirror = ftp://mirror.example.com/pub"
+				}
+			]
+		},
+		{
+			"name": "urls.js as javascript",
+			"file": "urls.js",
+			"languageId": "javascript",
+			"success": true,
+			"errors": [],
+			"expected": [
+				{
+					"value": "https://api.example.com/v1",
+					"protocol": "https",
+					"domain": "api.example.com",
+					"path": "/v1",
+					"line": 1,
+					"column": 14,
+					"context": "const api = 'https://api.example.com/v1';"
+				},
+				{
+					"value": "http://legacy.example.com/endpoint",
+					"protocol": "http",
+					"domain": "legacy.example.com",
+					"path": "/endpoint",
+					"line": 2,
+					"column": 19,
+					"context": "const insecure = 'http://legacy.example.com/endpoint';"
+				},
+				{
+					"value": "https://tpl.example.com/$",
+					"protocol": "https",
+					"domain": "tpl.example.com",
+					"path": "/$",
+					"line": 4,
+					"column": 14,
+					"context": "const tpl = `https://tpl.example.com/${'id'}`;"
+				},
+				{
+					"value": "https://comment.example.com/docs",
+					"protocol": "https",
+					"domain": "comment.example.com",
+					"path": "/docs",
+					"line": 5,
+					"column": 8,
+					"context": "// See https://comment.example.com/docs for details"
+				},
+				{
+					"value": "mailto:dev@example.com",
+					"protocol": "mailto",
+					"domain": null,
+					"path": "dev@example.com",
+					"line": 6,
+					"column": 15,
+					"context": "const mail = 'mailto:dev@example.com';"
+				},
+				{
+					"value": "tel:+15550001111",
+					"protocol": "tel",
+					"domain": null,
+					"path": "+15550001111",
+					"line": 7,
+					"column": 16,
+					"context": "const phone = 'tel:+15550001111';"
+				},
+				{
+					"value": "ftp://mirror.example.com/iso",
+					"protocol": "ftp",
+					"domain": "mirror.example.com",
+					"path": "/iso",
+					"line": 8,
+					"column": 20,
+					"context": "const ftpMirror = 'ftp://mirror.example.com/iso';"
+				},
+				{
+					"value": "https://api.example.com/v1",
+					"protocol": "https",
+					"domain": "api.example.com",
+					"path": "/v1",
+					"line": 9,
+					"column": 15,
+					"context": "const dupe = 'https://api.example.com/v1';"
+				},
+				{
+					"value": "https://multiline.example.com/inside-template",
+					"protocol": "https",
+					"domain": "multiline.example.com",
+					"path": "/inside-template",
+					"line": 11,
+					"column": 3,
+					"context": "https://multiline.example.com/inside-template"
+				}
+			]
+		},
+		{
+			"name": "urls.json as json",
+			"file": "urls.json",
+			"languageId": "json",
+			"success": true,
+			"errors": [],
+			"expected": [
+				{
+					"value": "https://example.com",
+					"protocol": "https",
+					"domain": "example.com",
+					"path": "/",
+					"line": 2,
+					"column": 16,
+					"context": "\"homepage\": \"https://example.com\","
+				},
+				{
+					"value": "http://legacy.example.com/api",
+					"protocol": "http",
+					"domain": "legacy.example.com",
+					"path": "/api",
+					"line": 3,
+					"column": 16,
+					"context": "\"insecure\": \"http://legacy.example.com/api\","
+				},
+				{
+					"value": "https://github.com/example/repo.git",
+					"protocol": "https",
+					"domain": "github.com",
+					"path": "/example/repo.git",
+					"line": 5,
+					"column": 13,
+					"context": "\"url\": \"https://github.com/example/repo.git\""
+				},
+				{
+					"value": "https://mirror-a.example.com",
+					"protocol": "https",
+					"domain": "mirror-a.example.com",
+					"path": "/",
+					"line": 8,
+					"column": 6,
+					"context": "\"https://mirror-a.example.com\","
+				},
+				{
+					"value": "https://mirror-a.example.com",
+					"protocol": "https",
+					"domain": "mirror-a.example.com",
+					"path": "/",
+					"line": 9,
+					"column": 6,
+					"context": "\"https://mirror-a.example.com\""
+				},
+				{
+					"value": "mailto:team@example.com",
+					"protocol": "mailto",
+					"domain": null,
+					"path": "team@example.com",
+					"line": 11,
+					"column": 15,
+					"context": "\"contact\": \"mailto:team@example.com\","
+				},
+				{
+					"value": "tel:+15551230000",
+					"protocol": "tel",
+					"domain": null,
+					"path": "+15551230000",
+					"line": 12,
+					"column": 13,
+					"context": "\"phone\": \"tel:+15551230000\","
+				},
+				{
+					"value": "ftp://files.example.com/pub",
+					"protocol": "ftp",
+					"domain": "files.example.com",
+					"path": "/pub",
+					"line": 13,
+					"column": 11,
+					"context": "\"ftp\": \"ftp://files.example.com/pub\""
+				}
+			]
+		},
+		{
+			"name": "urls.md as markdown",
+			"file": "urls.md",
+			"languageId": "markdown",
+			"success": true,
+			"errors": [],
+			"expected": [
+				{
+					"value": "https://example.com/page",
+					"protocol": "https",
+					"domain": "example.com",
+					"path": "/page",
+					"line": 3,
+					"column": 19,
+					"context": "A [markdown link](https://example.com/page) and an autolink <https://autolink.example.com>."
+				},
+				{
+					"value": "https://autolink.example.com",
+					"protocol": "https",
+					"domain": "autolink.example.com",
+					"path": "/",
+					"line": 3,
+					"column": 62,
+					"context": "A [markdown link](https://example.com/page) and an autolink <https://autolink.example.com>."
+				},
+				{
+					"value": "http://plain.example.com/path",
+					"protocol": "http",
+					"domain": "plain.example.com",
+					"path": "/path",
+					"line": 5,
+					"column": 17,
+					"context": "Plain http URL: http://plain.example.com/path"
+				},
+				{
+					"value": "ftp://ftp.example.com/pub/file.tar.gz",
+					"protocol": "ftp",
+					"domain": "ftp.example.com",
+					"path": "/pub/file.tar.gz",
+					"line": 6,
+					"column": 13,
+					"context": "FTP mirror: ftp://ftp.example.com/pub/file.tar.gz"
+				},
+				{
+					"value": "mailto:team@example.com",
+					"protocol": "mailto",
+					"domain": null,
+					"path": "team@example.com",
+					"line": 7,
+					"column": 10,
+					"context": "Contact: mailto:team@example.com or tel:+15551234567"
+				},
+				{
+					"value": "tel:+15551234567",
+					"protocol": "tel",
+					"domain": null,
+					"path": "+15551234567",
+					"line": 7,
+					"column": 37,
+					"context": "Contact: mailto:team@example.com or tel:+15551234567"
+				},
+				{
+					"value": "file:///Users/dev/notes.txt",
+					"protocol": "file",
+					"domain": null,
+					"path": "/Users/dev/notes.txt",
+					"line": 8,
+					"column": 13,
+					"context": "Local file: file:///Users/dev/notes.txt"
+				},
+				{
+					"value": "https://example.com/page",
+					"protocol": "https",
+					"domain": "example.com",
+					"path": "/page",
+					"line": 16,
+					"column": 30,
+					"context": "Duplicate of the first link: https://example.com/page appears again here."
+				}
+			]
+		},
+		{
+			"name": "urls.properties as properties",
+			"file": "urls.properties",
+			"languageId": "properties",
+			"success": true,
+			"errors": [],
+			"expected": [
+				{
+					"value": "https://api.example.com/v2",
+					"protocol": "https",
+					"domain": "api.example.com",
+					"path": "/v2",
+					"line": 3,
+					"column": 18,
+					"context": "service.endpoint=https://api.example.com/v2"
+				},
+				{
+					"value": "http://legacy.example.com/soap",
+					"protocol": "http",
+					"domain": "legacy.example.com",
+					"path": "/soap",
+					"line": 4,
+					"column": 17,
+					"context": "legacy.endpoint=http://legacy.example.com/soap"
+				},
+				{
+					"value": "mailto:support@example.com",
+					"protocol": "mailto",
+					"domain": null,
+					"path": "support@example.com",
+					"line": 5,
+					"column": 15,
+					"context": "support.email=mailto:support@example.com"
+				},
+				{
+					"value": "tel:+15554443333",
+					"protocol": "tel",
+					"domain": null,
+					"path": "+15554443333",
+					"line": 6,
+					"column": 15,
+					"context": "support.phone=tel:+15554443333"
+				},
+				{
+					"value": "ftp://mirror.example.com/pub",
+					"protocol": "ftp",
+					"domain": "mirror.example.com",
+					"path": "/pub",
+					"line": 7,
+					"column": 12,
+					"context": "mirror.ftp=ftp://mirror.example.com/pub"
+				},
+				{
+					"value": "https://continued.example.com/one",
+					"protocol": "https",
+					"domain": "continued.example.com",
+					"path": "/one",
+					"line": 8,
+					"column": 17,
+					"context": "continued.value=https://continued.example.com/one \\"
+				},
+				{
+					"value": "https://continued.example.com/two",
+					"protocol": "https",
+					"domain": "continued.example.com",
+					"path": "/two",
+					"line": 9,
+					"column": 5,
+					"context": "https://continued.example.com/two"
+				}
+			]
+		},
+		{
+			"name": "urls.toml as toml",
+			"file": "urls.toml",
+			"languageId": "toml",
+			"success": true,
+			"errors": [],
+			"expected": [
+				{
+					"value": "https://example.com",
+					"protocol": "https",
+					"domain": "example.com",
+					"path": "/",
+					"line": 2,
+					"column": 13,
+					"context": "homepage = \"https://example.com\""
+				},
+				{
+					"value": "https://github.com/example/repo",
+					"protocol": "https",
+					"domain": "github.com",
+					"path": "/example/repo",
+					"line": 3,
+					"column": 15,
+					"context": "repository = \"https://github.com/example/repo\""
+				},
+				{
+					"value": "http://docs.example.com/book",
+					"protocol": "http",
+					"domain": "docs.example.com",
+					"path": "/book",
+					"line": 4,
+					"column": 18,
+					"context": "documentation = \"http://docs.example.com/book\""
+				},
+				{
+					"value": "mailto:team@example.com",
+					"protocol": "mailto",
+					"domain": null,
+					"path": "team@example.com",
+					"line": 7,
+					"column": 10,
+					"context": "email = \"mailto:team@example.com\""
+				},
+				{
+					"value": "https://mirror-a.example.com",
+					"protocol": "https",
+					"domain": "mirror-a.example.com",
+					"path": "/",
+					"line": 8,
+					"column": 13,
+					"context": "mirrors = [\"https://mirror-a.example.com\", \"ftp://mirror-b.example.com/pub\"]"
+				},
+				{
+					"value": "ftp://mirror-b.example.com/pub",
+					"protocol": "ftp",
+					"domain": "mirror-b.example.com",
+					"path": "/pub",
+					"line": 8,
+					"column": 45,
+					"context": "mirrors = [\"https://mirror-a.example.com\", \"ftp://mirror-b.example.com/pub\"]"
+				}
+			]
+		},
+		{
+			"name": "urls.xml as xml",
+			"file": "urls.xml",
+			"languageId": "xml",
+			"success": true,
+			"errors": [],
+			"expected": [
+				{
+					"value": "http://maven.apache.org/POM/4.0.0",
+					"protocol": "http",
+					"domain": "maven.apache.org",
+					"path": "/POM/4.0.0",
+					"line": 2,
+					"column": 17,
+					"context": "<project xmlns=\"http://maven.apache.org/POM/4.0.0\">"
+				},
+				{
+					"value": "https://example.com/project",
+					"protocol": "https",
+					"domain": "example.com",
+					"path": "/project",
+					"line": 3,
+					"column": 8,
+					"context": "<url>https://example.com/project</url>"
+				},
+				{
+					"value": "https://github.com/example/repo",
+					"protocol": "https",
+					"domain": "github.com",
+					"path": "/example/repo",
+					"line": 5,
+					"column": 10,
+					"context": "<url>https://github.com/example/repo</url>"
+				},
+				{
+					"value": "https://github.com/example/repo.git",
+					"protocol": "https",
+					"domain": "github.com",
+					"path": "/example/repo.git",
+					"line": 6,
+					"column": 25,
+					"context": "<connection>scm:git:https://github.com/example/repo.git</connection>"
+				},
+				{
+					"value": "https://repo.example.com/maven2",
+					"protocol": "https",
+					"domain": "repo.example.com",
+					"path": "/maven2",
+					"line": 8,
+					"column": 20,
+					"context": "<repository url=\"https://repo.example.com/maven2\"/>"
+				},
+				{
+					"value": "http://legacy.example.com/feed",
+					"protocol": "http",
+					"domain": "legacy.example.com",
+					"path": "/feed",
+					"line": 9,
+					"column": 15,
+					"context": "<link href=\"http://legacy.example.com/feed\"/>"
+				},
+				{
+					"value": "mailto:team@example.com",
+					"protocol": "mailto",
+					"domain": null,
+					"path": "team@example.com",
+					"line": 10,
+					"column": 12,
+					"context": "<contact>mailto:team@example.com</contact>"
+				},
+				{
+					"value": "tel:+15557778888",
+					"protocol": "tel",
+					"domain": null,
+					"path": "+15557778888",
+					"line": 11,
+					"column": 10,
+					"context": "<phone>tel:+15557778888</phone>"
+				},
+				{
+					"value": "ftp://mirror.example.com/pub",
+					"protocol": "ftp",
+					"domain": "mirror.example.com",
+					"path": "/pub",
+					"line": 12,
+					"column": 11,
+					"context": "<mirror>ftp://mirror.example.com/pub</mirror>"
+				}
+			]
+		},
+		{
+			"name": "urls.yaml as yaml",
+			"file": "urls.yaml",
+			"languageId": "yaml",
+			"success": true,
+			"errors": [],
+			"expected": [
+				{
+					"value": "https://example.com",
+					"protocol": "https",
+					"domain": "example.com",
+					"path": "/",
+					"line": 1,
+					"column": 11,
+					"context": "homepage: https://example.com"
+				},
+				{
+					"value": "http://legacy.example.com/api",
+					"protocol": "http",
+					"domain": "legacy.example.com",
+					"path": "/api",
+					"line": 2,
+					"column": 11,
+					"context": "insecure: http://legacy.example.com/api"
+				},
+				{
+					"value": "https://commented.example.com/still-extracted",
+					"protocol": "https",
+					"domain": "commented.example.com",
+					"path": "/still-extracted",
+					"line": 3,
+					"column": 16,
+					"context": "# comment with https://commented.example.com/still-extracted"
+				},
+				{
+					"value": "https://github.com/example/repo.git",
+					"protocol": "https",
+					"domain": "github.com",
+					"path": "/example/repo.git",
+					"line": 5,
+					"column": 8,
+					"context": "url: https://github.com/example/repo.git"
+				},
+				{
+					"value": "https://mirror-a.example.com",
+					"protocol": "https",
+					"domain": "mirror-a.example.com",
+					"path": "/",
+					"line": 7,
+					"column": 5,
+					"context": "- https://mirror-a.example.com"
+				},
+				{
+					"value": "https://mirror-a.example.com",
+					"protocol": "https",
+					"domain": "mirror-a.example.com",
+					"path": "/",
+					"line": 8,
+					"column": 5,
+					"context": "- https://mirror-a.example.com"
+				},
+				{
+					"value": "mailto:team@example.com",
+					"protocol": "mailto",
+					"domain": null,
+					"path": "team@example.com",
+					"line": 9,
+					"column": 10,
+					"context": "contact: mailto:team@example.com"
+				},
+				{
+					"value": "tel:+15551230000",
+					"protocol": "tel",
+					"domain": null,
+					"path": "+15551230000",
+					"line": 10,
+					"column": 8,
+					"context": "phone: tel:+15551230000"
+				},
+				{
+					"value": "ftp://files.example.com/pub",
+					"protocol": "ftp",
+					"domain": "files.example.com",
+					"path": "/pub",
+					"line": 11,
+					"column": 6,
+					"context": "ftp: ftp://files.example.com/pub"
+				}
+			]
+		}
+	],
+	"scan": [
+		{
+			"input": "see https://example.com/a for more",
+			"expected": [
+				{
+					"value": "https://example.com/a",
+					"protocol": "https",
+					"start": 4
+				}
+			]
+		},
+		{
+			"input": "quoted \"https://example.com/a\" here",
+			"expected": [
+				{
+					"value": "https://example.com/a",
+					"protocol": "https",
+					"start": 8
+				}
+			]
+		},
+		{
+			"input": "bracketed [https://example.com/a] and (https://example.com/b)",
+			"expected": [
+				{
+					"value": "https://example.com/a",
+					"protocol": "https",
+					"start": 11
+				},
+				{
+					"value": "https://example.com/b",
+					"protocol": "https",
+					"start": 39
+				}
+			]
+		},
+		{
+			"input": "trailing dot https://example.com/a. kept",
+			"expected": [
+				{
+					"value": "https://example.com/a.",
+					"protocol": "https",
+					"start": 13
+				}
+			]
+		},
+		{
+			"input": "trailing comma https://example.com/a, kept",
+			"expected": [
+				{
+					"value": "https://example.com/a,",
+					"protocol": "https",
+					"start": 15
+				}
+			]
+		},
+		{
+			"input": "semicolon https://example.com/a; stops",
+			"expected": [
+				{
+					"value": "https://example.com/a",
+					"protocol": "https",
+					"start": 10
+				}
+			]
+		},
+		{
+			"input": "http://plain.example.com",
+			"expected": [
+				{
+					"value": "http://plain.example.com",
+					"protocol": "http",
+					"start": 0
+				}
+			]
+		},
+		{
+			"input": "ftp://files.example.com/pub",
+			"expected": [
+				{
+					"value": "ftp://files.example.com/pub",
+					"protocol": "ftp",
+					"start": 0
+				}
+			]
+		},
+		{
+			"input": "file:///opt/data.bin",
+			"expected": [
+				{
+					"value": "file:///opt/data.bin",
+					"protocol": "file",
+					"start": 0
+				}
+			]
+		},
+		{
+			"input": "mailto:someone@example.com",
+			"expected": [
+				{
+					"value": "mailto:someone@example.com",
+					"protocol": "mailto",
+					"start": 0
+				}
+			]
+		},
+		{
+			"input": "mailto:nobody",
+			"expected": []
+		},
+		{
+			"input": "mailto:",
+			"expected": []
+		},
+		{
+			"input": "tel:+15551234567",
+			"expected": [
+				{
+					"value": "tel:+15551234567",
+					"protocol": "tel",
+					"start": 0
+				}
+			]
+		},
+		{
+			"input": "tel:",
+			"expected": []
+		},
+		{
+			"input": "tel:1",
+			"expected": []
+		},
+		{
+			"input": "no urls at all",
+			"expected": []
+		},
+		{
+			"input": "https://example.com/a https://example.com/b twice",
+			"expected": [
+				{
+					"value": "https://example.com/a",
+					"protocol": "https",
+					"start": 0
+				},
+				{
+					"value": "https://example.com/b",
+					"protocol": "https",
+					"start": 22
+				}
+			]
+		},
+		{
+			"input": "https://example.com/a https://example.com/a repeated",
+			"expected": [
+				{
+					"value": "https://example.com/a",
+					"protocol": "https",
+					"start": 0
+				},
+				{
+					"value": "https://example.com/a",
+					"protocol": "https",
+					"start": 22
+				}
+			]
+		},
+		{
+			"input": "angle <https://example.com/a> brackets",
+			"expected": [
+				{
+					"value": "https://example.com/a",
+					"protocol": "https",
+					"start": 7
+				}
+			]
+		},
+		{
+			"input": "backtick `https://example.com/a` fenced",
+			"expected": [
+				{
+					"value": "https://example.com/a",
+					"protocol": "https",
+					"start": 10
+				}
+			]
+		},
+		{
+			"input": "pipe |https://example.com/a| bars",
+			"expected": [
+				{
+					"value": "https://example.com/a",
+					"protocol": "https",
+					"start": 6
+				}
+			]
+		},
+		{
+			"input": "caret ^https://example.com/a^ carets",
+			"expected": [
+				{
+					"value": "https://example.com/a",
+					"protocol": "https",
+					"start": 7
+				}
+			]
+		},
+		{
+			"input": "https://user:pass@example.com/private",
+			"expected": [
+				{
+					"value": "https://user:pass@example.com/private",
+					"protocol": "https",
+					"start": 0
+				}
+			]
+		},
+		{
+			"input": "https://127.0.0.1:8080/health",
+			"expected": [
+				{
+					"value": "https://127.0.0.1:8080/health",
+					"protocol": "https",
+					"start": 0
+				}
+			]
+		},
+		{
+			"input": "https://\u4f8b\u3048.\u30c6\u30b9\u30c8/\u30d1\u30b9",
+			"expected": [
+				{
+					"value": "https://\u4f8b\u3048.\u30c6\u30b9\u30c8/\u30d1\u30b9",
+					"protocol": "https",
+					"start": 0
+				}
+			]
+		}
+	]
+}

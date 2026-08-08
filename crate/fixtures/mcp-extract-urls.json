@@ -1,0 +1,382 @@
+[
+	{
+		"name": "format given explicitly",
+		"file": "urls.md",
+		"arguments": {
+			"format": "markdown"
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://example.com/page",
+						"protocol": "https",
+						"line": 3,
+						"column": 19
+					},
+					{
+						"value": "https://autolink.example.com",
+						"protocol": "https",
+						"line": 3,
+						"column": 62
+					},
+					{
+						"value": "http://plain.example.com/path",
+						"protocol": "http",
+						"line": 5,
+						"column": 17
+					},
+					{
+						"value": "ftp://ftp.example.com/pub/file.tar.gz",
+						"protocol": "ftp",
+						"line": 6,
+						"column": 13
+					},
+					{
+						"value": "mailto:team@example.com",
+						"protocol": "mailto",
+						"line": 7,
+						"column": 10
+					},
+					{
+						"value": "tel:+15551234567",
+						"protocol": "tel",
+						"line": 7,
+						"column": 37
+					},
+					{
+						"value": "file:///Users/dev/notes.txt",
+						"protocol": "file",
+						"line": 8,
+						"column": 13
+					},
+					{
+						"value": "https://example.com/page",
+						"protocol": "https",
+						"line": 16,
+						"column": 30
+					}
+				],
+				"fileType": "markdown"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 8,
+				"truncated": false
+			}
+		}
+	},
+	{
+		"name": "format inferred from a filename",
+		"file": "urls.toml",
+		"arguments": {
+			"filename": "config.toml"
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://example.com",
+						"protocol": "https",
+						"line": 2,
+						"column": 13
+					},
+					{
+						"value": "https://github.com/example/repo",
+						"protocol": "https",
+						"line": 3,
+						"column": 15
+					},
+					{
+						"value": "http://docs.example.com/book",
+						"protocol": "http",
+						"line": 4,
+						"column": 18
+					},
+					{
+						"value": "mailto:team@example.com",
+						"protocol": "mailto",
+						"line": 7,
+						"column": 10
+					},
+					{
+						"value": "https://mirror-a.example.com",
+						"protocol": "https",
+						"line": 8,
+						"column": 13
+					},
+					{
+						"value": "ftp://mirror-b.example.com/pub",
+						"protocol": "ftp",
+						"line": 8,
+						"column": 45
+					}
+				],
+				"fileType": "toml"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 6,
+				"truncated": false
+			}
+		}
+	},
+	{
+		"name": "an alias resolves",
+		"file": "urls.yaml",
+		"arguments": {
+			"format": "yml"
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://example.com",
+						"protocol": "https",
+						"line": 1,
+						"column": 11
+					},
+					{
+						"value": "http://legacy.example.com/api",
+						"protocol": "http",
+						"line": 2,
+						"column": 11
+					},
+					{
+						"value": "https://commented.example.com/still-extracted",
+						"protocol": "https",
+						"line": 3,
+						"column": 16
+					},
+					{
+						"value": "https://github.com/example/repo.git",
+						"protocol": "https",
+						"line": 5,
+						"column": 8
+					},
+					{
+						"value": "https://mirror-a.example.com",
+						"protocol": "https",
+						"line": 7,
+						"column": 5
+					},
+					{
+						"value": "https://mirror-a.example.com",
+						"protocol": "https",
+						"line": 8,
+						"column": 5
+					},
+					{
+						"value": "mailto:team@example.com",
+						"protocol": "mailto",
+						"line": 9,
+						"column": 10
+					},
+					{
+						"value": "tel:+15551230000",
+						"protocol": "tel",
+						"line": 10,
+						"column": 8
+					},
+					{
+						"value": "ftp://files.example.com/pub",
+						"protocol": "ftp",
+						"line": 11,
+						"column": 6
+					}
+				],
+				"fileType": "yaml"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 9,
+				"truncated": false
+			}
+		}
+	},
+	{
+		"name": "dedupe collapses repeats",
+		"file": "urls.html",
+		"arguments": {
+			"format": "html",
+			"dedupe": true
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://cdn.example.com/style.css",
+						"protocol": "https",
+						"line": 4,
+						"column": 17
+					},
+					{
+						"value": "http://scripts.example.com/app.js",
+						"protocol": "http",
+						"line": 5,
+						"column": 18
+					},
+					{
+						"value": "https://example.com/docs",
+						"protocol": "https",
+						"line": 8,
+						"column": 14
+					},
+					{
+						"value": "https://forms.example.com/submit",
+						"protocol": "https",
+						"line": 10,
+						"column": 19
+					},
+					{
+						"value": "https://images.example.com/logo.png",
+						"protocol": "https",
+						"line": 11,
+						"column": 15
+					},
+					{
+						"value": "ftp://ftp.example.com/pub",
+						"protocol": "ftp",
+						"line": 13,
+						"column": 55
+					},
+					{
+						"value": "mailto:info@example.com",
+						"protocol": "mailto",
+						"line": 14,
+						"column": 17
+					},
+					{
+						"value": "tel:+15559876543",
+						"protocol": "tel",
+						"line": 14,
+						"column": 49
+					}
+				],
+				"fileType": "html"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 8,
+				"truncated": false
+			}
+		}
+	},
+	{
+		"name": "capped and flagged",
+		"file": "urls.md",
+		"arguments": {
+			"format": "markdown",
+			"maxResults": 2
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://example.com/page",
+						"protocol": "https",
+						"line": 3,
+						"column": 19
+					},
+					{
+						"value": "https://autolink.example.com",
+						"protocol": "https",
+						"line": 3,
+						"column": 62
+					}
+				],
+				"fileType": "markdown"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 2,
+				"truncated": true
+			}
+		}
+	},
+	{
+		"name": "a document that does not parse",
+		"file": "broken.toml",
+		"arguments": {
+			"format": "toml"
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://fallback.example.com/after-parse-error",
+						"protocol": "https",
+						"line": 2,
+						"column": 13
+					},
+					{
+						"value": "http://fallback-docs.example.com",
+						"protocol": "http",
+						"line": 3,
+						"column": 9
+					}
+				],
+				"fileType": "toml"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 2,
+				"truncated": false
+			}
+		}
+	},
+	{
+		"name": "nothing to find",
+		"content": "plain text\n",
+		"arguments": {
+			"format": "markdown"
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [],
+				"fileType": "markdown"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 0,
+				"truncated": false
+			}
+		}
+	},
+	{
+		"name": "neither format nor filename",
+		"content": "x",
+		"arguments": {},
+		"expectedError": "Provide `format` (one of: markdown, html, css, javascript, typescript, json, yaml, properties, toml, ini, xml) or a `filename` with a recognised extension."
+	},
+	{
+		"name": "content must be a string",
+		"arguments": {
+			"format": "markdown"
+		},
+		"expectedError": "content is required and must be a string"
+	},
+	{
+		"name": "a nonsensical cap is rejected",
+		"content": "x",
+		"arguments": {
+			"format": "markdown",
+			"maxResults": 0
+		},
+		"expectedError": "maxResults must be a positive integer"
+	}
+]
