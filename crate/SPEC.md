@@ -1,36 +1,47 @@
 # urls-le — Rust specification
 
 A port of the [URLs-LE](https://github.com/nolindnaidoo/urls-le) VS Code
-extension to a Rust CLI and MCP server, plus a small audit an editor has
-no reason to run: which of these URLs should not have been committed.
+extension to a Rust CLI and MCP server.
 
-**Parity first.** For extraction, the extension is the reference
-implementation. Anything this produces for a given document must match
-what the extension produces for that document. A difference is a
-regression until proven otherwise. The audit layer has no extension
-equivalent and is specified separately, at the bottom.
+**Parity first, and parity is the whole of it.** The extension is the
+reference implementation. Anything this produces for a given document
+must match what the extension produces for that document. A difference
+is a regression until proven otherwise.
 
 ## The one question
 
-**Which URLs are in this codebase, and which of them are a problem?**
+**Which URLs are in this codebase, and exactly where?**
 
-The first half feeds a pipeline — `urls-le src/ | lychee` is the point.
-The second half answers on its own, without a network.
+That is the entire product. `urls-le src/ | lychee` is the point: this
+hands the next tool a better list than a grep can — one that knows a URL
+in a TOML value from a URL in a fenced code block — and then gets out of
+the way.
 
-## Why this does not check links
+## Why this has no opinions
 
-The obvious next feature is fetching each URL to see if it 404s. It is
-deliberately absent, for two reasons.
+The obvious next features are all judgments about the URLs it found:
+fetch each one to see if it 404s, flag `http://` as insecure, flag a
+password in the userinfo, flag a private address. Every one is absent,
+deliberately.
 
-**It would make the tool slow and non-deterministic**, so it could not
-be a cheap CI step, which is the thing it is good at. And **it already
-exists**: `lychee`, `muffet` and `htmltest` do it well, and this tool's
-job is to hand them a better list than a grep can — one that knows a URL
-in a TOML value from a URL in a comment.
+**This tool extracts. What the URLs mean is the reader's call.** An
+`http://` URL is wrong in a production config and correct in a test
+fixture. A `localhost` URL is a bug in one repository and the whole
+point in another. A tool that decides for you is a tool you have to
+configure, then argue with, then mute — and the muting takes the
+extraction with it.
 
-Everything this reports is decidable from the text. If a claim needs a
-socket, it does not belong here. Same rule as scrape-le, which is the
-one tool in this family that *is* allowed to open one.
+Link checking is also already solved: `lychee`, `muffet` and `htmltest`
+do it well, and each needs a network, which would stop this being a
+cheap deterministic CI step. The value here is the list, not a verdict
+on it.
+
+So: **nothing is filtered, nothing is rewritten, nothing is scored.**
+URLs are reported exactly as written, at their real positions, in
+document order. Trailing punctuation is kept because it may be part of
+the URL. Repeats are kept because they are separate occurrences.
+`--dedupe` exists because the extension has it, and it is opt-in there
+too.
 
 ## Shape
 
@@ -42,7 +53,6 @@ crate/
 ├── src/
 │   ├── extract/     pure: the URL scanner, the eleven format
 │   │                extractors, positions. No filesystem, pub(crate).
-│   ├── audit.rs     the verdicts — text-only, no network
 │   ├── walk.rs      ignore-aware tree walking
 │   ├── scan.rs      one file end to end — the only path either surface calls
 │   ├── cli.rs       the terminal surface
@@ -101,43 +111,6 @@ Commands, the editor UI, i18n, the configuration reader and the status
 bar are extension concerns. Parity is `src/extraction/**` and nothing
 else.
 
-## The audit — the enhancement
-
-**No extension equivalent, and no network.** Every verdict is decidable
-from the URL text alone, which is what keeps the tool a cheap CI step.
-
-| verdict | meaning |
-|---|---|
-| `ok` | nothing to say about it |
-| `credentials` | userinfo in the URL — `https://user:pass@host` |
-| `insecure` | `http://` to a host that is not loopback |
-| `loopback` | points at `localhost`, `127.0.0.1` or `::1` |
-| `private` | points at a private or link-local address |
-| `malformed` | does not parse as a URL |
-
-Rules that keep it honest:
-
-- **`credentials` is the one that matters most**, and it overlaps
-  secrets-le on purpose: a password in a URL is a credential in the
-  repository, and two tools finding it is better than none.
-- **`insecure` exempts loopback.** `http://localhost:3000` is how
-  everyone runs a dev server; flagging it would fire on every codebase
-  and get the check muted.
-- **`loopback` and `private` are facts, not failures.** They do not set
-  the exit code on their own — a dev-server URL in a test fixture is
-  fine, and it is the reader who knows whether one in a production
-  config is not. `--strict` promotes them.
-- **`mailto:` and `tel:` are `ok` by construction.** They have no host to
-  judge.
-
-### Exit codes are the API
-
-- **0** — nothing found, or nothing above the threshold.
-- **1** — at least one finding: `credentials`, `insecure` or `malformed`,
-  plus `loopback` and `private` under `--strict`.
-- **2** — the question was malformed: an unknown flag, an unreadable
-  input, a path that does not exist.
-
 ## Output contract
 
 **stdout is protocol, stderr is human.** One JSON report per line, one
@@ -145,33 +118,39 @@ line per file.
 
 ```json
 {
-  "file": "config/app.toml",
-  "format": "toml",
+  "file": "docs/setup.md",
+  "format": "markdown",
   "urls": [
     {
-      "value": "http://user:pw@api.internal/v1",
-      "protocol": "http",
-      "domain": "api.internal",
-      "path": "/v1",
-      "line": 4,
-      "column": 11,
-      "context": "endpoint = \"http://user:pw@api.internal/v1\"",
-      "audit": { "verdict": "credentials", "reason": "the URL carries a username and password" }
+      "value": "https://example.com/guide",
+      "protocol": "https",
+      "domain": "example.com",
+      "path": "/guide",
+      "line": 12,
+      "column": 15,
+      "context": "See [the guide](https://example.com/guide) first."
     }
   ],
   "diagnostics": [],
-  "summary": { "urls": 1, "findings": 1 }
+  "summary": { "urls": 1 }
 }
 ```
 
-**A URL with credentials in it is printed as it was written.** That is a
-deliberate difference from secrets-le, and the reason is that the two
-tools answer different questions: secrets-le tells you a credential
-exists without disclosing it, and this tells you *which line to edit*. A
-URL is not a secret in the same sense — it is already the thing you have
-to look at to fix it. If that trade is wrong for your repository, pipe
-this to nothing and use secrets-le, which will find the same string and
-never print it.
+There is no verdict field, and there is no place for one.
+
+### Exit codes are the API
+
+**grep's convention**, because this is grep's kind of tool:
+
+- **0** — URLs were found.
+- **1** — none were found. Not an error; the honest answer to "is there
+  anything here".
+- **2** — the question was malformed: an unknown flag, an unreadable
+  input, a path that does not exist.
+
+That is a fact about the extraction, not an opinion about the URLs. It
+makes the tool composable — `if urls-le src/; then …` — without the tool
+deciding anything on the reader's behalf.
 
 ## The CLI surface
 
@@ -182,8 +161,6 @@ usage: urls-le [options] <file|dir>...
        urls-le --version | --help
 
 Options:
-  --no-audit           extract only; no verdicts, and nothing is a finding
-  --strict             count loopback and private addresses as findings too
   --dedupe             collapse repeated URLs to their first occurrence
   --format <format>    force a format instead of inferring from the name
   --stdin              read one document from stdin
@@ -196,7 +173,7 @@ Options:
 - **`extract_urls` belongs to both servers.** The npm server and this one
   offer the same tool: same schema, same envelope, byte-identical output.
   `fixtures/mcp-extract-urls.json` runs against both.
-- **`urls_le_audit` is this server's own**: files or directories in, the
+- **`urls_le_scan` is this server's own**: files or directories in, the
   same reports the CLI writes.
 
 **Refusals speak the caller's vocabulary.** No message here names a flag.
@@ -204,14 +181,19 @@ Options:
 ## Non-goals
 
 - **No network, ever.** No fetching, no DNS, no reachability.
-- **It does not rewrite files.**
-- **It does not know your allow-list.** A private-address URL that is
-  correct for your deployment is `private` here; `--no-audit` or the exit
-  code you choose to ignore is the answer, not a config file this tool
-  has to be taught.
+- **It does not rewrite files**, and does not offer to.
+- **It does not judge a URL.** No insecure-scheme flag, no credential
+  flag, no private-address flag, no scoring. See "Why this has no
+  opinions"; adding one would make everything else here negotiable.
+- **It does not filter.** Every occurrence the extension reports, this
+  reports.
 
 ## Not in v1
 
-- **A baseline file** for accepting known findings.
+Listed so nobody smuggles one in as a small addition — each would turn
+an extractor into something with a position.
+
+- **Link checking**, or any network access.
+- **Verdicts of any kind**, and the allow-lists and baselines they would
+  immediately require.
 - **`--fix`**, rewriting `http` to `https`.
-- **Per-host allow-lists.**
