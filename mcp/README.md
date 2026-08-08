@@ -52,6 +52,14 @@ carries this server and registers it for you:
 · [Open VSX](https://open-vsx.org/extension/OffensiveEdge/urls-le)
 · [Zed](https://github.com/zed-industries/extensions/pull/7077) *(pending review)*
 
+**No Node?** The same `extract_urls` tool ships in a static Rust binary:
+`cargo install urls-le`, then `urls-le mcp`
+([crates.io](https://crates.io/crates/urls-le)). The two servers answer
+identically — one fixture corpus runs against both and CI fails if they
+diverge. The binary additionally offers `urls_le_scan`, which walks a
+tree; **this server reads no files**, which is what lets an agent call it
+anywhere.
+
 Prefer a global install to `npx` on every launch:
 
 ```bash
