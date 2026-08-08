@@ -25,7 +25,9 @@ pub(crate) enum Protocol {
     Tel,
 }
 
-/// A URL ends at whitespace or at any of `< > " { } | \ ^ ` [ ] ; ) '`.
+/// A URL ends at whitespace or at any of the delimiters the
+/// extension uses: angle brackets, quotes, braces, pipes, backslash,
+/// caret, backtick, square brackets, semicolon, close-paren, apostrophe.
 ///
 /// That is the extension's delimiter set, kept verbatim so quoted and
 /// bracketed sources terminate the same way. Trailing punctuation a URL

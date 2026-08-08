@@ -50,7 +50,8 @@ fn markdown(content: &str) -> Vec<Url> {
     to_urls(content, &matches)
 }
 
-/// 1-based line numbers inside (or delimiting) ``` fenced blocks.
+/// 1-based line numbers inside a triple-backtick fenced block, and
+/// the fence lines themselves.
 fn fenced_lines(lines: &[&str]) -> Vec<usize> {
     let mut fenced = Vec::new();
     let mut in_block = false;

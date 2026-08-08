@@ -14,7 +14,7 @@ mod position;
 pub(crate) mod corpus;
 
 pub(crate) use format::{FileType, determine_file_type};
-pub(crate) use scanner::Url;
+pub(crate) use scanner::{Protocol, Url};
 
 use serde::Serialize;
 
