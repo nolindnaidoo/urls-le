@@ -46,7 +46,9 @@ too.
 ## Shape
 
 **One crate.** Self-contained: no published `-core`, no shared crate with
-the family. Code two crates need is copied with a drift check.
+the family, and nothing holding this code equal to the similar files
+in the sibling repos. Where they agree it is because the same answer was
+right twice; where they diverge that is the point.
 
 ```
 crate/

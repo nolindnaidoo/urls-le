@@ -67,8 +67,9 @@ crate/src/
 - **Exit codes follow grep**: 0 found, 1 none found, 2 could not answer.
   That is a fact about the extraction, not an opinion about the URLs.
 - **One crate, self-contained.** No published `-core`, no shared crate.
-  `walk.rs` and `testing.rs` are near-copies of paths-le's, held equal
-  by the fleet drift check rather than shared.
+  `walk.rs` and `testing.rs` are near-copies of paths-le's, and nothing
+  holds them equal — where they agree it is because the same answer was
+  right twice, and where they diverge that is the point.
 - **One regex engine.** The URL scanner needs no backreferences and no
   lookaround, so `regex` expresses it exactly and its matching cannot
   fail. Not taking a backtracking engine is the cheaper answer.
