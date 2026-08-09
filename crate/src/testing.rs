@@ -55,9 +55,10 @@ impl TempTree {
     /// `link` points at `target`, written verbatim so a relative link
     /// stays relative.
     ///
-    /// Unused by this crate's own tests — nothing here resolves a link —
-    /// and kept so the helper stays identical to the copies in the other
-    /// crates, which the drift check compares.
+    /// Unused by this crate's own tests — nothing here resolves a link.
+    /// Kept because a test helper that exists is cheaper than one
+    /// reintroduced later, not because anything holds it equal to a
+    /// sibling repo's copy.
     #[cfg(all(unix, test))]
     #[cfg_attr(test, expect(dead_code, reason = "kept identical across the family"))]
     pub(crate) fn symlink(&self, target: &str, link: &str) {

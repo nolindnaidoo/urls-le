@@ -1,16 +1,10 @@
 //! Turning what the caller named into the list of files to examine.
 //!
-//! **This file is a near-copy of paths-le's `walk.rs`.** The family's
-//! crates are self-contained by decision — no shared crate, no published
-//! core — so code two of them need is duplicated and held equal by a
-//! drift check, the same way `biome.json` and `ci.yml` are. Fix a bug
-//! here and it needs fixing there.
-//!
-//! Directories are walked with ripgrep's `ignore`, so "what this tool
-//! looks at" and "what ripgrep looks at" are the same answer — which is
-//! the answer a person auditing a repository already has in their head.
-//! A file named explicitly is always read, ignore rules included: you
-//! asked for it.
+//! Each crate in this family stands on its own: no shared crate, no
+//! published core, and nothing holding this file equal to the similar
+//! ones in the sibling repos. Where they agree it is because the same
+//! answer was right twice; where they diverge that is the point, and
+//! neither has to justify itself to the other.
 
 use std::path::{Path as StdPath, PathBuf};
 
