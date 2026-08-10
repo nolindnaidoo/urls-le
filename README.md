@@ -242,10 +242,10 @@ a build only tells you how busy the runner was.
 <!-- coverage:start -->
 | Metric | Coverage |
 | --- | --- |
-| Statements | 95.10% |
-| Branches | 86.75% |
+| Statements | 94.64% |
+| Branches | 85.56% |
 | Functions | 95.54% |
-| Lines | 95.41% |
+| Lines | 94.93% |
 
 290 test cases across 21 files, plus an integration suite that runs
 in a real VS Code extension host and an end-to-end test that installs the
@@ -260,7 +260,7 @@ run. Reproduce with `bun run test:coverage`.
 
 Every tool in the family, one page: **[letools.dev](https://letools.dev)**
 
-Three also ship a Rust CLI: **URLs-LE** (`cargo install urls-le`), **Paths-LE** and **Secrets-LE**. All ten also ship as MCP servers — `npx <name>-mcp` gives any agent the same engine.
+All ten also ship as MCP servers — `npx <name>-mcp` gives any agent the same engine. Five go further and ship a Rust CLI: **Paths-LE**, **Secrets-LE**, **URLs-LE**, **Regex-LE** and **Scrape-LE**, each installed with `cargo install <that-name>`.
 
 - **[Paths-LE](https://letools.dev/tools/paths-le)** - Extract file paths from JS/TS imports, JSON, HTML, CSS, TOML, CSV, and .env
 - **[String-LE](https://letools.dev/tools/string-le)** - Extract string values for i18n from JSON, YAML, CSV, TOML, INI, and .env
@@ -274,19 +274,21 @@ Three also ship a Rust CLI: **URLs-LE** (`cargo install urls-le`), **Paths-LE** 
 
 ## Also by nolindnaidoo
 
-**Rust** — pixelcoords and pixelactions make up one loop: pixelcoords answers *where*, pixelactions *acts* there. scrape-le asks a different question entirely.
+**Rust** — pixelcoords and pixelactions are one loop: pixelcoords answers *where*, pixelactions *acts* there. The five LE crates are the terminal half of the extensions they sit in — the same detection, held to the extension's own corpus, and an exit code instead of a results editor.
 
 - **[pixelcoords](https://github.com/nolindnaidoo/pixelcoords)** — Freeze your screen, mark regions, get pixel-exact coordinates and crops
   [pixelcoords.dev](https://pixelcoords.dev) · [crates.io](https://crates.io/crates/pixelcoords) · [docs.rs](https://docs.rs/pixelcoords)
 - **[pixelactions](https://github.com/nolindnaidoo/pixelactions)** — Consume human-verified coordinates, perform the interaction, confirm it landed
   [pixelactions.dev](https://pixelactions.dev) · [crates.io](https://crates.io/crates/pixelactions) · [docs.rs](https://docs.rs/pixelactions)
-- **[urls-le](https://github.com/nolindnaidoo/urls-le/tree/main/crate)** — This extension's own CLI: extract every URL from a codebase, with protocol and position
+- **[urls-le](https://github.com/nolindnaidoo/urls-le/tree/main/crate)** — This extension's own CLI: extract every URL from a codebase, with its protocol and exact position
   [crates.io](https://crates.io/crates/urls-le)
 - **[paths-le](https://github.com/nolindnaidoo/paths-le/tree/main/crate)** — Find every path in a codebase and report whether it still points at anything
   [crates.io](https://crates.io/crates/paths-le)
 - **[secrets-le](https://github.com/nolindnaidoo/secrets-le/tree/main/crate)** — Find hardcoded credentials, and never print one
   [crates.io](https://crates.io/crates/secrets-le)
-- **[scrape-le](https://github.com/nolindnaidoo/scrape-le/tree/main/crate)** — Check whether a page is scrapeable before the scraper is written, from a terminal or an agent
+- **[regex-le](https://github.com/nolindnaidoo/regex-le/tree/main/crate)** — Find every regex in a codebase and report which can be driven into catastrophic backtracking
+  [crates.io](https://crates.io/crates/regex-le)
+- **[scrape-le](https://github.com/nolindnaidoo/scrape-le/tree/main/crate)** — Check whether a page is scrapeable before the scraper is written
   [crates.io](https://crates.io/crates/scrape-le)
 
 **Contact Developer** — [nolindnaidoo.com](https://nolindnaidoo.com) · [GitHub](https://github.com/nolindnaidoo) · [LinkedIn](https://www.linkedin.com/in/nolindnaidoo/)

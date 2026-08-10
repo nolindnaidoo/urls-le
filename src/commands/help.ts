@@ -46,7 +46,7 @@ http, https, ftp, file, mailto, tel
 
 Enjoying it? A rating helps more than you'd think:
 - Rate on VS Code Marketplace: https://marketplace.visualstudio.com/items?itemName=nolindnaidoo.urls-le&ssr=false#review-details
-- Rate on Open VSX: https://open-vsx.org/extension/nolindnaidoo/urls-le/reviews
+- Rate on Open VSX: https://open-vsx.org/extension/OffensiveEdge/urls-le/reviews
 
 Built by nolindnaidoo (https://github.com/nolindnaidoo) — MIT licensed.
 		`.trim();

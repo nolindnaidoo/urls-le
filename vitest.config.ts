@@ -30,10 +30,6 @@ export default defineConfig({
 				'src/**/__data__/**',
 				'src/i18n/**',
 				'src/types.ts',
-				// Process wiring: it calls serve() and exits. The protocol it
-				// wires up is covered by check-mcp-bundle.js against the built file.
-				'src/mcp/server.ts',
-				'src/mcp/info.ts',
 			],
 		},
 	},

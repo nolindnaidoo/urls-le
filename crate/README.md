@@ -162,7 +162,7 @@ no URLs is a result, not an error.
 | **VS Code** | The extraction, in your editor, on a keystroke | [Marketplace](https://marketplace.visualstudio.com/items?itemName=nolindnaidoo.urls-le) |
 | **Cursor, VSCodium, Windsurf** | The same extension | [Open VSX](https://open-vsx.org/extension/OffensiveEdge/urls-le) |
 | **Any MCP agent, via Node** | `extract_urls` over stdio | `npx urls-le-mcp` · [npm](https://www.npmjs.com/package/urls-le-mcp) |
-| **Zed** | The MCP server as a context server | [zed-industries/extensions#7083](https://github.com/zed-industries/extensions/pull/7083) *(listing pending)* |
+| **Zed** | The MCP server as a context server | [zed-industries/extensions#7077](https://github.com/zed-industries/extensions/pull/7077) *(pending review)* |
 
 All ten LE tools are on **[letools.dev](https://letools.dev)**.
 
@@ -178,6 +178,8 @@ All ten LE tools are on **[letools.dev](https://letools.dev)**.
   [crates.io](https://crates.io/crates/paths-le)
 - **[secrets-le](https://github.com/nolindnaidoo/secrets-le/tree/main/crate)** — Find hardcoded credentials, and never print one
   [crates.io](https://crates.io/crates/secrets-le)
+- **[regex-le](https://github.com/nolindnaidoo/regex-le/tree/main/crate)** — Find every regex in a codebase and report which can be driven into catastrophic backtracking
+  [crates.io](https://crates.io/crates/regex-le)
 - **[scrape-le](https://github.com/nolindnaidoo/scrape-le/tree/main/crate)** — Check whether a page is scrapeable before the scraper is written
   [crates.io](https://crates.io/crates/scrape-le)
 
