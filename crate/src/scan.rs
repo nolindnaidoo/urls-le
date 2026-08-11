@@ -30,13 +30,19 @@ pub(crate) struct FileReport {
 }
 
 impl FileReport {
-    /// Whether this file could not be examined at all. A run containing
-    /// one exits 2: a report that silently skipped a file would be
-    /// claiming coverage it does not have.
-    pub(crate) fn is_unexamined(&self) -> bool {
+    /// Whether this file was not read at all — not text, or not
+    /// openable.
+    ///
+    /// It is reported rather than swallowed, because a report that
+    /// quietly skipped a file would be claiming coverage it does not
+    /// have. It does **not** fail the run on its own: every repository
+    /// has a PNG and a zip in it, and exiting 2 on those makes the tool
+    /// unusable in CI, which is the one place it is most worth running.
+    /// `--strict` is there for a pipeline that wants zero tolerance.
+    pub(crate) fn was_skipped(&self) -> bool {
         self.diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.severity == "error")
+            .any(|diagnostic| diagnostic.code == "skipped")
     }
 }
 
@@ -50,20 +56,38 @@ pub(crate) struct ScanOptions {
 
 pub(crate) fn scan_file(target: &Target, options: ScanOptions) -> FileReport {
     let file = target.path.to_string_lossy().into_owned();
-    match std::fs::read_to_string(&target.path) {
-        Ok(content) => scan_content(&content, file, target.language_id, options),
-        Err(error) => FileReport {
-            file,
-            format: target.language_id.to_string(),
-            urls: Vec::new(),
-            diagnostics: vec![Diagnostic {
-                severity: "error".to_string(),
-                code: "unreadable".to_string(),
-                message: format!("could not be read: {error}"),
-            }],
-            summary: Summary { urls: 0 },
-        },
-    }
+    let skipped = |reason: String| FileReport {
+        file: file.clone(),
+        format: target.language_id.to_string(),
+        urls: Vec::new(),
+        diagnostics: vec![Diagnostic {
+            severity: "warning".to_string(),
+            code: "skipped".to_string(),
+            message: reason,
+        }],
+        summary: Summary { urls: 0 },
+    };
+
+    let bytes = match std::fs::read(&target.path) {
+        Ok(bytes) => bytes,
+        Err(error) => return skipped(error.to_string()),
+    };
+    let Ok(content) = String::from_utf8(bytes) else {
+        return skipped("not UTF-8 text".to_string());
+    };
+    scan_content(without_bom(&content), file, target.language_id, options)
+}
+
+/// Drop a leading byte-order mark.
+///
+/// No editor shows it and VS Code strips it before the extension ever
+/// sees a document, so without this the two frontends read the same file
+/// differently the moment anything on Windows saves it — Notepad, Excel,
+/// a PowerShell redirect. It is three invisible bytes that shift every
+/// column on the first line, and in a structured format it can lose the
+/// document entirely.
+pub(crate) fn without_bom(content: &str) -> &str {
+    content.strip_prefix('\u{feff}').unwrap_or(content)
 }
 
 pub(crate) fn scan_content(
@@ -109,8 +133,8 @@ pub(crate) fn scan_content(
 /// "None found" is not an error and not a judgment about the URLs — it
 /// is the honest answer to "is there anything here", and it is what
 /// makes the tool composable in a shell.
-pub(crate) fn exit_code(reports: &[FileReport]) -> u8 {
-    if reports.iter().any(FileReport::is_unexamined) {
+pub(crate) fn exit_code(reports: &[FileReport], strict: bool) -> u8 {
+    if strict && reports.iter().any(FileReport::was_skipped) {
         return 2;
     }
     u8::from(!reports.iter().any(|report| report.summary.urls > 0))
@@ -154,7 +178,7 @@ mod tests {
         tree.write("docs/a.md", "see https://a.example/x\n");
         let report = scan_file(&target(&tree, "docs/a.md", "markdown"), options());
         assert_eq!(report.summary.urls, 1);
-        assert_eq!(exit_code(&[report]), 0);
+        assert_eq!(exit_code(&[report], false), 0);
     }
 
     /// grep's convention: nothing found is 1, and it is not an error.
@@ -164,28 +188,33 @@ mod tests {
         tree.write("docs/a.md", "nothing to see\n");
         let report = scan_file(&target(&tree, "docs/a.md", "markdown"), options());
         assert_eq!(report.summary.urls, 0);
-        assert_eq!(exit_code(&[report]), 1);
+        assert_eq!(exit_code(&[report], false), 1);
     }
 
     #[test]
     fn one_file_with_urls_is_enough_for_zero() {
         let empty = scan_content("nothing", "a".into(), "markdown", options());
         let found = scan_content("https://a.example", "b".into(), "markdown", options());
-        assert_eq!(exit_code(&[empty, found]), 0);
+        assert_eq!(exit_code(&[empty, found], false), 0);
     }
 
+    /// Changed deliberately: a file that could not be read is reported
+    /// and does not fail the run, because every repository has one and
+    /// exiting 2 on it meant the tool never got run in CI at all.
     #[test]
-    fn an_unreadable_file_ends_the_run_at_two() {
+    fn an_unreadable_file_is_reported_and_does_not_end_the_run() {
         let tree = TempTree::new("scan-unreadable");
         let report = scan_file(&target(&tree, "gone.md", "markdown"), options());
-        assert!(report.is_unexamined());
-        assert_eq!(report.diagnostics[0].code, "unreadable");
-        assert_eq!(exit_code(&[report]), 2);
+        assert!(report.was_skipped());
+        assert_eq!(report.diagnostics[0].code, "skipped");
+        assert_eq!(report.diagnostics[0].severity, "warning");
+        assert_eq!(exit_code(std::slice::from_ref(&report), false), 1);
+        assert_eq!(exit_code(&[report], true), 2);
     }
 
     #[test]
     fn nothing_to_examine_reports_none_found() {
-        assert_eq!(exit_code(&[]), 1);
+        assert_eq!(exit_code(&[], false), 1);
     }
 
     #[test]
@@ -211,5 +240,64 @@ mod tests {
             describe(&report, &report.urls[0]),
             "a.md:1:3  https://a.example"
         );
+    }
+}
+
+#[cfg(test)]
+mod hazards {
+    use super::*;
+
+    /// Three invisible bytes that Notepad, Excel and a PowerShell
+    /// redirect all add, and that VS Code strips before the extension
+    /// ever sees a document.
+    #[test]
+    fn a_byte_order_mark_is_not_part_of_the_document() {
+        assert_eq!(
+            without_bom("\u{feff}https://a.example"),
+            "https://a.example"
+        );
+        assert_eq!(without_bom("https://a.example"), "https://a.example");
+        // Only a leading one: elsewhere it is a zero-width no-break
+        // space and belongs to the text.
+        assert_eq!(without_bom("a\u{feff}b"), "a\u{feff}b");
+    }
+
+    #[test]
+    fn a_byte_order_mark_does_not_move_the_first_column() {
+        let options = ScanOptions { dedupe: false };
+        let plain = scan_content("https://a.example", "x".to_string(), "markdown", options);
+        let marked = scan_content(
+            without_bom("\u{feff}https://a.example"),
+            "x".to_string(),
+            "markdown",
+            options,
+        );
+        assert!(!plain.urls.is_empty(), "the baseline must find something");
+        assert_eq!(marked.urls.len(), plain.urls.len());
+        assert_eq!(
+            marked.urls[0].position.map(|p| p.column),
+            plain.urls[0].position.map(|p| p.column)
+        );
+    }
+
+    /// The one that decides whether this is usable in CI. Every real
+    /// repository contains something that is not text, and failing the
+    /// build over it means the tool never gets run at all.
+    #[test]
+    fn a_skipped_file_does_not_fail_the_run() {
+        let skipped = FileReport {
+            file: "logo.png".to_string(),
+            format: "markdown".to_string(),
+            urls: Vec::new(),
+            diagnostics: vec![Diagnostic {
+                severity: "warning".to_string(),
+                code: "skipped".to_string(),
+                message: "not UTF-8 text".to_string(),
+            }],
+            summary: Summary { urls: 0 },
+        };
+        assert!(skipped.was_skipped());
+        assert_eq!(exit_code(std::slice::from_ref(&skipped), false), 1);
+        assert_eq!(exit_code(&[skipped], true), 2, "--strict is opt-in");
     }
 }

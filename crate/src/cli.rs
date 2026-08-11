@@ -28,9 +28,15 @@ Options:
   --format <format>    force a format instead of inferring it from the
                        file name; required with --stdin
   --stdin              read one document from stdin
+  --strict             exit 2 if any file could not be read, rather than
+                       reporting it and carrying on
   --follow-symlinks    descend symlinked directories when walking a tree
   --hidden             walk hidden files and directories too
   --no-ignore          walk files that .gitignore excludes
+
+Files that are not text, or that cannot be opened, are named on stderr
+and carried in the report, and do not by themselves fail the run — every
+repository has a PNG in it. --strict turns them back into a failure.
 
 Exit codes follow grep: 0 URLs found · 1 none found · 2 malformed
 question. Finding none is an answer, not an error.";
@@ -38,8 +44,9 @@ question. Finding none is an answer, not an error.";
 /// Every flag the parser accepts. Held equal to the flags named in USAGE
 /// by a test, and consulted at runtime so the list is what the parser
 /// actually honours.
-const FLAGS: [&str; 6] = [
+const FLAGS: [&str; 7] = [
     "--dedupe",
+    "--strict",
     "--format",
     "--stdin",
     "--follow-symlinks",
@@ -51,6 +58,7 @@ const FLAGS: [&str; 6] = [
 struct Options {
     inputs: Vec<PathBuf>,
     stdin: bool,
+    strict: bool,
     format: Option<&'static str>,
     scan: ScanOptions,
     walk: WalkOptions,
@@ -104,7 +112,7 @@ fn execute(args: &[String]) -> Result<u8, String> {
     drop(stdout);
 
     summarise(&reports);
-    Ok(scan::exit_code(&reports))
+    Ok(scan::exit_code(&reports, options.strict))
 }
 
 fn scan_stdin(options: &Options) -> Result<FileReport, String> {
@@ -117,7 +125,7 @@ fn scan_stdin(options: &Options) -> Result<FileReport, String> {
         .read_to_string(&mut content)
         .map_err(|error| format!("could not read stdin: {error}"))?;
     Ok(scan::scan_content(
-        &content,
+        scan::without_bom(&content),
         "<stdin>".to_string(),
         format,
         options.scan,
@@ -128,6 +136,7 @@ fn parse(args: &[String]) -> Result<Options, String> {
     let mut options = Options {
         inputs: Vec::new(),
         stdin: false,
+        strict: false,
         format: None,
         scan: ScanOptions { dedupe: false },
         walk: WalkOptions::default(),
@@ -145,6 +154,7 @@ fn parse(args: &[String]) -> Result<Options, String> {
         match arg.as_str() {
             "--dedupe" => options.scan.dedupe = true,
             "--stdin" => options.stdin = true,
+            "--strict" => options.strict = true,
             "--hidden" => options.walk.hidden = true,
             "--no-ignore" => options.walk.respect_ignore = false,
             "--follow-symlinks" => options.walk.follow_symlinks = true,
@@ -239,11 +249,17 @@ mod tests {
         assert!(error.contains("--dedup"), "{error}");
     }
 
-    /// There is no verdict, so there is no flag that would produce one.
-    /// If this ever needs changing, the tool has grown an opinion.
+    /// There is no verdict about a URL, so there is no flag that would
+    /// produce one. If this ever needs changing, the tool has grown an
+    /// opinion.
+    ///
+    /// `--strict` is deliberately not in this list. It says whether the
+    /// scan covered everything it was pointed at, which is a statement
+    /// about this run and not about any URL in it — the same axis as
+    /// "none found", which has always been an exit code here.
     #[test]
     fn no_flag_asks_for_a_judgment() {
-        for attempt in ["--strict", "--check", "--insecure", "--fail-on", "--allow"] {
+        for attempt in ["--check", "--insecure", "--fail-on", "--allow", "--score"] {
             assert!(
                 parse(&[attempt.into(), "x".into()]).is_err(),
                 "{attempt} was accepted"

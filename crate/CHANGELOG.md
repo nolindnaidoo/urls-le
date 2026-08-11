@@ -44,3 +44,24 @@ positions, XML emitted attribute URLs twice — and porting it as one
 function is what stops that recurring in a second language.
 
 [0.1.0]: https://github.com/nolindnaidoo/urls-le/releases/tag/crate-v0.1.0
+
+### Fixed
+
+- **A leading byte-order mark is no longer part of the document.** Three
+  invisible bytes, added by Notepad, Excel and a PowerShell redirect, and
+  stripped by VS Code before the extension ever sees a file — so the two
+  frontends read the same file differently. It shifted every column on
+  line one, and before a `{` it made a structured parser reject the whole
+  document, which is indistinguishable from a file with no URLs in it.
+
+- **A file that cannot be read no longer fails the run.** Every
+  repository has a PNG, a zip and something the runner lacks permission
+  for. Exiting 2 on those made the tool unusable in CI, which is the one
+  place it is most worth running. Such a file is now named on stderr and
+  carried in the report with a `skipped` diagnostic, and the exit code
+  reflects what was found. `--strict` restores the old behaviour for a
+  pipeline that wants zero tolerance.
+
+- **A file that is not text is named rather than dropped.** It used to
+  vanish from the report entirely, which reads to whoever ran it as
+  "that file was clean".
