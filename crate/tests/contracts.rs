@@ -132,18 +132,18 @@ fn an_unknown_flag_exits_two_and_names_itself() {
     assert!(run.stdout.is_empty(), "a refusal writes no report");
 }
 
-/// The tool has no opinions, so there is no flag that would produce one.
-/// If this ever passes for a new flag, it has grown a position.
+/// The tool has no opinions about a URL, so there is no flag that would
+/// produce one. If this ever passes for a new flag, it has grown a
+/// position.
+///
+/// `--strict` is deliberately not in this list. It says whether the scan
+/// covered everything it was pointed at, which is a statement about this
+/// run and not about any URL in it — the same axis as "none found",
+/// which has always been an exit code here.
 #[test]
 fn no_flag_asks_for_a_judgment() {
     let tree = docs_tree("nojudgment");
-    for attempt in [
-        "--strict",
-        "--check",
-        "--insecure",
-        "--fail-on",
-        "--no-http",
-    ] {
+    for attempt in ["--check", "--insecure", "--fail-on", "--no-http", "--score"] {
         assert_eq!(
             run(&[attempt, &tree.path().to_string_lossy()]).code,
             2,
