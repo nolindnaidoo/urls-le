@@ -225,8 +225,12 @@ fn stdin_without_a_format_exits_two() {
         .stdin
         .as_mut()
         .expect("stdin")
+        // A refusal happens before this write lands, so the pipe may
+        // already be closed. That race is the behaviour under test, not
+        // a failure of it — the exit code below is what is being
+        // asserted.
         .write_all(b"x")
-        .expect("written");
+        .ok();
     assert_eq!(
         child.wait_with_output().expect("finishes").status.code(),
         Some(2)
