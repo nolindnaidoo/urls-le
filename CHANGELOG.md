@@ -9,70 +9,64 @@ This file covers the **VS Code extension**. The Rust CLI in `crate/` is a
 separate product on its own cadence and keeps its own
 [CHANGELOG](crate/CHANGELOG.md).
 
-## [Unreleased]
+## [2.3.0] - 2026-08-12
+
+Extract now works in the documents you already expected it to work in.
 
 ### Changed
 
-- **Extract now works in every document.** A language with no
-  format-aware extractor — Python, Go, shell, SQL, CSV, plain text, a log
-  — is scanned whole instead of reporting "Unsupported language". Each of
-  the eleven extractors is that same scan *minus* an exclusion (a fenced
-  block, an HTML comment, everything that is not a JSON string), so the
-  whole-document scan is their superset, and a URL is unambiguous in any
-  text. `fileType` still reports `unknown` for that pass, so a caller can
-  tell which of the two ran.
+- **Extract works in every document.** Python, Go, shell, SQL, CSV, plain
+  text, a log, a file with no extension — running Extract in any of them
+  used to report "Unsupported language". They are read now. A codebase is
+  mostly source, and refusing to look at it turned a scan that never ran
+  into a result that read as clean.
 
-  The command surface is unchanged — no new commands, no new settings.
-  `activationEvents` becomes `onStartupFinished` and the editor context
-  menu drops its language filter, because gating either on a list of
-  eleven would leave the command greyed out in the documents that now
-  work.
+  **Expect your counts to go up.** Nothing was loosened: each of the
+  eleven format-aware extractors is the whole-document scan *minus* one
+  exclusion — a fenced code block, an HTML comment, everything that is
+  not a JSON string — so a document no extractor knows about gets the
+  same scan without an exclusion to apply. `fileType` reports `unknown`
+  for that pass, so you can always tell which of the two ran.
 
-  The `extract_urls` MCP tool moves with it: `format` accepts any name,
-  and one with no extractor is scanned as plain text rather than refused.
-  `csv`, `tsv`, `plaintext`, `txt` and `log` join the alias table, and
-  `csv` and `plaintext` the advertised enum.
+  No new commands and no new settings. The extension now activates on
+  startup and the editor context menu no longer filters by language,
+  because gating either on a list of eleven would grey the command out in
+  exactly the documents that now work.
 
-- **Characterization goldens updated**: `unknown language returns a
-  format error` is now `unknown language is scanned whole`.
-
-- **INI is a whole-content scan minus comment lines (`;` or `#`)**,
-  instead of a parse followed by a walk of the parsed string values. The
-  `ini` package never throws, so a line with no `=` became a key whose
-  value is `true` and the URL in it was dropped — while the fallback this
-  extractor declared in its own `catch` could never fire. The Rust
-  server's stricter parser refused that line and fell back to a whole
-  document scan, so the same `extract_urls` call answered differently
-  depending on which server an agent reached. A URL in a comment is still
-  excluded, so the shared corpus is unchanged. The `ini` dependency is
-  gone with it.
+- **`.ini` files are scanned like `.properties` files.** The whole
+  document is read and comment lines — `;` or `#` — are excluded, instead
+  of the file being parsed and its values walked. A well-formed INI file
+  gives the same answer as before, including still skipping URLs in
+  comments. What changes is a file that is *not* valid INI: a line with no
+  `=` used to swallow the URL on it silently, and now it does not.
 
 ### Fixed
 
-- **A dotfile now resolves by its whole name.** `resolveFormat(undefined,
-  '.env')` split on the last dot and found nothing; the Rust crate always
-  read the whole name first. Alias lookups also read own keys only — a
-  filename ending `.toString` used to hand back a function that every
-  truthiness check downstream accepted as a language id.
+- **A dotfile is resolved by its whole name.** Asking the MCP server about
+  `.env` split the name on its last dot, found nothing before it, and fell
+  back to plain text — so a `.env` file was not read as a properties file.
+  Alias lookups also walked inherited properties, so a filename ending
+  `.toString` handed back a JavaScript function that every check
+  downstream happily accepted as a language id.
 
-- **`extract_urls` strips a leading byte-order mark.** VS Code removes
-  one before the engine ever sees a buffer, so the MCP tool was the one
-  entry where it survived — into a TOML parse, where the two
-  implementations disagree about whether a document may begin with one.
+- **`extract_urls` and the Rust CLI disagreed about the same document.**
+  They are meant to be one tool offered by two servers, and they were two.
+  Beyond the `.ini` change above:
 
-  The dotfile and inherited-property bugs above were found by hand; this
-  one was found by `scripts/differential.ts`, which is the check that
-  finds the next. It generates documents and argument shapes — filenames
-  included, because two of the three were resolution bugs — and requires
-  both MCP servers to answer the shared `extract_urls` identically,
-  printing its seed on every run so a failure reproduces.
+  - The two accepted different file extensions. This side lacked `mdx`,
+    the crate lacked `mdown`, `mkd`, `env`, `cfg`, `conf`, `svg`, `xsl`
+    and `pom`, and neither read `mts` or `cts`. Both carry all of them
+    now, held equal from both directions by a shared contract file.
+  - A document beginning with a byte-order mark — three invisible bytes
+    that Notepad, Excel and a PowerShell redirect all add — parsed as TOML
+    on one side and not the other. The editor strips a leading mark before
+    this extension ever sees a buffer, so the MCP tool was the one entry
+    where it survived. It is stripped there now too.
 
-- **The MCP server accepted file extensions the Rust CLI refused, and
-  refused one it accepted.** `extract_urls` is meant to be one tool
-  offered by two servers; it was two. This side lacked `mdx`, the crate
-  lacked `mdown`, `mkd`, `env`, `cfg`, `conf`, `svg`, `xsl` and `pom`,
-  and neither read `mts` or `cts`. Both tables now carry all eleven, and
-  `crate/fixtures/aliases.json` holds them equal from both directions.
+  These are generated against rather than only fixed: a new check builds
+  documents and argument shapes from a printed seed and requires both
+  servers to answer identically, so the next disagreement fails a build
+  instead of reaching someone's editor.
 
 ### Added
 
@@ -80,18 +74,15 @@ separate product on its own cadence and keeps its own
   to crates.io as [`urls-le`](https://crates.io/crates/urls-le). It runs
   the same extraction over a whole tree, with exit codes following grep —
   0 found, 1 none found, 2 malformed question — so it composes in a shell
-  and feeds a link checker a better list than a grep can.
+  and hands a link checker a better list than a grep can.
 
   It reports what is there and nothing else: no link checking, no
-  verdicts, no filtering. The extension stays the reference
-  implementation, `crate/fixtures/` is the contract, and `ci-crate.yml`
-  watches `src/extraction/**` so neither side can drift green.
+  verdicts, no filtering. This extension stays the reference
+  implementation for extraction, and CI fails when either side drifts
+  from the shared corpus.
 
-### Changed
-
-- Documentation only for the extension itself — no behaviour change. The
-  README, the npm server's README and the manifest now cross-reference
-  the CLI, and the CLI references them back.
+- Cross-references between the extension, the npm server and the CLI, so
+  a reader who arrives at one can find the other two.
 
 ## [2.2.4] - 2026-08-07
 

@@ -114,9 +114,32 @@ read whatever its extension. Naming a file is an instruction.
   dedupe is a separate, opt-in step.
 - **`mailto:` needs an `@`; `tel:` needs a subject.** Applied to every
   format, so no two can disagree about what counts as well-formed.
-- **Five protocols**: `http`, `https`, `ftp`, `file`, `mailto`, `tel`.
+- **Five patterns, six protocols**: `http` and `https` share one pattern
+  and are told apart by the scheme actually matched; then `ftp`, `file`,
+  `mailto`, `tel`.
 - **Limits are behaviour**: content over 10 MB is refused with a message,
   and no more than 50,000 URLs are returned from one document.
+
+### What is not matched, and is not a bug report
+
+The five patterns above are the whole set. Written down so nobody has to
+discover it by running the tool:
+
+- **No `ws://`, `wss://`, `ssh://`, `git://`, `s3://` or `gs://`.**
+- **No bare domains.** `example.com` in prose is not extracted, and
+  neither is `foo.py`. There is no TLD list here, deliberately: the
+  moment there is one, this tool starts guessing, and the guesses are
+  wrong in prose and in source in different ways.
+- **No IPv6 literals.** `https://[2001:db8::1]/` yields nothing at all,
+  because `[` is in the delimiter set that ends a URL, so the pattern
+  never gets its first character. Located precisely rather than left to
+  be rediscovered; fixing it means changing the delimiter set, which is
+  where the zero-false-positive property lives, so it needs its own
+  corpus pass.
+- **No relative links.** `/docs/setup` is not a URL and never was.
+
+Adding a protocol is a change to the shared scanner and therefore a
+change to **both** frontends and the corpus at once.
 
 ### Which subset each format sees
 
