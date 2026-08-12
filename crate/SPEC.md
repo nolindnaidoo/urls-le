@@ -3,10 +3,11 @@
 A port of the [URLs-LE](https://github.com/nolindnaidoo/urls-le) VS Code
 extension to a Rust CLI and MCP server.
 
-**Parity first, and parity is the whole of it.** The extension is the
-reference implementation. Anything this produces for a given document
-must match what the extension produces for that document. A difference
-is a regression until proven otherwise.
+**One answer is held equal; the surfaces are not.** The shared
+`extract_urls` MCP tool must return the same URLs, their parts, and their positions
+from either server — a difference there is a bug. Everything else is
+IDE-first in the extension and terminal-first here, and is meant to
+differ. See "Deliberate divergences".
 
 ## The one question
 
