@@ -36,6 +36,17 @@ separate product on its own cadence and keeps its own
 - **Characterization goldens updated**: `unknown language returns a
   format error` is now `unknown language is scanned whole`.
 
+- **INI is a whole-content scan minus comment lines (`;` or `#`)**,
+  instead of a parse followed by a walk of the parsed string values. The
+  `ini` package never throws, so a line with no `=` became a key whose
+  value is `true` and the URL in it was dropped — while the fallback this
+  extractor declared in its own `catch` could never fire. The Rust
+  server's stricter parser refused that line and fell back to a whole
+  document scan, so the same `extract_urls` call answered differently
+  depending on which server an agent reached. A URL in a comment is still
+  excluded, so the shared corpus is unchanged. The `ini` dependency is
+  gone with it.
+
 ### Fixed
 
 - **A dotfile now resolves by its whole name.** `resolveFormat(undefined,
@@ -44,7 +55,17 @@ separate product on its own cadence and keeps its own
   filename ending `.toString` used to hand back a function that every
   truthiness check downstream accepted as a language id.
 
+- **`extract_urls` strips a leading byte-order mark.** VS Code removes
+  one before the engine ever sees a buffer, so the MCP tool was the one
+  entry where it survived — into a TOML parse, where the two
+  implementations disagree about whether a document may begin with one.
 
+  The dotfile and inherited-property bugs above were found by hand; this
+  one was found by `scripts/differential.ts`, which is the check that
+  finds the next. It generates documents and argument shapes — filenames
+  included, because two of the three were resolution bugs — and requires
+  both MCP servers to answer the shared `extract_urls` identically,
+  printing its seed on every run so a failure reproduces.
 
 - **The MCP server accepted file extensions the Rust CLI refused, and
   refused one it accepted.** `extract_urls` is meant to be one tool

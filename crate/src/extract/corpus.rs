@@ -11,7 +11,7 @@ use super::{FileType, extract};
 
 const EXTRACTION: &str = include_str!("../../fixtures/extraction.json");
 
-const DOCUMENTS: [(&str, &str); 14] = [
+const DOCUMENTS: [(&str, &str); 17] = [
     ("urls.md", include_str!("../../fixtures/documents/urls.md")),
     (
         "urls.html",
@@ -50,8 +50,20 @@ const DOCUMENTS: [(&str, &str); 14] = [
         "broken.toml",
         include_str!("../../fixtures/documents/broken.toml"),
     ),
+    ("urls.ts", include_str!("../../fixtures/documents/urls.ts")),
     // Read through the fallback: no format-aware extractor, nothing to
-    // exclude, and every URL still found.
+    // exclude, and every URL still found. `csv` and `plaintext` are
+    // advertised formats that resolve to that same pass, so they carry a
+    // document each — `tests/coverage_matrix.rs` fails when an
+    // advertised format has none.
+    (
+        "urls.csv",
+        include_str!("../../fixtures/documents/urls.csv"),
+    ),
+    (
+        "urls.txt",
+        include_str!("../../fixtures/documents/urls.txt"),
+    ),
     ("urls.py", include_str!("../../fixtures/documents/urls.py")),
     ("urls.go", include_str!("../../fixtures/documents/urls.go")),
     ("urls.sh", include_str!("../../fixtures/documents/urls.sh")),

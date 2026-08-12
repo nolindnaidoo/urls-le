@@ -42,7 +42,13 @@ const MAX_RESULTS_SCHEMA = {
 };
 
 async function extract(args: Record<string, unknown>): Promise<unknown> {
-	const content = readString(args, 'content');
+	// A leading byte-order mark is not part of the document. VS Code strips it
+	// before the engine ever sees a buffer, and the Rust CLI strips it before
+	// reading a file — so this tool was the one entry where it survived, and it
+	// survived into a TOML parse, where the two implementations disagree about
+	// whether a document may begin with one. Found by scripts/differential.ts.
+	const raw = readString(args, 'content');
+	const content = raw.startsWith('\ufeff') ? raw.slice(1) : raw;
 	const maxResults = readMaxResults(args);
 
 	const format = typeof args.format === 'string' ? args.format : undefined;

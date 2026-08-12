@@ -980,6 +980,177 @@
 					"context": "ftp: ftp://files.example.com/pub"
 				}
 			]
+		},
+		{
+			"name": "urls.ts as typescript",
+			"file": "urls.ts",
+			"languageId": "typescript",
+			"success": true,
+			"errors": [],
+			"expected": [
+				{
+					"value": "https://ts-comment.example.com/docs",
+					"protocol": "https",
+					"domain": "ts-comment.example.com",
+					"path": "/docs",
+					"line": 2,
+					"column": 8,
+					"context": "// See https://ts-comment.example.com/docs for the rationale."
+				},
+				{
+					"value": "https://api.example.com/v2",
+					"protocol": "https",
+					"domain": "api.example.com",
+					"path": "/v2",
+					"line": 7,
+					"column": 31,
+					"context": "const API: Endpoint = { url: 'https://api.example.com/v2' };"
+				},
+				{
+					"value": "http://legacy.example.com/v1",
+					"protocol": "http",
+					"domain": "legacy.example.com",
+					"path": "/v1",
+					"line": 8,
+					"column": 17,
+					"context": "const LEGACY = \"http://legacy.example.com/v1\";"
+				},
+				{
+					"value": "ftp://mirror.example.com/pub/ts",
+					"protocol": "ftp",
+					"domain": "mirror.example.com",
+					"path": "/pub/ts",
+					"line": 9,
+					"column": 19,
+					"context": "const TEMPLATE = `ftp://mirror.example.com/pub/ts`;"
+				},
+				{
+					"value": "mailto:support@example.com",
+					"protocol": "mailto",
+					"domain": null,
+					"path": "support@example.com",
+					"line": 11,
+					"column": 28,
+					"context": "/* A block comment holding mailto:support@example.com */"
+				}
+			]
+		},
+		{
+			"name": "urls.csv as csv",
+			"file": "urls.csv",
+			"languageId": "csv",
+			"success": true,
+			"errors": [],
+			"expected": [
+				{
+					"value": "https://example.com/home,mailto:hello@example.com",
+					"protocol": "https",
+					"domain": "example.com",
+					"path": "/home,mailto:hello@example.com",
+					"line": 2,
+					"column": 9,
+					"context": "example,https://example.com/home,mailto:hello@example.com"
+				},
+				{
+					"value": "mailto:hello@example.com",
+					"protocol": "mailto",
+					"domain": null,
+					"path": "hello@example.com",
+					"line": 2,
+					"column": 34,
+					"context": "example,https://example.com/home,mailto:hello@example.com"
+				},
+				{
+					"value": "http://legacy.example.com/index.html,mailto:old@example.com",
+					"protocol": "http",
+					"domain": "legacy.example.com",
+					"path": "/index.html,mailto:old@example.com",
+					"line": 3,
+					"column": 8,
+					"context": "legacy,http://legacy.example.com/index.html,mailto:old@example.com"
+				},
+				{
+					"value": "mailto:old@example.com",
+					"protocol": "mailto",
+					"domain": null,
+					"path": "old@example.com",
+					"line": 3,
+					"column": 45,
+					"context": "legacy,http://legacy.example.com/index.html,mailto:old@example.com"
+				},
+				{
+					"value": "ftp://mirror.example.com/pub,tel:+15551234567",
+					"protocol": "ftp",
+					"domain": "mirror.example.com",
+					"path": "/pub,tel:+15551234567",
+					"line": 4,
+					"column": 8,
+					"context": "mirror,ftp://mirror.example.com/pub,tel:+15551234567"
+				},
+				{
+					"value": "tel:+15551234567",
+					"protocol": "tel",
+					"domain": null,
+					"path": "+15551234567",
+					"line": 4,
+					"column": 37,
+					"context": "mirror,ftp://mirror.example.com/pub,tel:+15551234567"
+				}
+			]
+		},
+		{
+			"name": "urls.txt as plaintext",
+			"file": "urls.txt",
+			"languageId": "plaintext",
+			"success": true,
+			"errors": [],
+			"expected": [
+				{
+					"value": "https://downloads.example.com/latest",
+					"protocol": "https",
+					"domain": "downloads.example.com",
+					"path": "/latest",
+					"line": 3,
+					"column": 19,
+					"context": "Downloads live at https://downloads.example.com/latest and the"
+				},
+				{
+					"value": "ftp://mirror.example.com/pub/releases.",
+					"protocol": "ftp",
+					"domain": "mirror.example.com",
+					"path": "/pub/releases.",
+					"line": 4,
+					"column": 11,
+					"context": "mirror is ftp://mirror.example.com/pub/releases."
+				},
+				{
+					"value": "mailto:help@example.com",
+					"protocol": "mailto",
+					"domain": null,
+					"path": "help@example.com",
+					"line": 6,
+					"column": 12,
+					"context": "Questions: mailto:help@example.com or tel:+15550000000"
+				},
+				{
+					"value": "tel:+15550000000",
+					"protocol": "tel",
+					"domain": null,
+					"path": "+15550000000",
+					"line": 6,
+					"column": 39,
+					"context": "Questions: mailto:help@example.com or tel:+15550000000"
+				},
+				{
+					"value": "file:///opt/example/README.txt",
+					"protocol": "file",
+					"domain": null,
+					"path": "/opt/example/README.txt",
+					"line": 7,
+					"column": 13,
+					"context": "Local copy: file:///opt/example/README.txt"
+				}
+			]
 		}
 	],
 	"scan": [

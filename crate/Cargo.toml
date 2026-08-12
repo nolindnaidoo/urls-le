@@ -40,18 +40,17 @@ serde_json = "1"
 # and its matching cannot fail. Nothing here needs a backtracking engine,
 # and not taking one is the cheaper answer.
 regex = "1"
-# The format parsers, each chosen to match what the extension uses:
-# toml for @iarna/toml, rust-ini for ini. JSON is neither — it is a
-# hand-rolled quote scanner, because the offsets have to be the raw
-# document's and a parser hands back values. Markdown, HTML, CSS and
-# JavaScript are regex in the extension and regex here.
+# The one format parser left, chosen to match what the extension uses:
+# toml for @iarna/toml. JSON is a hand-rolled token scanner, because the
+# offsets have to be the raw document's and a parser hands back values;
+# INI stopped parsing at all in 0.2.0, because which library each language
+# installed was deciding the answer. Markdown, HTML, CSS and JavaScript
+# are regex in the extension and regex here.
 #
 # `preserve_order` for the same reason paths-le needs it: without it a
 # TOML table iterates alphabetically and extraction stops following the
 # document.
 toml = { version = "1", features = ["preserve_order"] }
-# INI and `.properties`, which the extension reads with `ini`.
-rust-ini = "0.21"
 # `domain` and `path` come from a WHATWG URL parse. The extension uses
 # the platform parser; this is the same standard, a different
 # implementation, and the corpus pins where they might disagree.

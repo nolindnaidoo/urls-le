@@ -76,10 +76,18 @@ pub(crate) fn definition() -> Value {
 }
 
 pub(crate) fn run(arguments: &Value) -> Result<Value, String> {
-    let content = arguments
-        .get("content")
-        .and_then(Value::as_str)
-        .ok_or_else(|| "content is required and must be a string".to_string())?;
+    // A leading byte-order mark is not part of the document. VS Code
+    // strips it before the extension's engine ever sees a buffer and
+    // `scan.rs` strips it before the CLI reads a file, so this tool was
+    // the one entry where it survived — and it survived into a TOML
+    // parse, where the two implementations disagree about whether a
+    // document may begin with one. Generated documents found it.
+    let content = crate::scan::without_bom(
+        arguments
+            .get("content")
+            .and_then(Value::as_str)
+            .ok_or_else(|| "content is required and must be a string".to_string())?,
+    );
     let max_results = read_max_results(arguments)?;
 
     // Only a caller who named neither lands here — every name resolves,
@@ -101,12 +109,21 @@ pub(crate) fn run(arguments: &Value) -> Result<Value, String> {
         .urls
         .iter()
         .map(|url| {
-            json!({
+            // A URL a parser handed back that could not be located keeps
+            // its value and loses its position — and the npm server drops
+            // the keys entirely rather than sending null, because
+            // `JSON.stringify` omits an undefined field. This sent
+            // `"line": null` for the same document, so an agent testing
+            // `"line" in url` got two different answers from one tool.
+            let mut value = json!({
                 "value": url.value,
                 "protocol": protocol_name(url.protocol),
-                "line": url.position.map(|position| position.line),
-                "column": url.position.map(|position| position.column),
-            })
+            });
+            if let Some(position) = url.position {
+                value["line"] = json!(position.line);
+                value["column"] = json!(position.column);
+            }
+            value
         })
         .collect();
 

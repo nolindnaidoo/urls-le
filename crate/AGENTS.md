@@ -29,7 +29,9 @@ reproduces.
 ```
 crate/src/
 ├── extract/     pure: the URL scanner, the eleven format extractors
-│                and the scan every other document gets, positions.
+│                and the scan every other document gets, positions,
+│                and js.rs — JavaScript's whitespace set, which the
+│                delimiter class and every trim are held to.
 │                No filesystem, pub(crate).
 ├── walk.rs      ignore-aware tree walking and format detection
 ├── scan.rs      one file end to end — the only path either surface calls
@@ -76,6 +78,12 @@ crate/src/
 - **One regex engine.** The URL scanner needs no backreferences and no
   lookaround, so `regex` expresses it exactly and its matching cannot
   fail. Not taking a backtracking engine is the cheaper answer.
+- **Whitespace means JavaScript's whitespace, spelled out.** `str::trim`
+  and Rust's `\s` are not `String.prototype.trim` and JavaScript's `\s`:
+  the sets differ on U+FEFF and U+0085, and a byte-order mark is
+  ordinary. `extract/js.rs` holds the set in two forms with a test that
+  they agree, and every trim and the delimiter class route through it.
+  Reaching for `str::trim` here is a bug.
 - **One scanner, eleven formats, and every other file.** The extension's
   v1.x had five protocol patterns copy-pasted into ten files with
   divergent behaviour; porting it as one function is what stops that
@@ -124,8 +132,9 @@ pixelactions and scrape-le:
 - **`unsafe` is forbidden crate-wide** (`[lints.rust]`).
 - **Dependencies are a cost.** Every one is justified by a comment in
   `Cargo.toml`, and one that stops being used comes out — `jsonc-parser`
-  was declared and called nowhere, because the JSON extractor is a
-  hand-rolled quote scanner. Justify any addition; prefer the standard
+  was declared and called nowhere, and `rust-ini` came out when the INI
+  extractor stopped parsing, because which INI library each language
+  installed was deciding the answer. Justify any addition; prefer the standard
   library; prefer what is already in the tree.
 - **No network, ever.** Not even for a URL this tool just found. Link
   checking belongs to `lychee` and friends; the value here is the list.
@@ -193,6 +202,34 @@ The bar, enforced by review:
   folding — gated behind `URLS_LE_SCENARIOS` and run by CI on all three
   OSes. A skipped scenario is never reported as a pass; each one says
   plainly that it did not run.
+- **Six jobs exist because something real got through.** Each has a test
+  file and a CI job of the same name; none may be weakened to go green.
+  - `tests/hazards.rs` — a tree built at runtime, driven through the
+    built binary on all three OSes: a BOM, a lone CR, a NUL, invalid
+    UTF-8, UTF-16LE, a 1 MB line, 100k lines, a FIFO, a symlink loop, a
+    permission-denied directory, a path over 260 characters. Every case
+    asserts no panic, no hang and an exit code of 0, 1 or 2 — never a
+    signal. A case the platform cannot express says so by name.
+  - `tests/platform.rs` — `/` in every reported path, independence from
+    `TZ`, one report line per file on a case-folding filesystem, a walk
+    that survives a reserved Windows filename, and a stdin race asserted
+    on the exit code rather than on the write.
+  - `../scripts/differential.ts` — generated documents and argument
+    shapes through **both** MCP servers, requiring the shared
+    `extract_urls` to answer identically. Scoped to that tool: the two
+    *surfaces* are meant to differ. Seed printed on every run.
+  - `extract/fuzz.rs` — a seeded net over the pure layer. Deterministic
+    by default, sixty seconds in CI. Any panic, any hang, and any
+    reported span that does not line up with its source is a failure.
+  - `tests/budget.rs` — a wall-clock ceiling on a 500-file tree and a
+    linearity check, both gated behind `URLS_LE_BUDGET`. The local
+    measurement and the machine it came from are in the file.
+  - `tests/coverage_matrix.rs` — one file per alias plus a dozen
+    extensions the table has never heard of, and every advertised format
+    must have a corpus document.
+- **A fix is verified by reverting it and watching the check go red.** A
+  test that cannot fail is not a test; the three halves of the
+  JavaScript-whitespace fix were each checked that way.
 - **Every bug fix ships with a regression test** that fails before the
   fix. The `escapes-root` bug that fired on every relative path is the
   cautionary one: every unit test passed, because every one of them
@@ -211,11 +248,22 @@ cargo test --locked
 bun ../scripts/check-extraction-parity.ts   # when extraction changed
 ```
 
+The jobs that are gated locally, and what CI passes them:
+
+```bash
+URLS_LE_SCENARIOS=1 cargo test --test scenarios -- --test-threads=1
+URLS_LE_BUDGET=1 cargo test --release --test budget -- --nocapture --test-threads=1
+URLS_LE_FUZZ_SECONDS=60 cargo test --release extract::fuzz -- --nocapture
+cd .. && URLS_LE_BIN=crate/target/release/urls-le bun scripts/differential.ts
+```
+
 CI additionally builds on macOS, Windows and Linux, checks the Rust 1.88
 minimum version, runs `cargo audit`, the no-inline-`#[allow]` and
-no-filesystem-in-`extract/` policy jobs, the per-module coverage floor,
-the gated scenarios, and parity — including on extension-side edits to
-`src/extraction/**`, so neither frontend can drift green. A change is
+no-filesystem-in-`extract/` policy jobs, the per-module coverage floor
+(which skips `corpus.rs` and `fuzz.rs` as test-only scaffolding), the
+gated scenarios, the six jobs above, and parity — including on
+extension-side edits to `src/extraction/**`, so neither frontend can
+drift green. A change is
 not done because it compiles; it is done when it is tested, linted,
 documented where behavior changed (README / CHANGELOG / SPEC / this
 file), and honest — claims in docs must match the code.

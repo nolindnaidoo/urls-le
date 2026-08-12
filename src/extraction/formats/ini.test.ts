@@ -85,6 +85,36 @@ endpoint = https://api.example.com
 		// Valid INI with no URLs returns empty array
 	});
 
+	it('should exclude comment lines', () => {
+		const content =
+			'; https://semicolon.example\n# https://hash.example\nkey=https://a.example\n';
+		const urls = extractFromIni(content);
+		expect(urls).toHaveLength(1);
+		expect(urls[0]?.value).toBe('https://a.example');
+	});
+
+	// Regression: the `ini` package never throws, so a line with no `=`
+	// became a key whose value was `true` and the URL was dropped, while
+	// the Rust server's stricter parser fell back to a whole-document scan
+	// and found it. One `extract_urls` tool, two answers. Found by
+	// scripts/differential.ts.
+	it('should read a document that is not INI rather than dropping it', () => {
+		const content = 'bare https://a.example with no equals sign\n';
+		const urls = extractFromIni(content);
+		expect(urls).toHaveLength(1);
+		expect(urls[0]?.value).toBe('https://a.example');
+		expect(urls[0]?.position?.line).toBe(1);
+	});
+
+	// `=` is not in the delimiter set, so the URL runs to whitespace —
+	// reported exactly as written, which is the rule everywhere else too.
+	it('should report a URL in a key name, since it is a URL in the file', () => {
+		const content = '[section]\nhttps://a.example/k = 1\n';
+		const urls = extractFromIni(content);
+		expect(urls).toHaveLength(1);
+		expect(urls[0]?.value).toBe('https://a.example/k');
+	});
+
 	it('should extract multiple URLs from same value', () => {
 		const content = `
 [urls]

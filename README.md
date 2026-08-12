@@ -153,11 +153,11 @@ is already there; take the binary if you want no runtime, or if you want
 | HTML | `html` | `<!-- -->` comments excluded (multi-line supported) |
 | CSS | `css` | Quoted or bare `url(...)`, `@import` |
 | JavaScript / TypeScript | `javascript`, `typescript` | Strings, template literals, comments |
-| JSON | `json` | String literals only, via jsonc-parser token offsets |
+| JSON | `json` | String literals only, via jsonc-parser token offsets; comments are trivia |
 | YAML | `yaml` | Whole content, comments included |
 | Properties | `properties` | `#`/`!` comment lines excluded |
 | TOML | `toml` | Parsed values only; comments excluded |
-| INI | `ini` | Parsed values only; comments excluded |
+| INI | `ini` | Whole content; `;`/`#` comment lines excluded |
 | XML | `xml` | Attributes and text content |
 | Anything else | any | Whole document scanned; `fileType` reports `unknown` |
 
@@ -166,7 +166,7 @@ other language id — `python`, `go`, `shellscript`, `csv`, `plaintext`,
 `log`, whatever your editor calls it — is scanned whole, because a URL is
 unambiguous in any text and there is nothing in those worth excluding.
 
-Extracted protocols: `http`, `https`, `ftp`, `file`, `mailto` (requires an `@`), `tel`. Every occurrence is reported with its real line and column — TOML/INI positions are forward-located in the source and can be approximate for repeated identical values. A URL ends at whitespace or a quote/bracket delimiter, so relative links (`/docs`) and bare domains (`example.com`) are never extracted, and URLs containing raw spaces extract as space-terminated partials. Trailing `.`/`,` are kept — they are legal URL characters.
+Extracted protocols: `http`, `https`, `ftp`, `file`, `mailto` (requires an `@`), `tel`. Every occurrence is reported with its real line and column — TOML positions are forward-located in the source and can be approximate for repeated identical values. A URL ends at whitespace or a quote/bracket delimiter, so relative links (`/docs`) and bare domains (`example.com`) are never extracted, and URLs containing raw spaces extract as space-terminated partials. Trailing `.`/`,` are kept — they are legal URL characters.
 
 ## Commands
 

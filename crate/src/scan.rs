@@ -30,8 +30,8 @@ pub(crate) struct FileReport {
 }
 
 impl FileReport {
-    /// Whether this file was not read at all — not text, or not
-    /// openable.
+    /// Whether this file was **not examined** — not text, not openable,
+    /// a path the walk could not enter, or content refused for its size.
     ///
     /// It is reported rather than swallowed, because a report that
     /// quietly skipped a file would be claiming coverage it does not
@@ -39,10 +39,15 @@ impl FileReport {
     /// has a PNG and a zip in it, and exiting 2 on those makes the tool
     /// unusable in CI, which is the one place it is most worth running.
     /// `--strict` is there for a pipeline that wants zero tolerance.
+    ///
+    /// An `error`-severity diagnostic counts for the same reason the
+    /// `skipped` code does. A document over the 10 MB ceiling is refused
+    /// whole, and `--strict` used to pass it — which is exactly the
+    /// "clean result that quietly skipped a file" the rule forbids.
     pub(crate) fn was_skipped(&self) -> bool {
         self.diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.code == "skipped")
+            .any(|diagnostic| diagnostic.code == "skipped" || diagnostic.severity == "error")
     }
 }
 
@@ -54,8 +59,23 @@ pub(crate) struct ScanOptions {
     pub(crate) dedupe: bool,
 }
 
+/// The path as the report spells it: **`/` on every platform**.
+///
+/// The JSON on stdout is protocol. A consumer that splits a report path,
+/// or diffs one machine's report against another's, must not have to know
+/// which operating system produced it — and a sibling in this family
+/// shipped `\` on Windows for a whole release because nothing asserted
+/// otherwise.
+pub(crate) fn reported_path(path: &std::path::Path) -> String {
+    let text = path.to_string_lossy().into_owned();
+    if cfg!(windows) {
+        return text.replace('\\', "/");
+    }
+    text
+}
+
 pub(crate) fn scan_file(target: &Target, options: ScanOptions) -> FileReport {
-    let file = target.path.to_string_lossy().into_owned();
+    let file = reported_path(&target.path);
     let skipped = |reason: String| FileReport {
         file: file.clone(),
         format: target.language_id.to_string(),
@@ -67,6 +87,13 @@ pub(crate) fn scan_file(target: &Target, options: ScanOptions) -> FileReport {
         }],
         summary: Summary { urls: 0 },
     };
+
+    // The walk already knows this one cannot be examined — a directory it
+    // could not enter, a symlink loop it refused to follow. Reported here
+    // so it lands in the same shape as a file that could not be opened.
+    if let Some(reason) = &target.unreadable {
+        return skipped(reason.clone());
+    }
 
     let bytes = match std::fs::read(&target.path) {
         Ok(bytes) => bytes,
@@ -165,6 +192,7 @@ mod tests {
         Target {
             path: tree.path().join(relative),
             language_id,
+            unreadable: None,
         }
     }
 
@@ -215,6 +243,36 @@ mod tests {
     #[test]
     fn nothing_to_examine_reports_none_found() {
         assert_eq!(exit_code(&[], false), 1);
+    }
+
+    /// A path the walk itself could not examine lands in the report the
+    /// same way a file that could not be opened does, rather than ending
+    /// the run before anything is written.
+    #[test]
+    fn a_path_the_walk_could_not_examine_is_reported_not_fatal() {
+        let tree = TempTree::new("scan-walk-unreadable");
+        let report = scan_file(
+            &Target {
+                path: tree.path().join("locked"),
+                language_id: "plaintext",
+                unreadable: Some("Permission denied (os error 13)".to_string()),
+            },
+            options(),
+        );
+        assert!(report.was_skipped());
+        assert!(report.diagnostics[0].message.contains("Permission denied"));
+        assert_eq!(exit_code(std::slice::from_ref(&report), false), 1);
+        assert_eq!(exit_code(&[report], true), 2);
+    }
+
+    /// Report paths are `/` on every platform. Asserted here as well as
+    /// in `tests/platform.rs` so the rule has a home in the module that
+    /// owns it.
+    #[test]
+    fn a_reported_path_uses_forward_slashes() {
+        let mut path = std::path::PathBuf::from("docs");
+        path.push("guide.md");
+        assert_eq!(reported_path(&path), "docs/guide.md");
     }
 
     #[test]

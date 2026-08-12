@@ -12,6 +12,7 @@ use std::sync::LazyLock;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
+use super::js::{self, JS_SPACE_CLASS};
 use super::position::{Position, PositionIndex};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -34,7 +35,11 @@ pub(crate) enum Protocol {
 /// may legally contain (`.`, `,`) is deliberately **not** stripped —
 /// `https://x.com/a.` keeps its dot, because stripping it would corrupt
 /// the URLs that genuinely end that way.
-const DELIMS: &str = r#"[^\s<>"{}|\\^`\[\];)']"#;
+/// The whitespace half is JavaScript's `\s`, spelled out, not Rust's.
+/// The two sets differ on U+FEFF and U+0085, so a byte-order mark inside
+/// a URL ended the match on the npm server and not here.
+static DELIMS: LazyLock<String> =
+    LazyLock::new(|| format!(r#"[^{JS_SPACE_CLASS}<>"{{}}|\\^`\[\];)']"#));
 
 struct PatternSpec {
     pattern: Regex,
@@ -45,9 +50,10 @@ struct PatternSpec {
 
 static PATTERNS: LazyLock<Vec<PatternSpec>> = LazyLock::new(|| {
     let compile = |pattern: &str| Regex::new(pattern).expect("a constant pattern compiles");
+    let delims: &str = &DELIMS;
     vec![
         PatternSpec {
-            pattern: compile(&format!(r"https?://{DELIMS}+")),
+            pattern: compile(&format!(r"https?://{delims}+")),
             protocol: |value| {
                 if value.starts_with("https") {
                     Protocol::Https
@@ -57,19 +63,19 @@ static PATTERNS: LazyLock<Vec<PatternSpec>> = LazyLock::new(|| {
             },
         },
         PatternSpec {
-            pattern: compile(&format!(r"ftp://{DELIMS}+")),
+            pattern: compile(&format!(r"ftp://{delims}+")),
             protocol: |_| Protocol::Ftp,
         },
         PatternSpec {
-            pattern: compile(&format!(r"file://{DELIMS}+")),
+            pattern: compile(&format!(r"file://{delims}+")),
             protocol: |_| Protocol::File,
         },
         PatternSpec {
-            pattern: compile(&format!(r"mailto:{DELIMS}+")),
+            pattern: compile(&format!(r"mailto:{delims}+")),
             protocol: |_| Protocol::Mailto,
         },
         PatternSpec {
-            pattern: compile(&format!(r"tel:{DELIMS}+")),
+            pattern: compile(&format!(r"tel:{delims}+")),
             protocol: |_| Protocol::Tel,
         },
     ]
@@ -178,7 +184,7 @@ pub(crate) fn to_urls(content: &str, matches: &[UrlMatch]) -> Vec<Url> {
                 context: Some(
                     lines
                         .get(position.line - 1)
-                        .map_or(String::new(), |line| line.trim().to_string()),
+                        .map_or(String::new(), |line| js::trim(line).to_string()),
                 ),
                 position: Some(position),
             }
@@ -293,6 +299,42 @@ mod tests {
         assert_eq!(values("<https://a.example/x>"), ["https://a.example/x"]);
         assert_eq!(values("`https://a.example/x`"), ["https://a.example/x"]);
         assert_eq!(values("https://a.example/x;"), ["https://a.example/x"]);
+    }
+
+    /// The delimiter class's whitespace half is **JavaScript's** `\s`,
+    /// not Rust's. The two differ on exactly two characters, and both
+    /// decide where a URL ends: U+FEFF terminated a match on the npm
+    /// server and not here, U+0085 the other way round.
+    #[test]
+    fn javascripts_whitespace_set_decides_where_a_url_ends() {
+        assert_eq!(
+            values("x https://a.example\u{feff}TAIL y"),
+            ["https://a.example"],
+            "a byte-order mark is whitespace to JavaScript, so it ends the URL"
+        );
+        assert_eq!(
+            values("x https://a.example\u{85}TAIL y"),
+            ["https://a.example\u{85}TAIL"],
+            "U+0085 is not whitespace to JavaScript, so it stays in the URL"
+        );
+        // The rest of the set, which the two languages already agree on.
+        for space in ['\u{a0}', '\u{2028}', '\u{3000}', '\u{b}'] {
+            assert_eq!(
+                values(&format!("x https://a.example{space}TAIL")),
+                ["https://a.example"],
+                "{space:?}"
+            );
+        }
+    }
+
+    /// The context is the source line, trimmed the way the extension
+    /// trims it — so a line wrapped in a byte-order mark reports the same
+    /// string on both servers.
+    #[test]
+    fn the_context_is_trimmed_by_javascripts_whitespace_set() {
+        let content = "\u{feff}  https://a.example  \u{feff}";
+        let urls = to_urls(content, &scan_urls(content, 0));
+        assert_eq!(urls[0].context.as_deref(), Some("https://a.example"));
     }
 
     /// Documented limitation, ported: a trailing dot or comma is legal

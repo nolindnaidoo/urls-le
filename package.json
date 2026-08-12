@@ -261,7 +261,6 @@
 	},
 	"dependencies": {
 		"@iarna/toml": "^2.2.5",
-		"ini": "^7.0.0",
 		"jsonc-parser": "^3.3.1"
 	}
 }

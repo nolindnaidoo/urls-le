@@ -135,8 +135,8 @@ jobs:
               if "/extract/" not in f["filename"]:
                   continue
               name = f["filename"].split("/")[-1]
-              if name == "corpus.rs":
-                  continue  # the corpus runner is test-only scaffolding
+              if name in ("corpus.rs", "fuzz.rs"):
+                  continue  # test-only scaffolding: the corpus runner and the fuzz target
               pct = f["summary"]["lines"]["percent"]
               print(f"{name:16} {pct:6.2f}%")
               if pct < FLOOR:
@@ -177,6 +177,135 @@ jobs:
         with:
           tool: cargo-audit
       - run: cargo audit
+
+  # Documents and filesystems that break tools, run against the built
+  # binary over a tree the test constructs. Not a fixture directory:
+  # Windows cannot check in a FIFO, a symlink loop or a
+  # permission-denied file, so the tree is built at runtime and each
+  # case the platform cannot express says by name that it did not run.
+  #
+  # Every case asserts the same floor: no panic, no hang, and an exit
+  # code of 0, 1 or 2 — never a signal.
+  hazards:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, windows-2025, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: stable
+      - run: cargo test --locked --test hazards -- --nocapture
+
+  # Behaviour that differs by operating system, asserted rather than
+  # hoped: `/` in every reported path, independence from TZ, one report
+  # line per file on a case-folding filesystem, a walk that survives a
+  # reserved Windows filename, and a stdin race asserted on the exit
+  # code rather than on the write.
+  platform:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, windows-2025, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: stable
+      - run: cargo test --locked --test platform -- --nocapture
+      # The suite twice, because Windows ignores TZ entirely: a suite
+      # that depends on it passes on two platforms and fails on the
+      # third. tests/platform.rs asserts the binary's output is
+      # byte-identical under both; these two steps assert the suite is.
+      - name: The whole suite with TZ=UTC
+        env:
+          TZ: UTC
+        run: cargo test --locked
+      - name: The whole suite with TZ unset
+        run: cargo test --locked
+
+  # The corpus pins the cases somebody thought of; this generates the
+  # ones nobody did, and requires both MCP servers to answer the SHARED
+  # extract_urls tool identically — same document in, same envelope out.
+  #
+  # Scoped to that tool on purpose. The CLI is terminal-first (a tree
+  # walk, exit codes, JSON Lines, --strict) and the extension is
+  # IDE-first; those surfaces are meant to differ. What may not differ
+  # is the one tool both of them offer under the same name.
+  differential:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: stable
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.3.13
+      - run: cargo build --locked --release
+      - name: Install dependencies
+        working-directory: .
+        run: bun install --frozen-lockfile
+      # A fixed seed so a failure reproduces, and the seed is printed on
+      # every run, pass or fail.
+      - name: Generated documents, both servers
+        working-directory: .
+        env:
+          URLS_LE_BIN: crate/target/release/urls-le
+          DIFFERENTIAL_SEED: '20260812'
+          DIFFERENTIAL_CASES: '4000'
+        run: bun scripts/differential.ts
+
+  # A standing net over the pure layer — the scanner, the delimiter
+  # class and the eleven subset rules. Sixty seconds, not to
+  # convergence. Any panic, any hang, any reported span that does not
+  # line up with its source is a failure, and the seed is printed so a
+  # red build reproduces.
+  fuzz:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: stable
+      - name: Fuzz the extraction layer for sixty seconds
+        env:
+          URLS_LE_FUZZ_SECONDS: '60'
+        run: cargo test --locked --release extract::fuzz -- --nocapture --test-threads=1
+
+  # A wall-clock ceiling on a fixed tree, and a linearity check on top
+  # of it. A sibling in this family was fifty times slower than the rest
+  # for a whole release because nothing measured it. Ubuntu only: a
+  # timing assertion on three shared runners is three chances to flake
+  # for a reason that has nothing to do with the code.
+  budget:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: stable
+      - name: Scan a 500-file tree inside its budget
+        env:
+          URLS_LE_BUDGET: '1'
+        run: cargo test --locked --release --test budget -- --nocapture --test-threads=1
+
+  # Does this crate open what it claims to open? One file per alias plus
+  # a dozen extensions the table has never heard of, walked once — a
+  # file the walk skips is a failure, and so is an advertised format
+  # with no corpus document. This is the check that would have made
+  # "opens 21 of 88" visible without anyone counting by hand.
+  coverage-matrix:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: stable
+      - run: cargo test --locked --test coverage_matrix -- --nocapture
 
   # Fails when the extension's extraction behaviour and the shared
   # corpus (crate/fixtures/) disagree — the reason both frontends live

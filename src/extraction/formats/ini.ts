@@ -1,27 +1,32 @@
-import * as ini from 'ini';
 import type { Url } from '../../types';
-import {
-	locateParsedValues,
-	scanUrls,
-	toUnpositionedUrls,
-	toUrls,
-} from '../heuristics';
-import { collectStrings } from './collectStrings';
+import { scanUrls, toUrls } from '../heuristics';
+import { createPositionIndex } from '../position';
 
 /**
- * INI: parse, walk string values, then forward-locate each URL in the
- * source for a real position — v1.x returned no positions at all from
- * this path. Comment lines (; or #) never contribute (the parser drops
- * them). On a parse error the whole content is scanned instead.
+ * INI: whole-content scan, minus comment lines (; or #).
+ *
+ * **No parser.** This used to parse with the `ini` package and then
+ * forward-locate each value, which made the answer depend on which INI
+ * library each language happened to install. `ini` never throws — a line
+ * with no `=` becomes a key whose value is `true`, which `collectStrings`
+ * skips, so the URL vanished and the declared fallback below could never
+ * fire. The Rust server's parser refuses that same line and fell back to
+ * a whole-document scan, so it found the URL. One document, one
+ * `extract_urls` tool, two servers, two answers — found by generated
+ * documents in `scripts/differential.ts`.
+ *
+ * A rule both sides can state in three lines cannot drift that way, and
+ * it is what the .properties extractor has always done. The shared
+ * corpus is unchanged: a URL in a comment stays excluded.
  */
 export function extractFromIni(content: string): readonly Url[] {
-	try {
-		const parsed = ini.parse(content);
-		const strings = collectStrings(parsed);
-		const { located, unlocated } = locateParsedValues(content, strings);
-		return [...toUrls(content, located), ...toUnpositionedUrls(unlocated)];
-	} catch (error) {
-		console.warn('[URLs-LE] INI parsing failed, using fallback:', error);
-		return toUrls(content, scanUrls(content));
-	}
+	const lines = content.split('\n');
+	const toPosition = createPositionIndex(content);
+
+	const matches = scanUrls(content).filter((match) => {
+		const line = lines[toPosition(match.start).line - 1]?.trim() ?? '';
+		return !line.startsWith(';') && !line.startsWith('#');
+	});
+
+	return toUrls(content, matches);
 }

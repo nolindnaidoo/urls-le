@@ -1,0 +1,4 @@
+name,homepage,contact
+example,https://example.com/home,mailto:hello@example.com
+legacy,http://legacy.example.com/index.html,mailto:old@example.com
+mirror,ftp://mirror.example.com/pub,tel:+15551234567

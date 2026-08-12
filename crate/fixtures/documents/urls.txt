@@ -1,0 +1,7 @@
+Release notes, plain text.
+
+Downloads live at https://downloads.example.com/latest and the
+mirror is ftp://mirror.example.com/pub/releases.
+
+Questions: mailto:help@example.com or tel:+15550000000
+Local copy: file:///opt/example/README.txt

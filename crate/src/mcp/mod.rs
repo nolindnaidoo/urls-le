@@ -185,12 +185,18 @@ fn scan_tool(arguments: &Value) -> Result<Value, String> {
         .iter()
         .map(|report| report["summary"]["urls"].as_u64().unwrap_or(0))
         .sum();
+    // The same predicate `--strict` uses on the terminal surface. It
+    // checked `severity == "error"` alone, which is the one shape a
+    // skipped file never has — so an MCP caller was told a scan covered a
+    // tree it could not fully read. Both surfaces call one entry point;
+    // this is the rule that had grown a second copy.
     let diagnostics: Vec<Value> = reports
         .iter()
         .filter(|report| {
-            report["diagnostics"]
-                .as_array()
-                .is_some_and(|list| list.iter().any(|d| d["severity"] == "error"))
+            report["diagnostics"].as_array().is_some_and(|list| {
+                list.iter()
+                    .any(|d| d["severity"] == "error" || d["code"] == "skipped")
+            })
         })
         .map(|report| {
             warning(

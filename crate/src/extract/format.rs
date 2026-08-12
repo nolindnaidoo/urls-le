@@ -8,6 +8,8 @@
 
 use serde::Serialize;
 
+use super::js;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub(crate) enum FileType {
@@ -123,7 +125,11 @@ const ALIASES: [(&str, &str); 40] = [
 ];
 
 fn normalise(value: &str) -> String {
-    let trimmed = value.trim().to_lowercase();
+    // `js::trim`, not `str::trim`: the npm server calls
+    // `String.prototype.trim`, whose whitespace set includes U+FEFF and
+    // excludes U+0085 — the exact opposite of Rust's on both. A format
+    // name behind a byte-order mark resolved two different ways.
+    let trimmed = js::trim(value).to_lowercase();
     trimmed.strip_prefix('.').unwrap_or(&trimmed).to_string()
 }
 
@@ -147,6 +153,15 @@ fn alias(key: &str) -> Option<&'static str> {
 /// `None` only when nothing was named at all, which is a caller with no
 /// question rather than a document with no format.
 pub(crate) fn resolve_format(format: Option<&str>, filename: Option<&str>) -> Option<&'static str> {
+    // An empty string is not a name. The npm server reaches this through
+    // `if (format)`, which reads `""` as absent, so a caller sending
+    // `{"format": ""}` was refused there and answered here — the same
+    // `extract_urls` tool giving two different replies depending on which
+    // server the agent happened to reach. A single space still counts as
+    // named on both sides, because `if (" ")` is true.
+    let format = format.filter(|value| !value.is_empty());
+    let filename = filename.filter(|value| !value.is_empty());
+
     if let Some(format) = format
         && let Some(direct) = alias(&normalise(format))
     {
@@ -207,6 +222,41 @@ mod tests {
         );
         assert_eq!(
             resolve_format(None, Some("Makefile")),
+            Some(FALLBACK_FORMAT)
+        );
+    }
+
+    /// An empty string is not a name. The npm server reads `""` as
+    /// absent through `if (format)`, so a caller sending one was refused
+    /// there and answered here — two replies from one `extract_urls`.
+    /// A single space is still a name on both sides.
+    #[test]
+    fn an_empty_name_is_no_name() {
+        assert_eq!(resolve_format(Some(""), None), None);
+        assert_eq!(resolve_format(None, Some("")), None);
+        assert_eq!(resolve_format(Some(""), Some("")), None);
+        assert_eq!(resolve_format(Some(""), Some("a.md")), Some("markdown"));
+        assert_eq!(resolve_format(Some(" "), None), Some(FALLBACK_FORMAT));
+    }
+
+    /// A name is trimmed by **JavaScript's** whitespace set, not Rust's.
+    /// The two differ on exactly two characters and both are reachable:
+    /// U+FEFF is whitespace to `String.prototype.trim` and not to
+    /// `str::trim`, and U+0085 is the reverse. `format: "\u{feff}json"`
+    /// resolved to `json` on one server and `unknown` on the other.
+    #[test]
+    fn a_name_is_trimmed_by_javascripts_whitespace_set() {
+        assert_eq!(resolve_format(Some("\u{feff}json"), None), Some("json"));
+        assert_eq!(resolve_format(Some("json\u{feff}"), None), Some("json"));
+        assert_eq!(resolve_format(None, Some("\u{feff}a.md")), Some("markdown"));
+        // U+0085 is whitespace to Rust and not to JavaScript, so it stays
+        // part of the name and the name stops being one this recognises.
+        assert_eq!(
+            resolve_format(Some("\u{85}json"), None),
+            Some(FALLBACK_FORMAT)
+        );
+        assert_eq!(
+            resolve_format(Some("json\u{85}"), None),
             Some(FALLBACK_FORMAT)
         );
     }

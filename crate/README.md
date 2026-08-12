@@ -105,10 +105,10 @@ else is scanned whole.
 Each format decides *which part of the document* to scan, and nothing
 else — that is what one shared scanner buys. Markdown skips fenced blocks
 and inline code spans. HTML skips comments. JSON reads string literals
-only. `.properties` skips comment lines. TOML and INI parse first and
-locate each value back in the source, falling back to a whole-document
-scan when the file does not parse — so a broken config still yields its
-URLs.
+only, and a comment is trivia there rather than a string. `.properties`
+and INI skip comment lines. TOML parses first and locates each value back
+in the source, falling back to a whole-document scan when the file does
+not parse — so a broken config still yields its URLs.
 
 A `.py`, a `.go`, a `.sh`, a `.csv`, a `Dockerfile` gets that same
 whole-document scan, because a URL is unambiguous in any text and there

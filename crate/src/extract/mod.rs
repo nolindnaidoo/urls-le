@@ -5,6 +5,7 @@
 //! below this line is a bug, and CI greps for one.
 
 pub(crate) mod format;
+pub(crate) mod js;
 pub(crate) mod scanner;
 
 mod formats;
@@ -12,6 +13,8 @@ mod position;
 
 #[cfg(test)]
 pub(crate) mod corpus;
+#[cfg(test)]
+mod fuzz;
 
 pub(crate) use format::{FileType, determine_file_type};
 pub(crate) use scanner::{Protocol, Url};

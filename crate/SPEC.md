@@ -55,7 +55,9 @@ crate/
 ├── src/
 │   ├── extract/     pure: the URL scanner, the eleven format
 │   │                extractors and the scan every other document
-│   │                gets, positions. No filesystem, pub(crate).
+│   │                gets, positions, and js.rs — JavaScript's string
+│   │                primitives where Rust's differ. No filesystem,
+│   │                pub(crate).
 │   ├── walk.rs      ignore-aware tree walking
 │   ├── scan.rs      one file end to end — the only path either surface calls
 │   ├── cli.rs       the terminal surface
@@ -98,7 +100,11 @@ read whatever its extension. Naming a file is an instruction.
 
 - **A URL ends at whitespace or at any of** `< > " { } | \ ^ \` [ ] ; ) '`.
   That is the extension's delimiter set, kept so quoted and bracketed
-  sources terminate correctly.
+  sources terminate correctly. **Whitespace means JavaScript's `\s`**,
+  spelled out in `extract/js.rs` rather than borrowed from Rust: the two
+  sets differ on exactly two characters, U+FEFF and U+0085, and both
+  decide where a URL ends. The same set is what every `trim` here uses,
+  because the extension calls `String.prototype.trim`.
 - **Trailing punctuation a URL may legally contain is not stripped.**
   `https://x.com/a.` keeps its dot. A documented limitation, not a bug —
   stripping it would corrupt URLs that genuinely end that way.
@@ -111,6 +117,44 @@ read whatever its extension. Naming a file is an instruction.
 - **Five protocols**: `http`, `https`, `ftp`, `file`, `mailto`, `tel`.
 - **Limits are behaviour**: content over 10 MB is refused with a message,
   and no more than 50,000 URLs are returned from one document.
+
+### Which subset each format sees
+
+Every extractor is the whole-document scan minus an exclusion, and the
+exclusion is the whole difference between them:
+
+| format | excluded |
+|---|---|
+| Markdown | fenced blocks and inline code spans |
+| HTML | `<!--…-->`, including one left unterminated |
+| JSON | everything that is not a string token — comments are trivia, as they are to `jsonc-parser` |
+| `.properties` | lines whose first non-whitespace character is `#` or `!` |
+| INI | lines whose first non-whitespace character is `;` or `#` |
+| TOML | whatever the parse drops — comments, key names — with each value located back in the source |
+| CSS · JavaScript · TypeScript · YAML · XML · anything else | nothing |
+
+**INI takes no parser.** It parsed and then located, like TOML, until
+that made the answer depend on which INI library each language happened
+to install: one refuses a line with no `=` and fell back to a whole
+document scan, the other refuses nothing and quietly dropped the URL.
+A rule both sides state in three lines cannot drift that way. TOML keeps
+its parse because both implementations refuse the same documents, and the
+fallback is symmetric.
+
+### Deliberate divergences
+
+**There are none in the shared `extract_urls` tool.** One tool name, one
+schema, two servers: an agent must get the same answer whichever it
+reaches, and `scripts/differential.ts` generates documents and argument
+shapes to keep it that way. Anything it finds is a bug in one of the two
+until this section says otherwise, and a new entry here needs a reason
+and a test asserting what each side answers.
+
+**The two surfaces are a different question, and they are meant to
+differ.** The CLI is terminal-first — a tree walk, exit codes, JSON
+Lines, `--strict`, `--dedupe` — and the extension is IDE-first, one open
+buffer read by a person. Neither is drift, and nothing holds them equal.
+The bar for a new difference is whether it follows from that split.
 
 ### `domain` and `path`
 
@@ -228,16 +272,29 @@ Exit 2 means the *question* was malformed — an unknown flag, a missing
 in fifty thousand was a PNG, and since every file is now walked, most
 repositories contain several.
 
-A file that is not UTF-8 text, or that cannot be opened, is:
+A file that is not UTF-8 text, that cannot be opened, that sits in a
+directory the walk cannot enter, or that is refused for its size, is:
 
 - named on stderr,
 - carried in the JSON report with a `skipped` diagnostic saying why,
 - and left out of the exit code.
 
-`--strict` turns any skipped file back into exit 2, for a pipeline that
-wants zero tolerance. What is never allowed is the third option: a file
-that silently vanishes from the report, which reads to whoever ran it as
-a file that was clean.
+`--strict` turns any of those back into exit 2, for a pipeline that wants
+zero tolerance. What is never allowed is the third option: a file that
+silently vanishes from the report, which reads to whoever ran it as a
+file that was clean.
+
+**One unreadable path never ends the run.** A permission-denied directory
+— or a symlink loop under `--follow-symlinks` — used to exit 2 with
+nothing on stdout, so one locked directory deleted the audit of every
+readable file beside it. It is one `skipped` line among the others now.
+
+### Report paths use `/`
+
+On every platform, in the JSON and in the human summary. The report is
+protocol: a consumer that splits a path, or diffs one machine's run
+against another's, must not have to know which operating system produced
+it.
 
 ## The byte-order mark
 

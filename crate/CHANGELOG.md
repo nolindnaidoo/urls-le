@@ -40,8 +40,105 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   whole-document scan — which is what the extension has always reported
   and is the one bit a caller cannot work out for itself.
 
+- **INI no longer parses.** It is a whole-content scan minus comment
+  lines (`;` or `#`), which is what the `.properties` extractor has
+  always been. Parsing and then locating made the answer depend on which
+  INI library each language happened to install: `rust-ini` refuses a
+  line with no `=` and this fell back to a whole-document scan, while the
+  npm server's `ini` refuses nothing and turned that same line into a key
+  whose value is `true`, which its string walk skips. One document, one
+  `extract_urls`, two answers. A URL in a comment is still excluded, so
+  the corpus is unchanged; a document that is not INI is now read on both
+  sides instead of yielding nothing on one.
+
+- **Every path in a report uses `/`, on every platform.** They were
+  whatever `Path` spelled them, so a Windows report carried `\` and could
+  not be diffed against a Linux one or split by a consumer that did not
+  know which operating system produced it.
+
+- **A path the walk cannot examine no longer ends the run.** A directory
+  it could not enter — or a symlink loop under `--follow-symlinks` —
+  exited 2 with **nothing** on stdout, so one locked directory deleted
+  the audit of every readable file beside it. It is now one `skipped`
+  report line among the others, which is the rule this already had for a
+  file that could not be opened: named on stderr, carried in the report,
+  left out of the exit code, and turned back into a failure by
+  `--strict`.
+
+- **`--strict` refuses a document that was refused for its size.** A file
+  over the 10 MB ceiling was reported and then passed by `--strict`,
+  which is a clean result over a file nobody examined — the one thing
+  `--strict` exists to prevent.
+
+### Fixed
+
+- **`extract_urls` answered `{"format": ""}` two different ways.** An
+  empty string is not a name: the npm server reads it as absent through
+  `if (format)` and refuses, and this resolved it to the plain-text scan
+  and answered. Same tool, same schema, two servers, two replies.
+
+- **`extract_urls` sent `"line": null` where the npm server sends no key
+  at all.** A URL a parser handed back that could not be located in the
+  source keeps its value and loses its position; `JSON.stringify` drops
+  an undefined field, and this sent an explicit null, so an agent testing
+  `"line" in url` got a different answer from each server.
+
+- **Whitespace is JavaScript's set now, everywhere it is tested.** The
+  extension calls `String.prototype.trim` and matches `\s`, and neither
+  means what the Rust equivalent means: JavaScript's whitespace includes
+  U+FEFF, which Unicode's `White_Space` property does not, and excludes
+  U+0085, which it does. That reached five places at once — `format:
+  "\u{feff}json"` resolved to `json` on one server and `unknown` on the
+  other, a byte-order mark inside a URL ended the match on one server
+  only, and a fence or a comment marker behind one was a marker on one
+  server only. `extract/js.rs` now defines the set once, in a character
+  list and a regex class held equal by a test, and the scanner's
+  delimiter class and every trim route through it. `rust-ini` was the
+  third dependency in this family to disagree with JavaScript about
+  whitespace, which is why the set is spelled out rather than borrowed.
+
+- **A leading byte-order mark reached the TOML parse.** VS Code strips
+  one before the extension's engine sees a buffer and `scan.rs` strips
+  one before the CLI reads a file, so `extract_urls` was the single entry
+  where it survived — and the two TOML implementations disagree about
+  whether a document may begin with one, so the same document parsed on
+  one server and fell back to a whole-document scan on the other. Both
+  servers now strip it at that boundary, which is what SPEC.md has always
+  said a leading mark is: three invisible bytes that are not the
+  document.
+
+- **A quoted URL inside a JSON comment is trivia, not a string token.**
+  `jsonc` is an alias for `json` and the npm server reads these documents
+  with `jsonc-parser`'s scanner, which classifies `//` and `/* */` as
+  trivia. This was a bare quote scanner that could not see a comment, so
+  it extracted from inside one — its own doc comment had claimed a token
+  scan all along.
+
+  All five were found by `scripts/differential.ts`, which generates
+  documents and argument shapes and requires both servers to answer the
+  shared tool identically. Each fix was checked by reverting it and
+  confirming the job goes red: a fix whose test cannot fail is not
+  verified.
+
 ### Added
 
+- **Six CI jobs, each because something real got through this release.**
+  `hazards` and `platform` drive the built binary over trees built at
+  runtime on all three operating systems — a BOM, a lone CR, invalid
+  UTF-8, a 1 MB line, 100k lines, a FIFO, a symlink loop, a
+  permission-denied directory, a reserved Windows filename — and every
+  case asserts no panic, no hang and an exit code of 0, 1 or 2, never a
+  signal. `differential` generates documents and argument shapes and
+  requires both MCP servers to answer the shared `extract_urls`
+  identically, seed printed on every run. `fuzz` puts a sixty-second net
+  over the pure layer and checks that every reported span lines up with
+  its source. `budget` holds a 500-file scan to a wall-clock ceiling and
+  asserts four times the tree does not cost six times the time.
+  `coverage-matrix` writes one file per alias plus a dozen extensions the
+  table has never heard of and requires a report line for each.
+- **`fixtures/documents/urls.ts`, `urls.csv` and `urls.txt`** —
+  `typescript`, `csv` and `plaintext` were advertised formats that no
+  corpus document exercised, which `coverage-matrix` is the check for.
 - **`csv`, `tsv`, `plaintext`, `txt` and `log`** in the alias table, and
   `csv` and `plaintext` in the advertised format enum, so an agent that
   sends one sees it offered rather than falling through to the fallback.
@@ -53,8 +150,11 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Removed
 
 - **`jsonc-parser`.** Declared and called nowhere; the JSON extractor is
-  a hand-rolled quote scanner, because the offsets have to be the raw
+  a hand-rolled token scanner, because the offsets have to be the raw
   document's and a parser hands back values.
+- **`rust-ini`.** The INI extractor no longer parses, so nothing calls
+  it — and which INI library each language installed was deciding the
+  answer, which is the drift the one-scanner design exists to prevent.
 
 ### Fixed
 

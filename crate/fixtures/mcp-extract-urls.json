@@ -498,5 +498,307 @@
 				"truncated": false
 			}
 		}
+	},
+	{
+		"name": "a parsed value that cannot be located keeps no position",
+		"content": "homepage = \"https://a.example/\\u0041\"\n",
+		"arguments": {
+			"format": "toml"
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://a.example/A",
+						"protocol": "https"
+					}
+				],
+				"fileType": "toml"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 1,
+				"truncated": false
+			}
+		}
+	},
+	{
+		"name": "an empty format is not a name",
+		"content": "see https://a.example\n",
+		"arguments": {
+			"format": ""
+		},
+		"expectedError": "Provide `format` (one of: markdown, html, css, javascript, typescript, json, yaml, properties, toml, ini, xml, csv, plaintext) or a `filename` with a recognised extension."
+	},
+	{
+		"name": "an empty filename is not a name",
+		"content": "see https://a.example\n",
+		"arguments": {
+			"filename": ""
+		},
+		"expectedError": "Provide `format` (one of: markdown, html, css, javascript, typescript, json, yaml, properties, toml, ini, xml, csv, plaintext) or a `filename` with a recognised extension."
+	},
+	{
+		"name": "a quoted URL inside a JSON comment is trivia",
+		"content": "{\n  // \"https://in-a-comment.example\"\n  \"a\": \"https://a.example\"\n}\n",
+		"arguments": {
+			"format": "jsonc"
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://a.example",
+						"protocol": "https",
+						"line": 3,
+						"column": 9
+					}
+				],
+				"fileType": "json"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 1,
+				"truncated": false
+			}
+		}
+	},
+	{
+		"name": "a document that is not INI is read, not dropped",
+		"content": "; https://in-a-comment.example\nbare https://a.example with no equals sign\n",
+		"arguments": {
+			"format": "ini"
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://a.example",
+						"protocol": "https",
+						"line": 2,
+						"column": 6
+					}
+				],
+				"fileType": "ini"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 1,
+				"truncated": false
+			}
+		}
+	},
+	{
+		"name": "an inherited property is not an alias",
+		"content": "see https://a.example\n",
+		"arguments": {
+			"filename": "a.toString"
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://a.example",
+						"protocol": "https",
+						"line": 1,
+						"column": 5
+					}
+				],
+				"fileType": "unknown"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 1,
+				"truncated": false
+			}
+		}
+	},
+	{
+		"name": "a format name behind a byte-order mark still resolves",
+		"content": "{\"a\": \"https://a.example\"}\n",
+		"arguments": {
+			"format": "﻿json"
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://a.example",
+						"protocol": "https",
+						"line": 1,
+						"column": 8
+					}
+				],
+				"fileType": "json"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 1,
+				"truncated": false
+			}
+		}
+	},
+	{
+		"name": "U+0085 is not whitespace to JavaScript, so it stays in the name",
+		"content": "{\"a\": \"https://a.example\"}\n",
+		"arguments": {
+			"format": "json"
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://a.example",
+						"protocol": "https",
+						"line": 1,
+						"column": 8
+					}
+				],
+				"fileType": "unknown"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 1,
+				"truncated": false
+			}
+		}
+	},
+	{
+		"name": "a byte-order mark ends a URL and U+0085 does not",
+		"content": "x https://a.example﻿TAIL y https://b.exampleTAIL z\n",
+		"arguments": {
+			"format": "plaintext"
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://a.example",
+						"protocol": "https",
+						"line": 1,
+						"column": 3
+					},
+					{
+						"value": "https://b.exampleTAIL",
+						"protocol": "https",
+						"line": 1,
+						"column": 28
+					}
+				],
+				"fileType": "unknown"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 2,
+				"truncated": false
+			}
+		}
+	},
+	{
+		"name": "a fence behind a byte-order mark is still a fence",
+		"content": "intro https://a.example\n﻿```\nhttps://fenced.example\n```\nsee https://b.example\n",
+		"arguments": {
+			"format": "markdown"
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://a.example",
+						"protocol": "https",
+						"line": 1,
+						"column": 7
+					},
+					{
+						"value": "https://b.example",
+						"protocol": "https",
+						"line": 5,
+						"column": 5
+					}
+				],
+				"fileType": "markdown"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 2,
+				"truncated": false
+			}
+		}
+	},
+	{
+		"name": "a comment marker behind a byte-order mark is still a comment",
+		"content": "first=https://a.example\n﻿# https://commented.example\nkey=https://b.example\n",
+		"arguments": {
+			"format": "properties"
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://a.example",
+						"protocol": "https",
+						"line": 1,
+						"column": 7
+					},
+					{
+						"value": "https://b.example",
+						"protocol": "https",
+						"line": 3,
+						"column": 5
+					}
+				],
+				"fileType": "properties"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 2,
+				"truncated": false
+			}
+		}
+	},
+	{
+		"name": "a leading byte-order mark is not part of the document",
+		"content": "﻿# mailto:someone@example.com\nhomepage = \"https://a.example\"\n",
+		"arguments": {
+			"format": "toml"
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://a.example",
+						"protocol": "https",
+						"line": 2,
+						"column": 13
+					}
+				],
+				"fileType": "toml"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 1,
+				"truncated": false
+			}
+		}
 	}
 ]

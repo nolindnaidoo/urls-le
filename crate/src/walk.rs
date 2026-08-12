@@ -15,6 +15,17 @@ pub(crate) struct Target {
     pub(crate) path: PathBuf,
     /// The VS Code language id the extraction engine wants.
     pub(crate) language_id: &'static str,
+    /// Why the walk could not examine this path, when it could not.
+    ///
+    /// Carried rather than returned as an error. A directory the walk
+    /// cannot enter, or a symlink loop under `--follow-symlinks`, used to
+    /// end the whole run with exit 2 and an **empty** report — one locked
+    /// directory deleted the audit of everything beside it. That is the
+    /// failure SPEC.md rules out for a file that cannot be opened, and
+    /// the rule is the same one layer up: named on stderr, carried in the
+    /// report as `skipped`, left out of the exit code, and turned back
+    /// into a failure by `--strict`.
+    pub(crate) unreadable: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -58,11 +69,12 @@ pub(crate) fn collect(inputs: &[PathBuf], options: &WalkOptions) -> Result<Vec<T
             targets.push(Target {
                 path: input.clone(),
                 language_id: options.format.unwrap_or_else(|| language_for(input)),
+                unreadable: None,
             });
             continue;
         }
 
-        targets.extend(walk_directory(input, options)?);
+        targets.extend(walk_directory(input, options));
     }
 
     targets.sort_by(|a, b| a.path.cmp(&b.path));
@@ -70,7 +82,7 @@ pub(crate) fn collect(inputs: &[PathBuf], options: &WalkOptions) -> Result<Vec<T
     Ok(targets)
 }
 
-fn walk_directory(root: &StdPath, options: &WalkOptions) -> Result<Vec<Target>, String> {
+fn walk_directory(root: &StdPath, options: &WalkOptions) -> Vec<Target> {
     let mut builder = ignore::WalkBuilder::new(root);
     builder
         .hidden(!options.hidden)
@@ -83,16 +95,50 @@ fn walk_directory(root: &StdPath, options: &WalkOptions) -> Result<Vec<Target>, 
 
     let mut targets = Vec::new();
     for entry in builder.build() {
-        let entry = entry.map_err(|error| format!("{}: {error}", root.display()))?;
+        let entry = match entry {
+            Ok(entry) => entry,
+            // Not fatal. This used to be `?`, which meant a single
+            // permission-denied directory — or a symlink loop under
+            // `--follow-symlinks` — exited 2 with nothing on stdout, so
+            // the answer for every readable file in the tree was thrown
+            // away along with the one that could not be read.
+            Err(error) => {
+                targets.push(Target {
+                    path: errored_path(&error).unwrap_or_else(|| root.to_path_buf()),
+                    language_id: FALLBACK_FORMAT,
+                    unreadable: Some(error.to_string()),
+                });
+                continue;
+            }
+        };
         if !entry.file_type().is_some_and(|kind| kind.is_file()) {
             continue;
         }
         targets.push(Target {
             path: entry.path().to_path_buf(),
             language_id: options.format.unwrap_or_else(|| language_for(entry.path())),
+            unreadable: None,
         });
     }
-    Ok(targets)
+    targets
+}
+
+/// Which path a walk error is about, when the error knows.
+///
+/// Most carry it directly; a filesystem loop names the link that closed
+/// it instead, and the caller falls back to the root for anything that
+/// names nothing — a report line pointing at the wrong directory is still
+/// better than a run that says nothing at all.
+fn errored_path(error: &ignore::Error) -> Option<PathBuf> {
+    match error {
+        ignore::Error::WithPath { path, .. } => Some(path.clone()),
+        ignore::Error::Loop { child, .. } => Some(child.clone()),
+        ignore::Error::WithDepth { err, .. } | ignore::Error::WithLineNumber { err, .. } => {
+            errored_path(err)
+        }
+        ignore::Error::Partial(errors) => errors.iter().find_map(errored_path),
+        _ => None,
+    }
 }
 
 /// Every file gets a format, because every file gets read.
@@ -265,6 +311,45 @@ mod tests {
         let error =
             collect(&[tree.path().join("nope")], &WalkOptions::default()).expect_err("a refusal");
         assert!(error.contains("nope"), "{error}");
+    }
+
+    /// A directory the walk cannot enter is one unreadable target among
+    /// the readable ones, not the end of the run. Unix only: Windows
+    /// permissions are ACL-based and `chmod` does not express this, so
+    /// there is nothing to construct there.
+    #[cfg(unix)]
+    #[test]
+    fn a_directory_that_cannot_be_entered_is_carried_not_fatal() {
+        use std::os::unix::fs::PermissionsExt as _;
+
+        let tree = TempTree::new("walk-locked");
+        tree.write("readable.md", "https://a.example\n");
+        let locked = tree.mkdir("locked");
+        tree.write("locked/hidden.md", "https://b.example\n");
+        std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o000))
+            .expect("permissions");
+
+        let targets = collect(&[tree.path().to_path_buf()], &WalkOptions::default());
+        // Restore before asserting, or a failure leaves a directory the
+        // temporary-tree cleanup cannot remove.
+        std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o755))
+            .expect("permissions");
+        let targets = targets.expect("the walk succeeds");
+
+        // Running as root reads it anyway, which is not this test's
+        // subject. Say so rather than passing on a case that never ran.
+        let Some(unreadable) = targets.iter().find(|t| t.unreadable.is_some()) else {
+            eprintln!(
+                "SKIPPED a_directory_that_cannot_be_entered_is_carried_not_fatal: \
+                 this user can read a 0o000 directory"
+            );
+            return;
+        };
+        assert!(unreadable.path.ends_with("locked"), "{unreadable:?}");
+        assert!(
+            names(&targets).contains(&"readable.md".to_string()),
+            "the rest of the tree survives one unreadable directory"
+        );
     }
 
     #[test]
