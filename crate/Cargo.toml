@@ -5,12 +5,12 @@ edition = "2024"
 rust-version = "1.88"
 license = "MIT"
 readme = "README.md"
-description = "Extract every URL from a codebase, with its protocol and exact position"
+description = "Extract every URL and link from a codebase, with its protocol and exact position — hand a link checker a better list than grep can produce"
 authors = ["Nolin D Naidoo"]
 homepage = "https://letools.dev/tools/urls-le"
 repository = "https://github.com/nolindnaidoo/urls-le"
-keywords = ["urls", "url", "extract", "audit", "cli"]
-categories = ["command-line-utilities", "development-tools", "text-processing"]
+keywords = ["url", "link-checker", "links", "extract", "lychee"]
+categories = ["command-line-utilities", "development-tools", "web-programming", "text-processing", "parsing"]
 # What a consumer gets, and why.
 #
 # Ships: src/, Cargo.toml, Cargo.lock, LICENSE, README.md — needed to
