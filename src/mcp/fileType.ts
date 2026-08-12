@@ -8,10 +8,18 @@
  * characterization goldens.
  */
 
-/** Every language id the engine understands, keyed by what a caller might send. */
-const ALIASES: Readonly<Record<string, string>> = Object.freeze({
+/**
+ * Every language id the engine understands, keyed by what a caller might send.
+ *
+ * Exported because `crate/fixtures/aliases.json` holds it equal to the Rust
+ * crate's table: both MCP servers offer the same `extract_urls`, so a name one
+ * side reads and the other refuses makes them two different tools rather than
+ * one. `scripts/check-extraction-parity.ts` checks this side of that.
+ */
+export const ALIASES: Readonly<Record<string, string>> = Object.freeze({
 	markdown: 'markdown',
 	md: 'markdown',
+	mdx: 'markdown',
 	mdown: 'markdown',
 	mkd: 'markdown',
 	html: 'html',
@@ -28,6 +36,8 @@ const ALIASES: Readonly<Record<string, string>> = Object.freeze({
 	typescript: 'typescript',
 	ts: 'typescript',
 	tsx: 'typescript',
+	mts: 'typescript',
+	cts: 'typescript',
 	json: 'json',
 	jsonc: 'json',
 	yaml: 'yaml',

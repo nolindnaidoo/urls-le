@@ -16,6 +16,7 @@ rather than trust them.
 | `extraction.json` → `documents` | Every URL found in each document, with protocol, domain, path, position and context — plus the success flag and any errors. |
 | `extraction.json` → `scan` | The shared scanner over the inputs most likely to drift. |
 | `mcp-extract-urls.json` | The `extract_urls` MCP tool, which **both** servers offer and must answer identically. |
+| `aliases.json` | Every format name and file extension both sides accept, and what each resolves to. |
 
 ## Deliberate contents
 
@@ -23,6 +24,11 @@ rather than trust them.
   failure becoming an empty result is the quiet way a scanner stops
   working — the fallback whole-document scan must still find its URLs,
   and both frontends must agree that it does.
+- **`aliases.json`** exists because 0.1.0 shipped two tables that
+  disagreed on nine names. Walking a directory of `icon.svg`, `app.cfg`,
+  `app.conf` and `ok.json`, the CLI read one file and the extension read
+  four — the same tool, two answers, no error either side. Nothing
+  compared the tables, so nothing failed.
 - **The `scan` cases** cover the delimiter set one at a time (quotes,
   brackets, backticks, pipes, carets, semicolons), the kept trailing dot
   and comma, the `mailto`/`tel` well-formedness rules, repeats, and an

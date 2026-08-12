@@ -7,6 +7,26 @@ this repository release on their own cadence.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **The CLI and the extension accepted different file extensions.**
+  Walking a directory of `icon.svg`, `app.cfg`, `app.conf` and
+  `ok.json`, this read one file and the extension read four — the same
+  `extract_urls`, two answers, no error either side. This crate lacked
+  `mdown`, `mkd`, `env`, `cfg`, `conf`, `svg`, `xsl` and `pom`; the
+  extension lacked `mdx`. Both tables now carry all nine, plus `mts` and
+  `cts`, which neither had while colors-le, dates-le and paths-le all
+  read them.
+
+### Added
+
+- **`fixtures/aliases.json`** — the alias table as a shared contract,
+  asserted from `extract/format.rs` and from
+  `../scripts/check-extraction-parity.ts`. The divergence above shipped
+  in 0.1.0 and nothing failed, because nothing compared the two tables.
+
 ## [0.1.0] - 2026-08-08
 
 First release. The extension's extraction engine, ported and pinned

@@ -11,6 +11,15 @@ separate product on its own cadence and keeps its own
 
 ## [Unreleased]
 
+### Fixed
+
+- **The MCP server accepted file extensions the Rust CLI refused, and
+  refused one it accepted.** `extract_urls` is meant to be one tool
+  offered by two servers; it was two. This side lacked `mdx`, the crate
+  lacked `mdown`, `mkd`, `env`, `cfg`, `conf`, `svg`, `xsl` and `pom`,
+  and neither read `mts` or `cts`. Both tables now carry all eleven, and
+  `crate/fixtures/aliases.json` holds them equal from both directions.
+
 ### Added
 
 - A **Rust CLI and MCP server**, in [`crate/`](crate/README.md), published

@@ -11,6 +11,9 @@
  *   rules, repeats, and IDN.
  * - mcp-extract-urls.json: the `extract_urls` tool, which BOTH MCP
  *   servers offer and must answer identically.
+ * - aliases.json: the file extensions and format names both sides accept.
+ *   0.1.0 shipped two tables that disagreed on nine names, silently,
+ *   because nothing compared them.
  *
  * This checks only the extension's side. `cargo test` runs the crate's
  * implementation over the same files.
@@ -21,6 +24,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { extractUrls } from '../src/extraction/extract';
 import { scanUrls } from '../src/extraction/heuristics';
+import { ALIASES } from '../src/mcp/fileType';
 import { TOOLS } from '../src/mcp/tools';
 
 const ROOT = join(import.meta.dir, '..');
@@ -184,8 +188,26 @@ async function checkMcpExtractUrls(): Promise<void> {
 	}
 }
 
+/**
+ * The alias tables are the same contract as the corpus: a name one frontend
+ * reads and the other refuses makes `extract_urls` two different tools. The
+ * crate holds its own table to the same file, from `extract/format.rs`.
+ */
+function checkAliases(): void {
+	const shared = readCorpus('aliases.json') as Record<string, string>;
+	const names = new Set([...Object.keys(shared), ...Object.keys(ALIASES)]);
+	for (const name of [...names].sort()) {
+		if (shared[name] !== ALIASES[name]) {
+			fail(
+				`alias "${name}": the contract says ${JSON.stringify(shared[name] ?? null)}, the extension says ${JSON.stringify(ALIASES[name] ?? null)}`,
+			);
+		}
+	}
+}
+
 await checkDocuments();
 checkScan();
+checkAliases();
 await checkMcpExtractUrls();
 
 if (failures.length > 0) {

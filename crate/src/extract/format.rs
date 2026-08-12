@@ -58,10 +58,17 @@ pub(crate) const SUPPORTED_FORMATS: [&str; 11] = [
 
 /// Every language id the engine understands, keyed by what a caller
 /// might send.
-const ALIASES: [(&str, &str); 24] = [
+///
+/// Held equal to the extension's table by `fixtures/aliases.json`: the
+/// two MCP servers offer the same `extract_urls`, so an extension that
+/// reads `icon.svg` while this refuses it makes them two different
+/// tools.
+const ALIASES: [(&str, &str); 35] = [
     ("markdown", "markdown"),
     ("md", "markdown"),
     ("mdx", "markdown"),
+    ("mdown", "markdown"),
+    ("mkd", "markdown"),
     ("html", "html"),
     ("htm", "html"),
     ("xhtml", "html"),
@@ -76,13 +83,22 @@ const ALIASES: [(&str, &str); 24] = [
     ("typescript", "typescript"),
     ("ts", "typescript"),
     ("tsx", "typescript"),
+    ("mts", "typescript"),
+    ("cts", "typescript"),
     ("json", "json"),
     ("jsonc", "json"),
     ("yaml", "yaml"),
     ("yml", "yaml"),
     ("properties", "properties"),
+    ("env", "properties"),
     ("toml", "toml"),
     ("ini", "ini"),
+    ("cfg", "ini"),
+    ("conf", "ini"),
+    ("xml", "xml"),
+    ("svg", "xml"),
+    ("xsl", "xml"),
+    ("pom", "xml"),
 ];
 
 fn normalise(value: &str) -> String {
@@ -95,7 +111,6 @@ fn alias(key: &str) -> Option<&'static str> {
         .iter()
         .find(|(from, _)| *from == key)
         .map(|(_, to)| *to)
-        .or(if key == "xml" { Some("xml") } else { None })
 }
 
 /// Resolve a language id from an explicit format, else from a filename.
@@ -162,5 +177,24 @@ mod tests {
         for (from, to) in ALIASES {
             assert_ne!(determine_file_type(to), FileType::Unknown, "{from} -> {to}");
         }
+    }
+
+    /// The two frontends offer the same `extract_urls`, so a name one
+    /// reads and the other refuses makes them two different tools. That
+    /// shipped in 0.1.0 — `svg`, `cfg`, `conf` and five more were the
+    /// extension's alone, `mdx` was this crate's — and nothing failed,
+    /// because nothing compared the tables. This is that comparison;
+    /// `../scripts/check-extraction-parity.ts` is the other side of it.
+    #[test]
+    fn the_alias_table_matches_the_shared_contract() {
+        let shared: std::collections::BTreeMap<String, String> =
+            serde_json::from_str(include_str!("../../fixtures/aliases.json"))
+                .expect("the alias contract is valid JSON");
+        let mine: std::collections::BTreeMap<String, String> = ALIASES
+            .iter()
+            .map(|(from, to)| ((*from).to_string(), (*to).to_string()))
+            .collect();
+        assert_eq!(mine.len(), ALIASES.len(), "an alias is listed twice");
+        assert_eq!(mine, shared);
     }
 }
