@@ -97,10 +97,12 @@ is enforced rather than merely written down.
 
 ## What it reads
 
-**Every text file.** Eleven formats know what to exclude — the same
-eleven the extension supports: **Markdown, HTML, CSS, JavaScript,
-TypeScript, JSON, YAML, `.properties`, TOML, INI, XML** — and everything
-else is scanned whole.
+**Every text file.** Thirteen format names are recognised, the same
+thirteen the extension accepts. Eleven of them know what to exclude —
+**Markdown, HTML, CSS, JavaScript, TypeScript, JSON, YAML,
+`.properties`, TOML, INI, XML** — and `csv` and `plaintext` are named
+because a caller can ask for them, though there is nothing in either
+worth excluding. Everything else is scanned whole.
 
 Each format decides *which part of the document* to scan, and nothing
 else — that is what one shared scanner buys. Markdown skips fenced blocks
@@ -110,10 +112,11 @@ and INI skip comment lines. TOML parses first and locates each value back
 in the source, falling back to a whole-document scan when the file does
 not parse — so a broken config still yields its URLs.
 
-A `.py`, a `.go`, a `.sh`, a `.csv`, a `Dockerfile` gets that same
-whole-document scan, because a URL is unambiguous in any text and there
-is nothing in those worth excluding. The report's `format` field says
-which pass ran. Nothing is refused for its name.
+A `.py`, a `.go`, a `.sh`, a `Dockerfile` gets that same whole-document
+scan, because a URL is unambiguous in any text and there is nothing in
+those worth excluding. The report's `format` field says which pass ran,
+so a `.py` comes back as `plaintext` and a `.csv` as `csv`. Nothing is
+refused for its name.
 
 A directory is walked the way ripgrep walks one: `.gitignore` honoured,
 hidden files skipped, `--no-ignore` and `--hidden` to reach the rest. A
