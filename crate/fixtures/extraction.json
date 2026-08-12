@@ -73,6 +73,69 @@
 			]
 		},
 		{
+			"name": "urls.go as go",
+			"file": "urls.go",
+			"languageId": "go",
+			"success": true,
+			"errors": [],
+			"expected": [
+				{
+					"value": "https://api.example.com/v1",
+					"protocol": "https",
+					"domain": "api.example.com",
+					"path": "/v1",
+					"line": 1,
+					"column": 39,
+					"context": "// Package client talks to the API at https://api.example.com/v1"
+				},
+				{
+					"value": "https://api.example.com/v1",
+					"protocol": "https",
+					"domain": "api.example.com",
+					"path": "/v1",
+					"line": 7,
+					"column": 12,
+					"context": "base   = \"https://api.example.com/v1\""
+				},
+				{
+					"value": "http://health.example.com/ready",
+					"protocol": "http",
+					"domain": "health.example.com",
+					"path": "/ready",
+					"line": 8,
+					"column": 12,
+					"context": "health = \"http://health.example.com/ready\""
+				},
+				{
+					"value": "https://raw.example.com/spec.json",
+					"protocol": "https",
+					"domain": "raw.example.com",
+					"path": "/spec.json",
+					"line": 11,
+					"column": 41,
+					"context": "// Raw string literals keep their URL: `https://raw.example.com/spec.json`"
+				},
+				{
+					"value": "https://raw.example.com/spec.json",
+					"protocol": "https",
+					"domain": "raw.example.com",
+					"path": "/spec.json",
+					"line": 12,
+					"column": 13,
+					"context": "var spec = `https://raw.example.com/spec.json`"
+				},
+				{
+					"value": "tel:+15551234567",
+					"protocol": "tel",
+					"domain": null,
+					"path": "+15551234567",
+					"line": 15,
+					"column": 5,
+					"context": "// tel:+15551234567 is on the support page"
+				}
+			]
+		},
+		{
 			"name": "urls.html as html",
 			"file": "urls.html",
 			"languageId": "html",
@@ -537,6 +600,141 @@
 					"line": 9,
 					"column": 5,
 					"context": "https://continued.example.com/two"
+				}
+			]
+		},
+		{
+			"name": "urls.py as python",
+			"file": "urls.py",
+			"languageId": "python",
+			"success": true,
+			"errors": [],
+			"expected": [
+				{
+					"value": "https://docs.example.com/api/v2",
+					"protocol": "https",
+					"domain": "docs.example.com",
+					"path": "/api/v2",
+					"line": 1,
+					"column": 9,
+					"context": "# Docs: https://docs.example.com/api/v2"
+				},
+				{
+					"value": "https://api.example.com/v2",
+					"protocol": "https",
+					"domain": "api.example.com",
+					"path": "/v2",
+					"line": 2,
+					"column": 13,
+					"context": "API_BASE = \"https://api.example.com/v2\""
+				},
+				{
+					"value": "http://mirror.example.com:8080/pypi",
+					"protocol": "http",
+					"domain": "mirror.example.com",
+					"path": "/pypi",
+					"line": 3,
+					"column": 11,
+					"context": "MIRROR = 'http://mirror.example.com:8080/pypi'"
+				},
+				{
+					"value": "mailto:ops@example.com",
+					"protocol": "mailto",
+					"domain": null,
+					"path": "ops@example.com",
+					"line": 4,
+					"column": 12,
+					"context": "CONTACT = \"mailto:ops@example.com\""
+				},
+				{
+					"value": "ftp://ftp.example.com/pub/dist.tar.gz",
+					"protocol": "ftp",
+					"domain": "ftp.example.com",
+					"path": "/pub/dist.tar.gz",
+					"line": 6,
+					"column": 12,
+					"context": "ARCHIVE = \"ftp://ftp.example.com/pub/dist.tar.gz\""
+				},
+				{
+					"value": "https://api.example.com/v2",
+					"protocol": "https",
+					"domain": "api.example.com",
+					"path": "/v2",
+					"line": 10,
+					"column": 19,
+					"context": "\"\"\"Reads from https://api.example.com/v2 and nowhere else.\"\"\""
+				},
+				{
+					"value": "http://legacy.example.com/notes",
+					"protocol": "http",
+					"domain": "legacy.example.com",
+					"path": "/notes",
+					"line": 15,
+					"column": 7,
+					"context": "# see http://legacy.example.com/notes for why"
+				},
+				{
+					"value": "file:///srv/data/cache.json",
+					"protocol": "file",
+					"domain": null,
+					"path": "/srv/data/cache.json",
+					"line": 16,
+					"column": 10,
+					"context": "LOCAL = \"file:///srv/data/cache.json\""
+				}
+			]
+		},
+		{
+			"name": "urls.sh as shellscript",
+			"file": "urls.sh",
+			"languageId": "shellscript",
+			"success": true,
+			"errors": [],
+			"expected": [
+				{
+					"value": "https://mirror.example.com/debian",
+					"protocol": "https",
+					"domain": "mirror.example.com",
+					"path": "/debian",
+					"line": 2,
+					"column": 12,
+					"context": "# Mirrors: https://mirror.example.com/debian"
+				},
+				{
+					"value": "https://api.example.com/v1",
+					"protocol": "https",
+					"domain": "api.example.com",
+					"path": "/v1",
+					"line": 5,
+					"column": 7,
+					"context": "BASE=\"https://api.example.com/v1\""
+				},
+				{
+					"value": "https://releases.example.com/latest.tar.gz",
+					"protocol": "https",
+					"domain": "releases.example.com",
+					"path": "/latest.tar.gz",
+					"line": 6,
+					"column": 13,
+					"context": "curl -fsSL \"https://releases.example.com/latest.tar.gz\" -o dist.tar.gz"
+				},
+				{
+					"value": "http://old.example.com/legacy.zip",
+					"protocol": "http",
+					"domain": "old.example.com",
+					"path": "/legacy.zip",
+					"line": 7,
+					"column": 7,
+					"context": "wget 'http://old.example.com/legacy.zip'"
+				},
+				{
+					"value": "mailto:sre@example.com",
+					"protocol": "mailto",
+					"domain": null,
+					"path": "sre@example.com",
+					"line": 9,
+					"column": 17,
+					"context": "echo \"report to mailto:sre@example.com\" >&2"
 				}
 			]
 		},
@@ -1011,10 +1209,10 @@
 			]
 		},
 		{
-			"input": "https://\u4f8b\u3048.\u30c6\u30b9\u30c8/\u30d1\u30b9",
+			"input": "https://例え.テスト/パス",
 			"expected": [
 				{
-					"value": "https://\u4f8b\u3048.\u30c6\u30b9\u30c8/\u30d1\u30b9",
+					"value": "https://例え.テスト/パス",
 					"protocol": "https",
 					"start": 0
 				}

@@ -4,7 +4,7 @@
 <h1 align="center">URLs-LE: Zero Hassle URL Extraction</h1>
 <p align="center">
   <b>Pull every URL out of the current file in one keystroke</b><br/>
-  <i>Markdown, HTML, CSS, JavaScript, TypeScript, JSON, YAML, Properties, TOML, INI, XML</i>
+  <i>Any text file — Markdown, HTML, CSS, JavaScript, TypeScript, JSON, YAML, Properties, TOML, INI and XML know what to exclude</i>
 </p>
 
 <p align="center">
@@ -159,6 +159,12 @@ is already there; take the binary if you want no runtime, or if you want
 | TOML | `toml` | Parsed values only; comments excluded |
 | INI | `ini` | Parsed values only; comments excluded |
 | XML | `xml` | Attributes and text content |
+| Anything else | any | Whole document scanned; `fileType` reports `unknown` |
+
+**No document is refused.** The eleven above know what to exclude; every
+other language id — `python`, `go`, `shellscript`, `csv`, `plaintext`,
+`log`, whatever your editor calls it — is scanned whole, because a URL is
+unambiguous in any text and there is nothing in those worth excluding.
 
 Extracted protocols: `http`, `https`, `ftp`, `file`, `mailto` (requires an `@`), `tel`. Every occurrence is reported with its real line and column — TOML/INI positions are forward-located in the source and can be approximate for repeated identical values. A URL ends at whitespace or a quote/bracket delimiter, so relative links (`/docs`) and bare domains (`example.com`) are never extracted, and URLs containing raw spaces extract as space-terminated partials. Trailing `.`/`,` are kept — they are legal URL characters.
 
@@ -242,12 +248,12 @@ a build only tells you how busy the runner was.
 <!-- coverage:start -->
 | Metric | Coverage |
 | --- | --- |
-| Statements | 94.64% |
-| Branches | 85.56% |
-| Functions | 95.54% |
-| Lines | 94.93% |
+| Statements | 93.86% |
+| Branches | 84.84% |
+| Functions | 94.30% |
+| Lines | 94.10% |
 
-290 test cases across 21 files, plus an integration suite that runs
+293 test cases across 21 files, plus an integration suite that runs
 in a real VS Code extension host and an end-to-end test that installs the
 built `.vsix` into a clean profile.
 

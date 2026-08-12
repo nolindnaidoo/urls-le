@@ -32,9 +32,11 @@ pub(crate) fn definition() -> Value {
     json!({
         "name": "extract_urls",
         "description": "Extract every URL from a document, with its protocol and 1-based line \
-                        and column. Supports Markdown, HTML, CSS, JavaScript, TypeScript, JSON, \
-                        YAML, .properties, TOML, INI and XML. URLs are reported exactly as \
-                        written — nothing is fetched, filtered or judged.",
+                        and column. Reads any text document. Markdown, HTML, CSS, JavaScript, \
+                        TypeScript, JSON, YAML, .properties, TOML, INI and XML know what to \
+                        exclude — code fences, comments, non-string tokens; everything else is \
+                        scanned whole, and `fileType` says which happened. URLs are reported \
+                        exactly as written — nothing is fetched, filtered or judged.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -43,7 +45,8 @@ pub(crate) fn definition() -> Value {
                     "type": "string",
                     "enum": SUPPORTED_FORMATS,
                     "description": "Document format. Provide this or `filename`. Common \
-                                    extensions and aliases are accepted.",
+                                    extensions and aliases are accepted; anything else is \
+                                    scanned as plain text rather than refused.",
                 },
                 "filename": {
                     "type": "string",
@@ -79,6 +82,9 @@ pub(crate) fn run(arguments: &Value) -> Result<Value, String> {
         .ok_or_else(|| "content is required and must be a string".to_string())?;
     let max_results = read_max_results(arguments)?;
 
+    // Only a caller who named neither lands here — every name resolves,
+    // to the plain-text scan if nothing else. The message stays because
+    // "Unsupported language: undefined" tells nobody what to do.
     let language_id = resolve_format(
         arguments.get("format").and_then(Value::as_str),
         arguments.get("filename").and_then(Value::as_str),
@@ -133,10 +139,16 @@ pub(crate) fn run(arguments: &Value) -> Result<Value, String> {
         })
         .collect();
 
+    // The extractor that ran, not the name the caller sent: `csv` and
+    // `plaintext` are both read whole and both answer `unknown`, which
+    // is the one bit a caller cannot work out for itself. The extension
+    // has always reported it this way and is the reference.
+    let file_type = serde_json::to_value(result.file_type).expect("a file type serializes");
+
     let count = values.len();
     Ok(super::envelope(
         "extract_urls",
-        &json!({ "urls": values, "fileType": language_id }),
+        &json!({ "urls": values, "fileType": file_type }),
         count,
         &diagnostics,
         truncated,

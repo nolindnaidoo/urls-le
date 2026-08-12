@@ -49,8 +49,9 @@ async function extract(args: Record<string, unknown>): Promise<unknown> {
 	const filename =
 		typeof args.filename === 'string' ? args.filename : undefined;
 
-	// Requiring one of the two up front gives a message naming the problem,
-	// instead of the engine reporting "Unsupported language: undefined".
+	// Only a caller who named neither lands here — every name resolves, to the
+	// plain-text scan if nothing else. The message stays because the engine's
+	// own "Unsupported language: undefined" tells nobody what to do.
 	const languageId = resolveFormat(format, filename);
 	if (!languageId) {
 		throw new Error(
@@ -97,7 +98,7 @@ export const TOOLS: readonly ToolDefinition[] = Object.freeze([
 	Object.freeze({
 		name: 'extract_urls',
 		description:
-			'Extract every URL from a document, with its protocol and 1-based line and column. Supports Markdown, HTML, CSS, JavaScript, TypeScript, JSON, YAML, Properties, TOML, INI and XML. Code blocks and comments are excluded where the format defines them.',
+			'Extract every URL from a document, with its protocol and 1-based line and column. Reads any text document. Markdown, HTML, CSS, JavaScript, TypeScript, JSON, YAML, Properties, TOML, INI and XML know what to exclude — code fences, comments, non-string tokens; everything else is scanned whole, and `fileType` says which happened.',
 		inputSchema: {
 			type: 'object',
 			properties: {
@@ -109,7 +110,7 @@ export const TOOLS: readonly ToolDefinition[] = Object.freeze([
 					type: 'string',
 					enum: SUPPORTED_FORMATS,
 					description:
-						'Document format. Provide this or `filename`. Common extensions and aliases are accepted.',
+						'Document format. Provide this or `filename`. Common extensions and aliases are accepted; anything else is scanned as plain text rather than refused.',
 				},
 				filename: {
 					type: 'string',

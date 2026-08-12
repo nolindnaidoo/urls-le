@@ -361,7 +361,7 @@
 		"name": "neither format nor filename",
 		"content": "x",
 		"arguments": {},
-		"expectedError": "Provide `format` (one of: markdown, html, css, javascript, typescript, json, yaml, properties, toml, ini, xml) or a `filename` with a recognised extension."
+		"expectedError": "Provide `format` (one of: markdown, html, css, javascript, typescript, json, yaml, properties, toml, ini, xml, csv, plaintext) or a `filename` with a recognised extension."
 	},
 	{
 		"name": "content must be a string",
@@ -378,5 +378,125 @@
 			"maxResults": 0
 		},
 		"expectedError": "maxResults must be a positive integer"
+	},
+	{
+		"name": "a source file with no format-aware extractor",
+		"file": "urls.py",
+		"arguments": {
+			"filename": "app.py"
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://docs.example.com/api/v2",
+						"protocol": "https",
+						"line": 1,
+						"column": 9
+					},
+					{
+						"value": "https://api.example.com/v2",
+						"protocol": "https",
+						"line": 2,
+						"column": 13
+					},
+					{
+						"value": "http://mirror.example.com:8080/pypi",
+						"protocol": "http",
+						"line": 3,
+						"column": 11
+					},
+					{
+						"value": "mailto:ops@example.com",
+						"protocol": "mailto",
+						"line": 4,
+						"column": 12
+					},
+					{
+						"value": "ftp://ftp.example.com/pub/dist.tar.gz",
+						"protocol": "ftp",
+						"line": 6,
+						"column": 12
+					},
+					{
+						"value": "https://api.example.com/v2",
+						"protocol": "https",
+						"line": 10,
+						"column": 19
+					},
+					{
+						"value": "http://legacy.example.com/notes",
+						"protocol": "http",
+						"line": 15,
+						"column": 7
+					},
+					{
+						"value": "file:///srv/data/cache.json",
+						"protocol": "file",
+						"line": 16,
+						"column": 10
+					}
+				],
+				"fileType": "unknown"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 8,
+				"truncated": false
+			}
+		}
+	},
+	{
+		"name": "a format name nothing recognises is read, not refused",
+		"file": "urls.sh",
+		"arguments": {
+			"format": "shellscript"
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://mirror.example.com/debian",
+						"protocol": "https",
+						"line": 2,
+						"column": 12
+					},
+					{
+						"value": "https://api.example.com/v1",
+						"protocol": "https",
+						"line": 5,
+						"column": 7
+					},
+					{
+						"value": "https://releases.example.com/latest.tar.gz",
+						"protocol": "https",
+						"line": 6,
+						"column": 13
+					},
+					{
+						"value": "http://old.example.com/legacy.zip",
+						"protocol": "http",
+						"line": 7,
+						"column": 7
+					},
+					{
+						"value": "mailto:sre@example.com",
+						"protocol": "mailto",
+						"line": 9,
+						"column": 17
+					}
+				],
+				"fileType": "unknown"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 5,
+				"truncated": false
+			}
+		}
 	}
 ]

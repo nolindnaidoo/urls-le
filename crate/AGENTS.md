@@ -28,8 +28,9 @@ reproduces.
 
 ```
 crate/src/
-├── extract/     pure: the URL scanner, the eleven format extractors,
-│                positions. No filesystem, pub(crate).
+├── extract/     pure: the URL scanner, the eleven format extractors
+│                and the scan every other document gets, positions.
+│                No filesystem, pub(crate).
 ├── walk.rs      ignore-aware tree walking and format detection
 ├── scan.rs      one file end to end — the only path either surface calls
 ├── cli.rs       the terminal surface
@@ -51,7 +52,9 @@ crate/src/
   tree.
 - **`walk.rs` selects, it does not decide.** Its one rule — a file named
   explicitly is read whatever the ignore rules say — is why intent beats
-  configuration.
+  configuration. It no longer filters by extension either: every walked
+  file is read, and one that is not text comes back as `skipped` from
+  `scan.rs`, which is where that is knowable rather than guessable.
 - Keep modules flat. No layers, registries, managers, or services. No
   trait with a single implementation.
 
@@ -73,11 +76,14 @@ crate/src/
 - **One regex engine.** The URL scanner needs no backreferences and no
   lookaround, so `regex` expresses it exactly and its matching cannot
   fail. Not taking a backtracking engine is the cheaper answer.
-- **One scanner, eleven formats.** The extension's v1.x had five
-  protocol patterns copy-pasted into ten files with divergent behaviour;
-  porting it as one function is what stops that recurring in a second
-  language. A format extractor decides *which subset of the document* to
-  scan and nothing else.
+- **One scanner, eleven formats, and every other file.** The extension's
+  v1.x had five protocol patterns copy-pasted into ten files with
+  divergent behaviour; porting it as one function is what stops that
+  recurring in a second language. A format extractor decides *which
+  subset of the document* to scan and nothing else — which is why
+  `FileType::Unknown` is the whole-document scan rather than a refusal:
+  it is the superset of all eleven, and a URL is unambiguous in a `.py`
+  or a `.csv` too.
 - **The claimed-offset set is a `HashSet`.** With a linear scan the
   scanner is quadratic in the number of URLs, and the 50,000 cap says
   documents with that many are expected.
@@ -116,18 +122,23 @@ pixelactions and scrape-le:
 - **No async runtime.** This tool reads files and asks the filesystem
   about them. There is nothing to await.
 - **`unsafe` is forbidden crate-wide** (`[lints.rust]`).
-- **Dependencies are a cost.** Four format parsers and two regex engines
-  is already more than most tools carry, and every one of them is
-  justified by a comment in `Cargo.toml`. Justify any addition; prefer
-  the standard library; prefer what is already in the tree.
+- **Dependencies are a cost.** Every one is justified by a comment in
+  `Cargo.toml`, and one that stops being used comes out — `jsonc-parser`
+  was declared and called nowhere, because the JSON extractor is a
+  hand-rolled quote scanner. Justify any addition; prefer the standard
+  library; prefer what is already in the tree.
 - **No network, ever.** Not even for a URL this tool just found. Link
   checking belongs to `lychee` and friends; the value here is the list.
 - **Nothing writes, and nothing judges.** No `--fix`, no verdicts, no
   filtering.
 - **Strict parsing, never silent defaults.** An unrecognised flag, a
-  format that does not resolve, an input that does not exist: all are
-  errors with actionable messages. A typo'd `--stict` that silently did
-  nothing would report a clean audit that never ran the check asked for.
+  `--format` with no value, an input that does not exist: all are errors
+  with actionable messages. A typo'd `--stict` that silently did nothing
+  would report a clean audit that never ran the check asked for. A
+  *format name* is the one thing this does not refuse, and only because
+  every extractor is the whole-document scan minus an exclusion: an
+  unrecognised name can never hide a URL, and the report says which pass
+  ran.
 - **Refuse rather than guess.** A file that cannot be read is reported
   as unexamined and the run exits 2 — never a clean result that quietly
   skipped it. Never report coverage you did not achieve.

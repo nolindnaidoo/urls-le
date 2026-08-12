@@ -95,6 +95,11 @@ fn docs_tree(name: &str) -> Tree {
     tree
 }
 
+/// Changed deliberately: `notes.rs` used to be skipped by the
+/// walk, so the total was 3. Every file is read now, and the two halves
+/// of that are asserted separately — a format that knows what to
+/// exclude still excludes it, and a format nobody wrote an extractor
+/// for is scanned rather than dropped.
 #[test]
 fn a_tree_with_urls_exits_zero() {
     let tree = docs_tree("found");
@@ -104,7 +109,15 @@ fn a_tree_with_urls_exits_zero() {
         .iter()
         .filter_map(|report| report["summary"]["urls"].as_u64())
         .sum();
-    assert_eq!(total, 3, "the fenced block and the .rs file are not read");
+    assert_eq!(total, 4, "{}", run.stdout);
+    assert!(
+        !run.stdout.contains("in-a-fence.example"),
+        "markdown still excludes a fenced block"
+    );
+    assert!(
+        run.stdout.contains("not-a-supported-format.example"),
+        "the .rs file is read"
+    );
 }
 
 /// grep's convention, and the reason it is worth having: finding

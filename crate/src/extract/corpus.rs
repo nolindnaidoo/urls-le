@@ -11,7 +11,7 @@ use super::{FileType, extract};
 
 const EXTRACTION: &str = include_str!("../../fixtures/extraction.json");
 
-const DOCUMENTS: [(&str, &str); 11] = [
+const DOCUMENTS: [(&str, &str); 14] = [
     ("urls.md", include_str!("../../fixtures/documents/urls.md")),
     (
         "urls.html",
@@ -50,6 +50,11 @@ const DOCUMENTS: [(&str, &str); 11] = [
         "broken.toml",
         include_str!("../../fixtures/documents/broken.toml"),
     ),
+    // Read through the fallback: no format-aware extractor, nothing to
+    // exclude, and every URL still found.
+    ("urls.py", include_str!("../../fixtures/documents/urls.py")),
+    ("urls.go", include_str!("../../fixtures/documents/urls.go")),
+    ("urls.sh", include_str!("../../fixtures/documents/urls.sh")),
 ];
 
 pub(crate) fn document(name: &str) -> &'static str {
@@ -177,10 +182,16 @@ fn a_broken_document_still_yields_its_urls() {
     assert!(!result.urls.is_empty(), "the fallback scan found nothing");
 }
 
+/// Changed deliberately: a language with no format-aware
+/// extractor was refused with a warning and no URLs. It is now read
+/// whole — the corpus's `urls.py`, `urls.go` and `urls.sh` are the
+/// documents that pin what comes back — and `Unknown` stops meaning
+/// "refused" and starts meaning "scanned whole".
 #[test]
-fn an_unsupported_language_is_a_warning_not_an_empty_result() {
+fn a_language_with_no_extractor_is_read_rather_than_refused() {
     let result = extract("see https://a.example", "python");
-    assert!(!result.success);
-    assert!(result.urls.is_empty());
+    assert!(result.success);
+    assert_eq!(result.urls.len(), 1);
+    assert!(result.errors.is_empty());
     assert_eq!(result.file_type, FileType::Unknown);
 }

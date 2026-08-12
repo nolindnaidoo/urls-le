@@ -90,7 +90,7 @@ If that prints `extract_urls`, the server works.
 | argument | type | |
 |---|---|---|
 | `content` | string | **required.** The text to scan. |
-| `format` | string | The language: `markdown`, `yaml`, `json`, `typescript`… Required unless `filename` is given. |
+| `format` | string | The language: `markdown`, `yaml`, `json`, `typescript`… Required unless `filename` is given. A name with no format-aware extractor is scanned as plain text rather than refused. |
 | `filename` | string | Used to infer `format` when it is absent — `README.md` resolves to `markdown`. |
 | `dedupe` | boolean | Collapse repeats. Default `false`. |
 | `maxResults` | number | Default `500`, ceiling `5000`. |

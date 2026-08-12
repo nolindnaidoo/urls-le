@@ -8,7 +8,7 @@ use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use crate::extract::format::{SUPPORTED_FORMATS, resolve_format};
+use crate::extract::format::resolve_format;
 use crate::scan::{self, FileReport, ScanOptions};
 use crate::walk::{self, WalkOptions};
 
@@ -20,13 +20,18 @@ const USAGE: &str = "usage: urls-le [options] <file|dir>...
 Extracts every URL from a document, with its protocol and 1-based line
 and column. One JSON report per line on stdout, human summary on stderr.
 
+Every file is read. Eleven formats know what to exclude — a fenced code
+block, an HTML comment, everything that is not a JSON string; anything
+else is scanned whole, and the report's format field says which.
+
 It reports what is there and nothing else: nothing is fetched, nothing
 is filtered, nothing is scored. What the URLs mean is yours to decide.
 
 Options:
   --dedupe             collapse repeated URLs to their first occurrence
   --format <format>    force a format instead of inferring it from the
-                       file name; required with --stdin
+                       file name; required with --stdin. A name with no
+                       format-aware extractor scans the whole document
   --stdin              read one document from stdin
   --strict             exit 2 if any file could not be read, rather than
                        reporting it and carrying on
@@ -162,12 +167,14 @@ fn parse(args: &[String]) -> Result<Options, String> {
                 let value = rest
                     .next()
                     .ok_or_else(|| "--format needs a format".to_string())?;
-                let resolved = resolve_format(Some(value), None).ok_or_else(|| {
-                    format!(
-                        "{value} is not a format this understands; one of: {}",
-                        SUPPORTED_FORMATS.join(", ")
-                    )
-                })?;
+                // A name nobody recognises resolves to the plain-text
+                // scan rather than a refusal. That is not a silent
+                // default: every format-aware extractor is that scan
+                // minus an exclusion, so a mistyped name can only stop
+                // something being excluded, never hide a URL — and the
+                // report's format field says which pass ran.
+                let resolved = resolve_format(Some(value), None)
+                    .ok_or_else(|| "--format needs a format".to_string())?;
                 options.format = Some(resolved);
                 options.walk.format = Some(resolved);
             }
@@ -270,11 +277,20 @@ mod tests {
         }
     }
 
+    /// Changed deliberately: `--format python` was refused,
+    /// which made a Python file something this would not read even when
+    /// told to. It now scans the whole document and says so in the
+    /// report, so the answer is visible rather than guessed at.
     #[test]
-    fn an_unknown_format_is_refused_by_name() {
-        let error =
-            parse(&["--format".into(), "python".into(), "x".into()]).expect_err("a refusal");
-        assert!(error.contains("python"), "{error}");
+    fn a_format_with_no_extractor_scans_the_whole_document() {
+        let options =
+            parse(&["--format".into(), "python".into(), "x".into()]).expect("it is accepted");
+        assert_eq!(options.format, Some("plaintext"));
+    }
+
+    #[test]
+    fn a_format_flag_with_no_value_is_refused() {
+        assert!(parse(&["--format".into()]).is_err());
     }
 
     #[test]

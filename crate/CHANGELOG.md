@@ -9,6 +9,53 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Every file is read.** A document with no format-aware extractor —
+  `.py`, `.go`, `.sh`, `.csv`, `.txt`, a `Dockerfile`, anything — is
+  scanned whole instead of being skipped by the walk or refused by name.
+  Each of the eleven extractors is that same scan *minus* an exclusion (a
+  fenced block, a comment, everything that is not a JSON string), so the
+  whole-document scan is their superset and a URL is unambiguous in any
+  text. Refusing never protected a reader from a wrong answer; it
+  withheld the right one, for most of a codebase.
+
+  Four behaviours move with it, each pinned by a test that says so:
+
+  - `walk.rs` no longer filters by extension, so a tree yields every
+    file. One that is not text still comes back as `skipped` from
+    `scan.rs`, which is where that is knowable rather than guessable —
+    and `--strict` still turns those into exit 2.
+  - Naming a file whose extension nothing recognises reads it, instead
+    of failing the run with "no format could be inferred". Naming a file
+    is an instruction.
+  - `--format` and the MCP `format` argument accept any name; one with
+    no extractor scans the whole document. Not a silent default: a
+    mistyped name can only stop something being excluded, never hide a
+    URL, and the report's `format` field says which pass ran.
+  - `extract` no longer returns an `Unsupported file type` warning.
+
+- **`extract_urls` reports the extractor that ran, not the name it was
+  given.** `fileType` is the extraction's own answer — `unknown` for the
+  whole-document scan — which is what the extension has always reported
+  and is the one bit a caller cannot work out for itself.
+
+### Added
+
+- **`csv`, `tsv`, `plaintext`, `txt` and `log`** in the alias table, and
+  `csv` and `plaintext` in the advertised format enum, so an agent that
+  sends one sees it offered rather than falling through to the fallback.
+- **`fixtures/documents/urls.py`, `urls.go` and `urls.sh`** — the
+  documents that pin what the whole-document scan actually returns:
+  comments, docstrings, f-strings, Go raw literals, quoted shell
+  arguments.
+
+### Removed
+
+- **`jsonc-parser`.** Declared and called nowhere; the JSON extractor is
+  a hand-rolled quote scanner, because the offsets have to be the raw
+  document's and a parser hands back values.
+
 ### Fixed
 
 - **The CLI and the extension accepted different file extensions.**

@@ -8,7 +8,7 @@
 
 use std::path::{Path as StdPath, PathBuf};
 
-use crate::extract::format::resolve_format;
+use crate::extract::format::{FALLBACK_FORMAT, resolve_format};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Target {
@@ -52,20 +52,12 @@ pub(crate) fn collect(inputs: &[PathBuf], options: &WalkOptions) -> Result<Vec<T
 
         if metadata.is_file() {
             // Named explicitly, so it is read whatever the ignore rules
-            // say. Only an unrecognised format refuses it, and that
-            // refusal names the problem rather than returning nothing.
-            let language_id = options
-                .format
-                .or_else(|| language_for(input))
-                .ok_or_else(|| {
-                    format!(
-                        "{}: no format could be inferred from the name; name one explicitly",
-                        input.display()
-                    )
-                })?;
+            // say — and whatever its name suggests. Naming a file is an
+            // instruction, and this used to answer it with a refusal
+            // when the extension was one it had no extractor for.
             targets.push(Target {
                 path: input.clone(),
-                language_id,
+                language_id: options.format.unwrap_or_else(|| language_for(input)),
             });
             continue;
         }
@@ -95,24 +87,26 @@ fn walk_directory(root: &StdPath, options: &WalkOptions) -> Result<Vec<Target>, 
         if !entry.file_type().is_some_and(|kind| kind.is_file()) {
             continue;
         }
-        let Some(language_id) = options.format.or_else(|| language_for(entry.path())) else {
-            continue;
-        };
         targets.push(Target {
             path: entry.path().to_path_buf(),
-            language_id,
+            language_id: options.format.unwrap_or_else(|| language_for(entry.path())),
         });
     }
     Ok(targets)
 }
 
-/// A walked file with no recognisable format is skipped silently; one
-/// named explicitly is refused loudly. The difference is intent — a
-/// repository is full of files this tool has nothing to say about, and
-/// naming one means you expected it to.
-fn language_for(path: &StdPath) -> Option<&'static str> {
-    let name = path.file_name()?.to_str()?;
-    resolve_format(None, Some(name))
+/// Every file gets a format, because every file gets read.
+///
+/// A name this recognises picks the extractor that knows what to
+/// exclude; anything else gets the whole-document scan, which is what
+/// those extractors are before they exclude anything. A file that is not
+/// text still ends up reported as skipped by `scan.rs` — that is the
+/// honest place to find out, not a guess from an extension.
+fn language_for(path: &StdPath) -> &'static str {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .and_then(|name| resolve_format(None, Some(name)))
+        .unwrap_or(FALLBACK_FORMAT)
 }
 
 #[cfg(test)]
@@ -134,8 +128,12 @@ mod tests {
             .collect()
     }
 
+    /// Changed deliberately: this asserted that `c.rs` and
+    /// `d.py` were skipped. They were the files a URL audit most wanted
+    /// — a codebase is mostly source — and skipping them silently made
+    /// a clean report out of a scan that never looked.
     #[test]
-    fn a_directory_yields_only_the_formats_it_understands() {
+    fn a_directory_yields_every_file_and_names_the_format_of_each() {
         let tree = TempTree::new("walk-formats");
         tree.write("a.md", "# yes");
         tree.write("b.toml", "");
@@ -143,7 +141,9 @@ mod tests {
         tree.write("d.py", "pass");
         let targets = collect(&[tree.path().to_path_buf()], &WalkOptions::default())
             .expect("the walk succeeds");
-        assert_eq!(names(&targets), ["a.md", "b.toml"]);
+        assert_eq!(names(&targets), ["a.md", "b.toml", "c.rs", "d.py"]);
+        assert_eq!(targets[0].language_id, "markdown");
+        assert_eq!(targets[2].language_id, FALLBACK_FORMAT);
     }
 
     #[test]
@@ -232,13 +232,16 @@ mod tests {
         assert_eq!(names(&targets), ["skipped.md"]);
     }
 
+    /// Changed deliberately: naming a file used to be refused
+    /// when its extension was one this had no extractor for. Naming a
+    /// file is an instruction, and the answer to it is the file.
     #[test]
-    fn an_explicitly_named_file_of_unknown_format_is_refused_by_name() {
+    fn an_explicitly_named_file_of_unknown_format_is_read_anyway() {
         let tree = TempTree::new("walk-unknown");
         let file = tree.write("notes.rs", "// x");
-        let error = collect(&[file], &WalkOptions::default()).expect_err("a refusal");
-        assert!(error.contains("notes.rs"), "{error}");
-        assert!(error.contains("no format could be inferred"), "{error}");
+        let targets = collect(&[file], &WalkOptions::default()).expect("the walk succeeds");
+        assert_eq!(names(&targets), ["notes.rs"]);
+        assert_eq!(targets[0].language_id, FALLBACK_FORMAT);
     }
 
     #[test]

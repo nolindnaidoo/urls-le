@@ -2,7 +2,7 @@
 
 <p align="center">
   <b>Extract every URL from a codebase, with its protocol and exact position</b><br/>
-  <i>eleven formats, one scanner — and no opinions about what it found</i>
+  <i>every file, one scanner — and no opinions about what it found</i>
 </p>
 
 <p align="center">
@@ -97,8 +97,10 @@ is enforced rather than merely written down.
 
 ## What it reads
 
-Eleven formats, the same eleven the extension supports: **Markdown, HTML,
-CSS, JavaScript, TypeScript, JSON, YAML, `.properties`, TOML, INI, XML.**
+**Every text file.** Eleven formats know what to exclude — the same
+eleven the extension supports: **Markdown, HTML, CSS, JavaScript,
+TypeScript, JSON, YAML, `.properties`, TOML, INI, XML** — and everything
+else is scanned whole.
 
 Each format decides *which part of the document* to scan, and nothing
 else — that is what one shared scanner buys. Markdown skips fenced blocks
@@ -108,9 +110,16 @@ locate each value back in the source, falling back to a whole-document
 scan when the file does not parse — so a broken config still yields its
 URLs.
 
+A `.py`, a `.go`, a `.sh`, a `.csv`, a `Dockerfile` gets that same
+whole-document scan, because a URL is unambiguous in any text and there
+is nothing in those worth excluding. The report's `format` field says
+which pass ran. Nothing is refused for its name.
+
 A directory is walked the way ripgrep walks one: `.gitignore` honoured,
 hidden files skipped, `--no-ignore` and `--hidden` to reach the rest. A
-file named explicitly is always read.
+file named explicitly is always read. Files that are not text — a PNG, a
+zip — are named on stderr and carried in the report as `skipped`, and do
+not fail the run unless you ask with `--strict`.
 
 ### Ported as-is, including the awkward parts
 

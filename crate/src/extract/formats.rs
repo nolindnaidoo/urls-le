@@ -1,6 +1,7 @@
-//! The eleven format extractors. Each reduces to the shared scanner over
-//! some subset of the document — which subset is the whole difference
-//! between them.
+//! The eleven format extractors, plus the scan every other document
+//! gets. Each reduces to the shared scanner over some subset of the
+//! document — which subset is the whole difference between them, and
+//! "all of it" is a legitimate answer.
 
 use super::format::FileType;
 use super::position::PositionIndex;
@@ -19,12 +20,17 @@ pub(crate) fn extract_by_file_type(content: &str, file_type: FileType) -> Vec<Ur
         // CSS, JavaScript, TypeScript, YAML and XML are whole-content
         // scans: nothing in them needs excluding, and pretending
         // otherwise would be five more chances to disagree.
+        //
+        // Unknown joins them rather than returning nothing. Every
+        // extractor above is this scan minus an exclusion, so this is
+        // the superset — a Python file, a CSV, a log — and a URL is
+        // unambiguous in any of them.
         FileType::Css
         | FileType::Javascript
         | FileType::Typescript
         | FileType::Yaml
-        | FileType::Xml => to_urls(content, &scan_urls(content, 0)),
-        FileType::Unknown => Vec::new(),
+        | FileType::Xml
+        | FileType::Unknown => to_urls(content, &scan_urls(content, 0)),
     }
 }
 
@@ -260,6 +266,7 @@ mod tests {
             FileType::Typescript,
             FileType::Yaml,
             FileType::Xml,
+            FileType::Unknown,
         ] {
             assert_eq!(
                 values("x https://a.example y", file_type),

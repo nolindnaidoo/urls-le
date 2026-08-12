@@ -39,7 +39,10 @@ describe('extraction characterization', () => {
 		});
 	}
 
-	it('unknown language returns a format error', async () => {
+	// Changed deliberately: this pinned a format error. A language
+	// with no format-aware extractor is now scanned whole, and `fileType`
+	// stays 'unknown' so a caller can still tell which of the two ran.
+	it('unknown language is scanned whole', async () => {
 		const result = await extractUrls(
 			'see https://fallback.example.com/plain',
 			'python',

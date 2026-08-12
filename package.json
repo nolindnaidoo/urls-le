@@ -62,17 +62,7 @@
 	"l10n": "./l10n",
 	"main": "./dist/extension.js",
 	"activationEvents": [
-		"onLanguage:markdown",
-		"onLanguage:html",
-		"onLanguage:css",
-		"onLanguage:javascript",
-		"onLanguage:typescript",
-		"onLanguage:json",
-		"onLanguage:yaml",
-		"onLanguage:properties",
-		"onLanguage:toml",
-		"onLanguage:ini",
-		"onLanguage:xml"
+		"onStartupFinished"
 	],
 	"capabilities": {
 		"virtualWorkspaces": {
@@ -124,7 +114,7 @@
 			"editor/context": [
 				{
 					"command": "urls-le.extractUrls",
-					"when": "editorLangId =~ /^(markdown|html|css|javascript|typescript|json|yaml|properties|toml|ini|xml)$/",
+					"when": "editorTextFocus",
 					"group": "1_modification@1"
 				}
 			],

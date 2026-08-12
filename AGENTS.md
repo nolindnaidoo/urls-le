@@ -6,7 +6,7 @@ This repo hosts **two products**: the extension at the root (this document's sco
 
 ## What this is
 
-A VS Code extension that extracts URLs (http/https/ftp/file/mailto/tel) from the active document (Markdown, HTML, CSS, JS/TS, JSON, YAML, Properties, TOML, INI, XML) into a results editor, with dedupe/sort post-processing. No network access — URLs are read from text, never fetched or validated.
+A VS Code extension that extracts URLs (http/https/ftp/file/mailto/tel) from the active document — any document — into a results editor, with dedupe/sort post-processing. Markdown, HTML, CSS, JS/TS, JSON, YAML, Properties, TOML, INI and XML know what to exclude; every other languageId is scanned whole. No network access — URLs are read from text, never fetched or validated.
 
 ## Architecture
 
@@ -23,7 +23,7 @@ mcp/                    MCP server: transport.ts holds the hand-rolled
                         mode, and is not part of the server bundle.
 extraction/extract.ts   dispatcher: languageId -> FileType -> extractor;
                         content-size cap (10MB), URL-count cap (50k), unknown
-                        languages return a 'format' error
+                        languages take the plain-text scan (no refusal)
 extraction/heuristics.ts  THE single URL scanner: five protocol patterns,
                         scanUrls() -> UrlMatch[], toUrls() enrichment,
                         locateParsedValues() for parser-based formats
@@ -31,7 +31,9 @@ extraction/position.ts    offset -> {line, column} via newline index (1-based)
 extraction/formats/*.ts   one extractor per format; scan-based ones filter the
                         shared scan (markdown: code regions, html: comments,
                         properties: comment lines), parser-based ones
-                        (json/toml/ini) walk tokens or values
+                        (json/toml/ini) walk tokens or values, and
+                        plaintext.ts is the unfiltered scan every other
+                        languageId gets
 ui/                     notifier (window messages, gated by notificationsLevel:
                         all -> everything, important -> warn+error, silent ->
                         error only), statusBar
@@ -330,6 +332,6 @@ Order matters beyond this repo: npm must be published *before* any Zed registry 
 ## Known limitations (documented, not bugs)
 
 - A URL ends at whitespace or any of ``< > " { } | \ ^ ` [ ] ; ) '`` — URLs containing raw spaces extract as space-terminated partials; trailing `.`/`,` are kept (legal URL characters).
-- YAML and JS/TS extraction includes comments by design (a URL in a commented-out line is still discoverable); Markdown code blocks, HTML comments, and Properties comment lines are excluded.
+- YAML and JS/TS extraction includes comments by design (a URL in a commented-out line is still discoverable); Markdown code blocks, HTML comments, and Properties comment lines are excluded. A languageId with no extractor of its own gets the same unfiltered scan, so nothing in it is excluded either.
 - TOML/INI positions come from forward-locate over the source (no offsets from @iarna/toml or ini); repeated identical values resolve to successive occurrences, and values whose raw form differs from the parsed form (escape sequences) are reported without a position.
 - JSON escaped URL forms (`https:\/\/…`) don't match — the scan runs over raw string tokens.

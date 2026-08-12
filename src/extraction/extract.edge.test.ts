@@ -186,13 +186,16 @@ describe('Extract.ts Edge Cases', () => {
 			expect(result.fileType).toBe('unknown');
 		});
 
-		it('returns a format error for unknown types', async () => {
+		// Changed deliberately: this asserted a format error and no
+		// URLs. Refusing never protected a caller from a wrong answer — it
+		// withheld the right one.
+		it('scans the whole document for unknown types', async () => {
 			const content = '[link](https://example.com)';
 			const result = await extractUrls(content, 'unknown-type');
 
-			expect(result.success).toBe(false);
-			expect(result.urls).toHaveLength(0);
-			expect(result.errors[0]?.category).toBe('format');
+			expect(result.success).toBe(true);
+			expect(result.errors).toHaveLength(0);
+			expect(result.urls.map((u) => u.value)).toEqual(['https://example.com']);
 		});
 	});
 

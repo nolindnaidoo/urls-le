@@ -242,20 +242,23 @@ describe('urls-le.extractUrls', () => {
 		expect(events).not.toContain('statusbar:extracting');
 	});
 
-	it('reports unsupported languages as an extraction failure', async () => {
+	// Changed deliberately: this asserted that a Python document
+	// produced "Failed to extract URLs: Unsupported language". A URL is
+	// unambiguous in any text, so the command now reads it.
+	it('extracts from a language with no format-aware extractor', async () => {
 		const events: string[] = [];
 		registerExtractCommand(makeContext(), makeDeps(events));
 		_setActiveEditor(
-			_createDocument({ content: 'print(1)', languageId: 'python' }),
+			_createDocument({
+				content: 'API = "https://only.example.com/v1"\n',
+				languageId: 'python',
+			}),
 		);
 
 		await runCommand('urls-le.extractUrls');
 
-		expect(
-			events.some((e) =>
-				e.startsWith('error:Failed to extract URLs: Unsupported language'),
-			),
-		).toBe(true);
+		expect(events.some((e) => e.startsWith('error:'))).toBe(false);
+		expect(events).toContain('info:Extracted 1 URLs');
 	});
 
 	it('replaces the document in place when both open settings are off', async () => {

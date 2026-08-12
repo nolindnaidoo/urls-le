@@ -70,20 +70,12 @@ pub(crate) fn extract(content: &str, language_id: &str) -> Extraction {
         };
     }
 
+    // No refusal for an unrecognised language: `FileType::Unknown` is
+    // the whole-document scan, which is what every format-aware
+    // extractor is before it excludes something. Refusing was never
+    // protecting a caller from a wrong answer — it withheld the right
+    // one, for every `.py`, `.go`, `.sh` and `.csv` in the tree.
     let file_type = determine_file_type(language_id);
-    if file_type == FileType::Unknown {
-        return Extraction {
-            success: false,
-            urls: Vec::new(),
-            errors: vec![ExtractionError {
-                category: ErrorCategory::Format,
-                severity: Severity::Warning,
-                message: format!("Unsupported file type: {language_id}"),
-            }],
-            file_type,
-        };
-    }
-
     let mut urls = formats::extract_by_file_type(content, file_type);
     let truncated = urls.len() > MAX_URL_COUNT;
     urls.truncate(MAX_URL_COUNT);
@@ -117,13 +109,20 @@ mod tests {
         assert_eq!(result.file_type, FileType::Markdown);
     }
 
+    /// Changed deliberately: this used to be a refusal naming
+    /// the language. A URL is unambiguous in any text, so a document
+    /// with no format-aware extractor is read whole, and `file_type`
+    /// says which pass ran.
     #[test]
-    fn an_unsupported_language_is_refused_by_name() {
-        let result = extract("https://a.example", "python");
-        assert!(!result.success);
-        assert_eq!(result.errors[0].category, ErrorCategory::Format);
-        assert_eq!(result.errors[0].severity, Severity::Warning);
-        assert!(result.errors[0].message.contains("python"));
+    fn a_language_with_no_extractor_is_read_whole() {
+        let result = extract(
+            "# see https://a.example\nurl = 'https://b.example'",
+            "python",
+        );
+        assert!(result.success);
+        assert!(result.errors.is_empty());
+        assert_eq!(result.file_type, FileType::Unknown);
+        assert_eq!(result.urls.len(), 2);
     }
 
     /// The 10 MB ceiling is behaviour a caller can observe, so it is
@@ -151,7 +150,7 @@ mod tests {
         }
     }
 
-    const SUPPORTED_LANGUAGES: [&str; 12] = [
+    const SUPPORTED_LANGUAGES: [&str; 15] = [
         "markdown",
         "html",
         "css",
@@ -164,5 +163,8 @@ mod tests {
         "toml",
         "ini",
         "xml",
+        "csv",
+        "plaintext",
+        "python",
     ];
 }

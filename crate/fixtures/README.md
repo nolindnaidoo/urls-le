@@ -24,6 +24,11 @@ rather than trust them.
   failure becoming an empty result is the quiet way a scanner stops
   working — the fallback whole-document scan must still find its URLs,
   and both frontends must agree that it does.
+- **`documents/urls.py`, `urls.go`, `urls.sh`** have no format-aware
+  extractor on either side, so they pin the plain-text scan: a comment,
+  a docstring, an f-string, a Go raw literal, a quoted shell argument.
+  They are the documents that say what "reads every file" actually
+  returns, rather than leaving it to the claim.
 - **`aliases.json`** exists because 0.1.0 shipped two tables that
   disagreed on nine names. Walking a directory of `icon.svg`, `app.cfg`,
   `app.conf` and `ok.json`, the CLI read one file and the extension read

@@ -11,7 +11,40 @@ separate product on its own cadence and keeps its own
 
 ## [Unreleased]
 
+### Changed
+
+- **Extract now works in every document.** A language with no
+  format-aware extractor — Python, Go, shell, SQL, CSV, plain text, a log
+  — is scanned whole instead of reporting "Unsupported language". Each of
+  the eleven extractors is that same scan *minus* an exclusion (a fenced
+  block, an HTML comment, everything that is not a JSON string), so the
+  whole-document scan is their superset, and a URL is unambiguous in any
+  text. `fileType` still reports `unknown` for that pass, so a caller can
+  tell which of the two ran.
+
+  The command surface is unchanged — no new commands, no new settings.
+  `activationEvents` becomes `onStartupFinished` and the editor context
+  menu drops its language filter, because gating either on a list of
+  eleven would leave the command greyed out in the documents that now
+  work.
+
+  The `extract_urls` MCP tool moves with it: `format` accepts any name,
+  and one with no extractor is scanned as plain text rather than refused.
+  `csv`, `tsv`, `plaintext`, `txt` and `log` join the alias table, and
+  `csv` and `plaintext` the advertised enum.
+
+- **Characterization goldens updated**: `unknown language returns a
+  format error` is now `unknown language is scanned whole`.
+
 ### Fixed
+
+- **A dotfile now resolves by its whole name.** `resolveFormat(undefined,
+  '.env')` split on the last dot and found nothing; the Rust crate always
+  read the whole name first. Alias lookups also read own keys only — a
+  filename ending `.toString` used to hand back a function that every
+  truthiness check downstream accepted as a language id.
+
+
 
 - **The MCP server accepted file extensions the Rust CLI refused, and
   refused one it accepted.** `extract_urls` is meant to be one tool

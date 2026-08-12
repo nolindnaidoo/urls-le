@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { describe, expect, it } from 'vitest';
 import type { ExtractionResult } from '../types';
 import { capped, isOk, readMaxResults, toDiagnostics } from './envelope';
-import { resolveFormat, SUPPORTED_FORMATS } from './fileType';
+import { FALLBACK_FORMAT, resolveFormat, SUPPORTED_FORMATS } from './fileType';
 import { TOOLS } from './tools';
 import { createResponder, serve } from './transport';
 
@@ -86,13 +86,37 @@ describe('fileType: tolerant resolution', () => {
 		expect(resolveFormat(undefined, 'pom.xml')).toBe('xml');
 	});
 
-	it('returns null when neither input resolves', () => {
-		expect(resolveFormat('klingon', 'a.klingon')).toBeNull();
+	// A dotfile has no extension to split on, so the whole name has to be
+	// tried first. The Rust crate always did; this side did not.
+	it('resolves a dotfile by its whole name', () => {
+		expect(resolveFormat(undefined, '.env')).toBe('properties');
+		expect(resolveFormat(undefined, 'env')).toBe('properties');
+	});
+
+	// Changed deliberately: an unrecognised name used to be null,
+	// which made `a.py` a document this tool refused rather than one it had
+	// no special handling for. Every extractor is the plain-text scan minus
+	// an exclusion, so the fallback can never hide a URL.
+	it('falls back to a plain-text scan rather than refusing a name', () => {
+		expect(resolveFormat('klingon', 'a.klingon')).toBe(FALLBACK_FORMAT);
+		expect(resolveFormat(undefined, 'app.py')).toBe(FALLBACK_FORMAT);
+		expect(resolveFormat(undefined, 'Makefile')).toBe(FALLBACK_FORMAT);
+	});
+
+	it('returns null when nothing at all was named', () => {
 		expect(resolveFormat(undefined, undefined)).toBeNull();
+	});
+
+	// A plain object literal inherits from Object.prototype, so an unguarded
+	// lookup hands back a function that every truthiness check accepts.
+	it('reads own keys only', () => {
+		expect(resolveFormat('toString', undefined)).toBe(FALLBACK_FORMAT);
+		expect(resolveFormat(undefined, 'a.constructor')).toBe(FALLBACK_FORMAT);
 	});
 
 	it('advertises only formats the engine supports', () => {
 		expect(SUPPORTED_FORMATS).toContain('markdown');
+		expect(SUPPORTED_FORMATS).toContain(FALLBACK_FORMAT);
 		expect(SUPPORTED_FORMATS).not.toContain('unknown');
 	});
 });

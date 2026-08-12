@@ -32,20 +32,24 @@ exports[`extraction characterization > broken.toml as toml 1`] = `
 }
 `;
 
-exports[`extraction characterization > unknown language returns a format error 1`] = `
+exports[`extraction characterization > unknown language is scanned whole 1`] = `
 {
-  "errors": [
+  "errors": [],
+  "fileType": "unknown",
+  "success": true,
+  "urls": [
     {
-      "category": "format",
-      "message": "Unsupported language: python",
-      "recoverable": false,
-      "recoveryAction": "abort",
-      "severity": "warning",
+      "context": "see https://fallback.example.com/plain",
+      "domain": "fallback.example.com",
+      "path": "/plain",
+      "position": {
+        "column": 5,
+        "line": 1,
+      },
+      "protocol": "https",
+      "value": "https://fallback.example.com/plain",
     },
   ],
-  "fileType": "unknown",
-  "success": false,
-  "urls": [],
 }
 `;
 

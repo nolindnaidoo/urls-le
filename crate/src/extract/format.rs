@@ -22,6 +22,11 @@ pub(crate) enum FileType {
     Toml,
     Ini,
     Xml,
+    /// No format-aware extractor: the document is scanned whole. Not
+    /// "we could not tell" — it is the answer for a `.py`, a `.csv` or
+    /// anything else with no structure worth excluding, and it is what
+    /// the `fileType` field says so a caller can tell which of the two
+    /// passes ran.
     Unknown,
 }
 
@@ -42,7 +47,13 @@ pub(crate) fn determine_file_type(language_id: &str) -> FileType {
     }
 }
 
-pub(crate) const SUPPORTED_FORMATS: [&str; 11] = [
+/// What a caller gets when nothing recognises the name. A URL is
+/// unambiguous in any text, so refusing a document this has no extractor
+/// for was never protecting anyone from a wrong answer — it withheld the
+/// right one.
+pub(crate) const FALLBACK_FORMAT: &str = "plaintext";
+
+pub(crate) const SUPPORTED_FORMATS: [&str; 13] = [
     "markdown",
     "html",
     "css",
@@ -54,6 +65,8 @@ pub(crate) const SUPPORTED_FORMATS: [&str; 11] = [
     "toml",
     "ini",
     "xml",
+    "csv",
+    "plaintext",
 ];
 
 /// Every language id the engine understands, keyed by what a caller
@@ -63,7 +76,7 @@ pub(crate) const SUPPORTED_FORMATS: [&str; 11] = [
 /// two MCP servers offer the same `extract_urls`, so an extension that
 /// reads `icon.svg` while this refuses it makes them two different
 /// tools.
-const ALIASES: [(&str, &str); 35] = [
+const ALIASES: [(&str, &str); 40] = [
     ("markdown", "markdown"),
     ("md", "markdown"),
     ("mdx", "markdown"),
@@ -99,6 +112,14 @@ const ALIASES: [(&str, &str); 35] = [
     ("svg", "xml"),
     ("xsl", "xml"),
     ("pom", "xml"),
+    // Named rather than left to the fallback: an agent that sends `csv`
+    // should see it in the advertised enum, and see the same answer it
+    // would get from a filename.
+    ("csv", "csv"),
+    ("tsv", "csv"),
+    ("plaintext", "plaintext"),
+    ("txt", "plaintext"),
+    ("log", "plaintext"),
 ];
 
 fn normalise(value: &str) -> String {
@@ -114,17 +135,36 @@ fn alias(key: &str) -> Option<&'static str> {
 }
 
 /// Resolve a language id from an explicit format, else from a filename.
-/// `None` rather than a guess: a wrong format extracts nothing and looks
-/// like a document with no URLs.
+///
+/// Anything named resolves: an unrecognised name yields
+/// [`FALLBACK_FORMAT`] rather than a refusal. A format-aware extractor
+/// only ever *excludes* part of a document — a fenced block, a comment,
+/// everything that is not a JSON string — so the fallback is a superset
+/// of all eleven, and a name nobody recognises can never hide a URL. It
+/// can only stop excluding one, and the `format` field in the report
+/// says which pass ran.
+///
+/// `None` only when nothing was named at all, which is a caller with no
+/// question rather than a document with no format.
 pub(crate) fn resolve_format(format: Option<&str>, filename: Option<&str>) -> Option<&'static str> {
     if let Some(format) = format
         && let Some(direct) = alias(&normalise(format))
     {
         return Some(direct);
     }
-    let filename = filename?;
+    if let Some(filename) = filename
+        && let Some(by_name) = from_filename(filename)
+    {
+        return Some(by_name);
+    }
+    (format.is_some() || filename.is_some()).then_some(FALLBACK_FORMAT)
+}
+
+/// The whole name first, so `.env` and `pom.xml` both land, then the
+/// extension.
+fn from_filename(filename: &str) -> Option<&'static str> {
     let bare = normalise(filename);
-    if let Some(whole) = alias(bare.strip_prefix('.').unwrap_or(&bare)) {
+    if let Some(whole) = alias(&bare) {
         return Some(whole);
     }
     let extension = filename.rsplit_once('.').map(|(_, ext)| ext)?;
@@ -155,11 +195,37 @@ mod tests {
         assert_eq!(resolve_format(None, Some("data.xml")), Some("xml"));
     }
 
+    /// Changed deliberately: a name nobody recognises used to
+    /// be refused, which made `script.py` a document this tool would not
+    /// read rather than one it had no special handling for.
     #[test]
-    fn nothing_recognisable_returns_none() {
-        assert_eq!(resolve_format(Some("python"), None), None);
-        assert_eq!(resolve_format(None, Some("script.py")), None);
+    fn nothing_recognisable_falls_back_rather_than_refusing() {
+        assert_eq!(resolve_format(Some("python"), None), Some(FALLBACK_FORMAT));
+        assert_eq!(
+            resolve_format(None, Some("script.py")),
+            Some(FALLBACK_FORMAT)
+        );
+        assert_eq!(
+            resolve_format(None, Some("Makefile")),
+            Some(FALLBACK_FORMAT)
+        );
+    }
+
+    /// Naming nothing is still nothing: the caller asked no question,
+    /// and answering one they did not ask is the guess this refuses.
+    #[test]
+    fn naming_neither_returns_none() {
         assert_eq!(resolve_format(None, None), None);
+    }
+
+    /// An unrecognised format hint still lets the filename answer,
+    /// rather than short-circuiting to the fallback.
+    #[test]
+    fn a_filename_is_consulted_when_the_format_hint_is_not_known() {
+        assert_eq!(
+            resolve_format(Some("klingon"), Some("README.md")),
+            Some("markdown")
+        );
     }
 
     /// Every format the schema advertises must resolve, or the enum
@@ -171,12 +237,26 @@ mod tests {
         }
     }
 
-    /// Every alias must land on a language id the engine understands.
+    /// Every alias must land on a language id the schema advertises.
+    ///
+    /// Stronger than the file-type check it replaces: `csv` and
+    /// `plaintext` are read by the whole-document scan, so they are
+    /// deliberately `Unknown` file types, and the old assertion would
+    /// have had to be weakened to keep them. What actually matters is
+    /// that no alias points at a name the enum does not offer.
     #[test]
-    fn every_alias_lands_on_a_known_file_type() {
+    fn every_alias_lands_on_an_advertised_format() {
         for (from, to) in ALIASES {
-            assert_ne!(determine_file_type(to), FileType::Unknown, "{from} -> {to}");
+            assert!(SUPPORTED_FORMATS.contains(&to), "{from} -> {to}");
         }
+    }
+
+    /// The fallback must itself be a format the schema offers, or the
+    /// answer names something a caller cannot ask for.
+    #[test]
+    fn the_fallback_is_an_advertised_format() {
+        assert!(SUPPORTED_FORMATS.contains(&FALLBACK_FORMAT));
+        assert_eq!(determine_file_type(FALLBACK_FORMAT), FileType::Unknown);
     }
 
     /// The two frontends offer the same `extract_urls`, so a name one

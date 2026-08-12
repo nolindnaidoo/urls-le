@@ -54,7 +54,8 @@ right twice; where they diverge that is the point.
 crate/
 ├── src/
 │   ├── extract/     pure: the URL scanner, the eleven format
-│   │                extractors, positions. No filesystem, pub(crate).
+│   │                extractors and the scan every other document
+│   │                gets, positions. No filesystem, pub(crate).
 │   ├── walk.rs      ignore-aware tree walking
 │   ├── scan.rs      one file end to end — the only path either surface calls
 │   ├── cli.rs       the terminal surface
@@ -67,7 +68,7 @@ floor per module**.
 
 ## Extraction — parity scope
 
-### One scanner, eleven formats
+### One scanner, eleven formats, and every other file
 
 The extension's history is the reason this matters: v1.x had the same
 five protocol patterns copy-pasted into ten files with divergent
@@ -78,6 +79,20 @@ uniformly, is the fix, and it is ported as one scanner.
 
 Formats: **Markdown, HTML, CSS, JavaScript, TypeScript, JSON, YAML,
 `.properties`, TOML, INI, XML.**
+
+**Nothing else is refused.** A format extractor decides which *subset* of
+the document to scan — a fenced block excluded, a comment excluded,
+everything that is not a JSON string excluded — so the whole-document
+scan is the superset of all eleven, and it is what a `.py`, a `.go`, a
+`.sh`, a `.csv` or a file with no extension at all gets. A URL is
+unambiguous in any text; refusing one of those documents never protected
+a reader from a wrong answer, it withheld the right one. The `fileType`
+field reports `unknown` when that scan ran, which is how a caller tells
+the two apart.
+
+The same rule reaches `--format` and the walk. Any name resolves — an
+unrecognised one to `plaintext` — and a file named on the command line is
+read whatever its extension. Naming a file is an instruction.
 
 ### The rules, ported as-is
 
@@ -170,6 +185,12 @@ Options:
   --no-ignore          walk files that .gitignore excludes
 ```
 
+`--format` takes any name. One of the eleven picks that extractor;
+anything else scans the whole document. That is not a silent default —
+every extractor is the whole-document scan minus an exclusion, so a
+mistyped name can only stop something being excluded, never hide a URL,
+and the report's `format` field says which pass ran.
+
 ## The MCP surface
 
 - **`extract_urls` belongs to both servers.** The npm server and this one
@@ -202,9 +223,10 @@ an extractor into something with a position.
 
 ## Files that cannot be read
 
-Exit 2 means the *question* was malformed — an unknown flag, an
-unreadable format name, a path that does not exist. It does not mean one
-file in fifty thousand was a PNG.
+Exit 2 means the *question* was malformed — an unknown flag, a missing
+`--format` value, a path that does not exist. It does not mean one file
+in fifty thousand was a PNG, and since every file is now walked, most
+repositories contain several.
 
 A file that is not UTF-8 text, or that cannot be opened, is:
 

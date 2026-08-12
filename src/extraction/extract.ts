@@ -11,6 +11,7 @@ import { extractFromIni } from './formats/ini';
 import { extractFromJavaScript } from './formats/javascript';
 import { extractFromJson } from './formats/json';
 import { extractFromMarkdown } from './formats/markdown';
+import { extractFromPlainText } from './formats/plaintext';
 import { extractFromProperties } from './formats/properties';
 import { extractFromToml } from './formats/toml';
 import { extractFromXml } from './formats/xml';
@@ -37,10 +38,11 @@ export async function extractUrls(
 		);
 	}
 
+	// No refusal for an unrecognised language: 'unknown' is the whole-document
+	// scan, which is what every format-aware extractor is before it excludes
+	// something. Refusing was never protecting a caller from a wrong answer —
+	// it withheld the right one, for every .py, .go, .sh and .csv there is.
 	const fileType = determineFileType(languageId);
-	if (fileType === 'unknown') {
-		return createUnsupportedResult(languageId);
-	}
 
 	// Fail fast: Check cancellation before extraction
 	if (cancellationToken?.isCancellationRequested) {
@@ -108,25 +110,10 @@ function selectExtractor(
 		case 'xml':
 			return extractFromXml;
 		default:
-			return extractFromMarkdown; // Unreachable: 'unknown' is rejected upstream
+			// 'unknown': no format-aware extractor, so nothing to exclude. The
+			// whole-content scan is what CSS, JS, TS, YAML and XML already run.
+			return extractFromPlainText;
 	}
-}
-
-function createUnsupportedResult(languageId: string): ExtractionResult {
-	return Object.freeze({
-		success: false,
-		urls: Object.freeze([]),
-		errors: Object.freeze([
-			{
-				category: 'format' as const,
-				severity: 'warning' as const,
-				message: `Unsupported language: ${languageId}`,
-				recoverable: false,
-				recoveryAction: 'abort' as const,
-			},
-		]),
-		fileType: 'unknown' as const,
-	});
 }
 
 function createEmptyResult(fileType: FileType): ExtractionResult {
@@ -229,6 +216,9 @@ function determineFileType(languageId: string): FileType {
 		case 'xml':
 			return 'xml';
 		default:
+			// Not "we could not tell" — it is the answer for a .py, a .csv or
+			// anything else with no structure worth excluding, and it is what
+			// the fileType field reports so a caller can tell which pass ran.
 			return 'unknown';
 	}
 }

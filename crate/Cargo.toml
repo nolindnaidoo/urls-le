@@ -41,10 +41,11 @@ serde_json = "1"
 # and not taking one is the cheaper answer.
 regex = "1"
 # The format parsers, each chosen to match what the extension uses:
-# jsonc-parser for jsonc-parser (comments, trailing commas, real
-# offsets), toml for @iarna/toml, csv for csv-parse. dotenv, HTML, CSS
-# and JavaScript are regex in the extension and regex here.
-jsonc-parser = "0.33"
+# toml for @iarna/toml, rust-ini for ini. JSON is neither — it is a
+# hand-rolled quote scanner, because the offsets have to be the raw
+# document's and a parser hands back values. Markdown, HTML, CSS and
+# JavaScript are regex in the extension and regex here.
+#
 # `preserve_order` for the same reason paths-le needs it: without it a
 # TOML table iterates alphabetically and extraction stops following the
 # document.
