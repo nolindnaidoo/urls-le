@@ -2,7 +2,7 @@
 	"name": "urls-le",
 	"publisher": "nolindnaidoo",
 	"displayName": "URLs-LE",
-	"description": "Zero Hassle URL Extraction from Documentation, Configs, and Code",
+	"description": "Extract every URL in a codebase, with its protocol and exact position",
 	"version": "2.3.0",
 	"license": "MIT",
 	"author": {
