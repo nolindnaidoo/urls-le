@@ -9,7 +9,7 @@ This file covers the **VS Code extension**. The Rust CLI in `crate/` is a
 separate product on its own cadence and keeps its own
 [CHANGELOG](crate/CHANGELOG.md).
 
-## [2.3.0] - 2026-08-12
+## [2.3.0] - 2026-08-14
 
 Extract now works in the documents you already expected it to work in.
 
@@ -436,3 +436,4 @@ audit found the shipped artifact could not activate, runtime
 localization never functioned, 18 of 27 settings were inert, and the
 documented metrics were not reproducible from the repo. Treat pre-2.0
 entries as historical record only.
+[0.2.0]: https://crates.io/crates/urls-le/0.2.0
