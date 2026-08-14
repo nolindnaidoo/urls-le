@@ -40,6 +40,12 @@ Extract now works in the documents you already expected it to work in.
   comments. What changes is a file that is *not* valid INI: a line with no
   `=` used to swallow the URL on it silently, and now it does not.
 
+- **New icon artwork.** All sixteen tools were redrawn in one style, so
+  the family reads as one set wherever the listings sit side by side —
+  the Marketplace, Open VSX and letools.dev. The framing is unchanged:
+  the drawing fills 65.8% of an 800×800 canvas, and every smaller size
+  is derived from that one file rather than drawn again.
+
 ### Fixed
 
 - **A dotfile is resolved by its whole name.** Asking the MCP server about
