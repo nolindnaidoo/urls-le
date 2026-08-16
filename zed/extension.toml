@@ -1,7 +1,7 @@
 id = "urls-le"
 name = "URLs-LE"
 description = "Extract URLs from documentation, configuration and code — as a tool the agent panel can call."
-version = "2.3.0"
+version = "2.3.1"
 schema_version = 1
 authors = ["nolindnaidoo"]
 repository = "https://github.com/nolindnaidoo/urls-le"
