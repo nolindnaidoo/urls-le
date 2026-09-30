@@ -24,6 +24,7 @@
 use std::time::{Duration, Instant};
 
 use super::corpus::document;
+use super::formats::decode_json_string;
 use super::js;
 use super::{FileType, extract};
 
@@ -267,8 +268,15 @@ fn check(content: &str, language: &str, case: usize, seed: u64) {
                 blame()
             )
         });
+        // JSON values are decoded, so `https:\/\/…` reports `https://…`:
+        // there the span holds the value once its escapes are decoded.
+        let holds = content[offset..].starts_with(&url.value)
+            || (language == "json"
+                && decode_json_string(&content[offset..], 0)
+                    .0
+                    .starts_with(&url.value));
         assert!(
-            content[offset..].starts_with(&url.value),
+            holds,
             "{:?} was reported at {}:{} where the document says {:?} — {}",
             url.value,
             position.line,

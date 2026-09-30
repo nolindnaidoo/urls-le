@@ -111,15 +111,103 @@ fn comment_spans(content: &str) -> Vec<(usize, usize)> {
 }
 
 /// JSON: a token scan, so URLs come only from string literals at their
-/// real offsets. Escaped forms (`https:\/\/…`) do not match, as before.
+/// real offsets. Each literal is scanned with its escapes decoded, so
+/// `https:\/\/…` and a query written `?a=1\u0026b=2` read as the URL the
+/// document means; the reported position is still where the match starts
+/// in the file.
 fn json(content: &str) -> Vec<Url> {
     let mut matches = Vec::new();
     for range in json_string_ranges(content) {
-        let raw = &content[range.0..range.1];
-        matches.extend(scan_urls(raw, range.0));
+        let (text, origin) = decode_json_string(&content[range.0..range.1], range.0);
+        for found in scan_urls(&text, 0) {
+            let start = origin[found.start];
+            matches.push(UrlMatch { start, ..found });
+        }
     }
     matches.sort_by_key(|found| found.start);
     to_urls(content, &matches)
+}
+
+/// A string token, quotes included, with its JSON escapes decoded, and for
+/// every decoded byte the offset in the document it came from — an
+/// escape's bytes all point at its backslash.
+///
+/// A malformed escape is left as written, so its backslash still ends a
+/// URL as it did before decoding existed. A lone surrogate becomes U+FFFD,
+/// which is also what the extension emits: a `String` cannot hold one.
+pub(crate) fn decode_json_string(raw: &str, base: usize) -> (String, Vec<usize>) {
+    let mut text = String::with_capacity(raw.len());
+    let mut origin = Vec::with_capacity(raw.len());
+    let mut emit = |value: char, from: usize| {
+        text.push(value);
+        origin.extend(std::iter::repeat_n(base + from, value.len_utf8()));
+    };
+
+    let bytes = raw.as_bytes();
+    let mut index = 0;
+    while index < raw.len() {
+        let Some(current) = raw[index..].chars().next() else {
+            break;
+        };
+        if current != '\\' || index + 1 >= raw.len() {
+            emit(current, index);
+            index += current.len_utf8();
+            continue;
+        }
+        let simple = match bytes[index + 1] {
+            b'"' => Some('"'),
+            b'\\' => Some('\\'),
+            b'/' => Some('/'),
+            b'b' => Some('\u{8}'),
+            b'f' => Some('\u{c}'),
+            b'n' => Some('\n'),
+            b'r' => Some('\r'),
+            b't' => Some('\t'),
+            _ => None,
+        };
+        if let Some(value) = simple {
+            emit(value, index);
+            index += 2;
+            continue;
+        }
+        let unit = (bytes[index + 1] == b'u')
+            .then(|| hex_unit(raw, index + 2))
+            .flatten();
+        let Some(unit) = unit else {
+            emit(current, index);
+            index += 1;
+            continue;
+        };
+        let low = (is_high_surrogate(unit) && raw[index + 6..].starts_with("\\u"))
+            .then(|| hex_unit(raw, index + 8))
+            .flatten();
+        if let Some(low) = low.filter(|&low| is_low_surrogate(low)) {
+            let combined = 0x10000 + ((u32::from(unit) - 0xd800) << 10) + (u32::from(low) - 0xdc00);
+            emit(char::from_u32(combined).unwrap_or('\u{fffd}'), index);
+            index += 12;
+            continue;
+        }
+        emit(char::from_u32(u32::from(unit)).unwrap_or('\u{fffd}'), index);
+        index += 6;
+    }
+
+    (text, origin)
+}
+
+fn hex_unit(raw: &str, at: usize) -> Option<u16> {
+    let digits = raw.get(at..at + 4)?;
+    if !digits.bytes().all(|b| b.is_ascii_hexdigit()) {
+        return None;
+    }
+    u16::from_str_radix(digits, 16).ok()
+}
+
+fn is_high_surrogate(unit: u16) -> bool {
+    (0xd800..=0xdbff).contains(&unit)
+}
+
+fn is_low_surrogate(unit: u16) -> bool {
+    (0xdc00..=0xdfff).contains(&unit)
 }
 
 /// The byte ranges of every string token, including its quotes — which

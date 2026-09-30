@@ -451,6 +451,60 @@
 			]
 		},
 		{
+			"name": "escaped.json as json",
+			"file": "escaped.json",
+			"languageId": "json",
+			"success": true,
+			"errors": [],
+			"expected": [
+				{
+					"value": "https://escaped.example.com/docs",
+					"protocol": "https",
+					"domain": "escaped.example.com",
+					"path": "/docs",
+					"line": 2,
+					"column": 16,
+					"context": "\"homepage\": \"https:\\/\\/escaped.example.com\\/docs\","
+				},
+				{
+					"value": "https://search.example.com/?q=urls&page=2",
+					"protocol": "https",
+					"domain": "search.example.com",
+					"path": "/?q=urls&page=2",
+					"line": 3,
+					"column": 14,
+					"context": "\"search\": \"https://search.example.com/?q=urls&page=2\","
+				},
+				{
+					"value": "https://quoted.example.com",
+					"protocol": "https",
+					"domain": "quoted.example.com",
+					"path": "/",
+					"line": 4,
+					"column": 20,
+					"context": "\"quoted\": \"see \\\"https://quoted.example.com\\\" for details\","
+				},
+				{
+					"value": "https://example.com/café",
+					"protocol": "https",
+					"domain": "example.com",
+					"path": "/caf%C3%A9",
+					"line": 5,
+					"column": 15,
+					"context": "\"unicode\": \"https://example.com/café\","
+				},
+				{
+					"value": "https://plain.example.com/path",
+					"protocol": "https",
+					"domain": "plain.example.com",
+					"path": "/path",
+					"line": 6,
+					"column": 13,
+					"context": "\"plain\": \"https://plain.example.com/path\""
+				}
+			]
+		},
+		{
 			"name": "urls.md as markdown",
 			"file": "urls.md",
 			"languageId": "markdown",

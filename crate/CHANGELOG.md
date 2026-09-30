@@ -7,6 +7,18 @@ this repository release on their own cadence.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **A URL written with JSON escapes is found.** `"https:\/\/example.com\/docs"`
+  was skipped, because each string was scanned as it is written rather than
+  as it reads, and a query spelled `?a=1\u0026b=2` was cut off at the
+  backslash. JSON strings are now decoded before they are scanned: the URL
+  reads `https://example.com/docs` and `?a=1&b=2`, and its position is still
+  where it starts in the file. A malformed escape is left as written, so
+  nothing that ended a URL before now runs into the next string.
+
 ## [0.2.2] - 2026-08-15
 
 ### Added

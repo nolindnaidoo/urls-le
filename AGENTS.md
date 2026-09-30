@@ -353,4 +353,3 @@ Order matters beyond this repo: npm must be published *before* any Zed registry 
 - A URL ends at whitespace or any of ``< > " { } | \ ^ ` [ ] ; ) '`` — URLs containing raw spaces extract as space-terminated partials; trailing `.`/`,` are kept (legal URL characters).
 - YAML and JS/TS extraction includes comments by design (a URL in a commented-out line is still discoverable); Markdown code blocks, HTML comments, and Properties comment lines are excluded. A languageId with no extractor of its own gets the same unfiltered scan, so nothing in it is excluded either.
 - TOML/INI positions come from forward-locate over the source (no offsets from @iarna/toml or ini); repeated identical values resolve to successive occurrences, and values whose raw form differs from the parsed form (escape sequences) are reported without a position.
-- JSON escaped URL forms (`https:\/\/…`) don't match — the scan runs over raw string tokens.

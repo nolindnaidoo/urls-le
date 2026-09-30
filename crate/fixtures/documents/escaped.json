@@ -1,0 +1,7 @@
+{
+  "homepage": "https:\/\/escaped.example.com\/docs",
+  "search": "https://search.example.com/?q=urls&page=2",
+  "quoted": "see \"https://quoted.example.com\" for details",
+  "unicode": "https://example.com/café",
+  "plain": "https://plain.example.com/path"
+}
