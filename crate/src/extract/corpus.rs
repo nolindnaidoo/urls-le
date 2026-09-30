@@ -11,7 +11,7 @@ use super::{FileType, extract};
 
 const EXTRACTION: &str = include_str!("../../fixtures/extraction.json");
 
-const DOCUMENTS: [(&str, &str); 17] = [
+const DOCUMENTS: [(&str, &str); 18] = [
     ("urls.md", include_str!("../../fixtures/documents/urls.md")),
     (
         "urls.html",
@@ -25,6 +25,10 @@ const DOCUMENTS: [(&str, &str); 17] = [
     (
         "urls.json",
         include_str!("../../fixtures/documents/urls.json"),
+    ),
+    (
+        "escaped.json",
+        include_str!("../../fixtures/documents/escaped.json"),
     ),
     (
         "urls.yaml",
