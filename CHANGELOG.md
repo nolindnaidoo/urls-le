@@ -9,6 +9,23 @@ This file covers the **VS Code extension**. The Rust CLI in `crate/` is a
 separate product on its own cadence and keeps its own
 [CHANGELOG](crate/CHANGELOG.md).
 
+## [Unreleased]
+
+### Fixed
+
+- The npm README's example is now an answer the server actually gives.
+- **A Zed pull request was linked as pending review** in both READMEs. It was
+  closed without merging; both now say there is no Zed listing yet and link
+  Zed's instructions for adding the MCP server by hand.
+- The npm README's list of the family's Rust tools left out `dates-le`.
+
+### Added
+
+- `src/mcp/readme.test.ts` holds the npm README to the tool it documents: the
+  heading names the tool, the argument table lists exactly the schema's
+  arguments, the required ones are marked, the example is this tool's answer,
+  and the opening sentence names what the tool works on.
+
 ## [2.3.2] - 2026-09-30
 
 ### Fixed

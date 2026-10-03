@@ -52,7 +52,7 @@ Open a file, press `Ctrl+Alt+U` (`Cmd+Alt+U` on Mac), and every URL in the docum
 | **Cursor, VSCodium, Windsurf** | The same extension | [Open VSX](https://open-vsx.org/extension/OffensiveEdge/urls-le) |
 | **A terminal or a CI step** | The same run over a whole tree, with exit codes | `cargo install urls-le` · [crates.io](https://crates.io/crates/urls-le) |
 | **Any MCP agent, via Node** | `extract_urls` over stdio | `npx urls-le-mcp` · [npm](https://www.npmjs.com/package/urls-le-mcp) |
-| **Zed** | The MCP server as a context server | [zed-industries/extensions#7077](https://github.com/zed-industries/extensions/pull/7077) *(pending review)* |
+| **Zed** | The MCP server as a context server | [add it by hand](https://zed.dev/docs/ai/mcp) *(no listing yet)* |
 
 ## Use it from an AI agent
 
@@ -61,7 +61,7 @@ The same extraction engine runs as an [MCP](https://modelcontextprotocol.io) ser
 | Editor | How |
 |---|---|
 | **VS Code** 1.101+ | Nothing to install — the extension registers `extract_urls` with agent mode |
-| **Zed** | [URLs-LE](https://github.com/zed-industries/extensions/pull/7077) — *pending review* |
+| **Zed** | No listing yet — [add the MCP server by hand](https://zed.dev/docs/ai/mcp) |
 | **Claude Code** | `claude mcp add urls-le -- npx -y urls-le-mcp` |
 | **Cursor, Windsurf, anything else** | point it at `npx urls-le-mcp` |
 
@@ -246,7 +246,7 @@ a build only tells you how busy the runner was.
 | Functions | 94.51% |
 | Lines | 94.77% |
 
-327 test cases across 23 files, plus an integration suite that runs
+332 test cases across 24 files, plus an integration suite that runs
 in a real VS Code extension host and an end-to-end test that installs the
 built `.vsix` into a clean profile.
 
