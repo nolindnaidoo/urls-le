@@ -7,6 +7,15 @@ this repository release on their own cadence.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- The `extract_urls` MCP tool's description now matches the npm server's word
+  for word. Its extra sentence said nothing is filtered, and the extractor
+  excludes code fences and comments by design. CI now fails when the two
+  servers' definitions differ.
+
 ## [0.2.3] - 2026-09-30
 
 ### Fixed

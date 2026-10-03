@@ -31,12 +31,11 @@ fn protocol_name(protocol: Protocol) -> &'static str {
 pub(crate) fn definition() -> Value {
     json!({
         "name": "extract_urls",
-        "description": "Extract every URL from a document, with its protocol and 1-based line \
-                        and column. Reads any text document. Markdown, HTML, CSS, JavaScript, \
-                        TypeScript, JSON, YAML, .properties, TOML, INI and XML know what to \
+        "description": "Extract every URL from a document, with its protocol and 1-based line and \
+                        column. Reads any text document. Markdown, HTML, CSS, JavaScript, \
+                        TypeScript, JSON, YAML, Properties, TOML, INI and XML know what to \
                         exclude — code fences, comments, non-string tokens; everything else is \
-                        scanned whole, and `fileType` says which happened. URLs are reported \
-                        exactly as written — nothing is fetched, filtered or judged.",
+                        scanned whole, and `fileType` says which happened.",
         "inputSchema": {
             "type": "object",
             "properties": {
