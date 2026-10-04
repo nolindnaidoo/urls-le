@@ -140,6 +140,9 @@ async function performExtraction(
 		vscode.l10n.t('Extracted {0} URLs', result.urls.length),
 	);
 	deps.telemetry.event('extract-success', { count: result.urls.length });
+	// Not awaited: it resolves when the toast is answered, and a command that
+	// waited on that would stay pending for as long as the toast is ignored.
+	void deps.ratingPrompt.recordSuccess();
 }
 
 function formatUrls(result: ExtractionResult, config: Configuration): string[] {

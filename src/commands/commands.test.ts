@@ -42,6 +42,7 @@ function makeDeps(events: string[]) {
 			hideProgress: () => events.push('statusbar:idle'),
 			dispose: () => {},
 		},
+		ratingPrompt: { recordSuccess: async () => {} },
 	};
 }
 

@@ -43,6 +43,7 @@ function makeDeps(events: string[]) {
 			hideProgress: () => events.push('statusbar:idle'),
 			dispose: () => {},
 		},
+		ratingPrompt: { recordSuccess: async () => {} },
 	} as never;
 }
 
@@ -259,6 +260,7 @@ describe('safety guardrails and failure reporting', () => {
 				hideProgress: () => events.push('statusbar:idle'),
 				dispose: () => {},
 			},
+			ratingPrompt: { recordSuccess: async () => {} },
 		} as never);
 		const handler = _registeredCommands().get('urls-le.extractUrls');
 		if (!handler) throw new Error('extract command not registered');

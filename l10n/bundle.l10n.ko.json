@@ -1,5 +1,9 @@
 {
 	"File size ({0} bytes) exceeds safety threshold ({1} bytes)": "파일 크기({0}바이트)가 안전 임계값({1}바이트)을 초과합니다",
+	"Enjoying {0}? A rating helps other developers find it.": "{0}이(가) 마음에 드시나요? 평점을 남기면 다른 개발자가 찾는 데 도움이 됩니다.",
+	"Rate": "평가하기",
+	"Later": "나중에",
+	"Don't Ask Again": "다시 묻지 않기",
 	"Large file: {0} lines (threshold: {1}); extraction may be slow": "큰 파일: {0}줄(임계값: {1}). 추출이 느릴 수 있습니다",
 	"URLs-LE: Ready": "URLs-LE: 준비 완료",
 	"URLs-LE: URL extraction": "URLs-LE: URL 추출",

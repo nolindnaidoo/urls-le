@@ -1,5 +1,6 @@
 import type { Telemetry } from '../telemetry/telemetry';
 import type { Notifier } from '../ui/notifier';
+import type { RatingPrompt } from '../ui/ratingPrompt';
 import type { StatusBar } from '../ui/statusBar';
 
 /**
@@ -13,4 +14,5 @@ export interface CommandDependencies {
 	readonly telemetry: Telemetry;
 	readonly notifier: Notifier;
 	readonly statusBar: StatusBar;
+	readonly ratingPrompt: RatingPrompt;
 }
