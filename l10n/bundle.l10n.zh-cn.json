@@ -1,5 +1,9 @@
 {
 	"File size ({0} bytes) exceeds safety threshold ({1} bytes)": "文件大小（{0} 字节）超过安全阈值（{1} 字节）",
+	"Enjoying {0}? A rating helps other developers find it.": "喜欢 {0} 吗？评分可以帮助其他开发者发现它。",
+	"Rate": "评分",
+	"Later": "稍后",
+	"Don't Ask Again": "不再询问",
 	"Large file: {0} lines (threshold: {1}); extraction may be slow": "大文件：{0} 行（阈值：{1}）；提取可能较慢",
 	"URLs-LE: Ready": "$(link) URLs-LE",
 	"URLs-LE: URL extraction": "URLs-LE：URL 提取",

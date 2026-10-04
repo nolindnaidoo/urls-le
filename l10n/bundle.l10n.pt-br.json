@@ -1,5 +1,9 @@
 {
 	"File size ({0} bytes) exceeds safety threshold ({1} bytes)": "O tamanho do arquivo ({0} bytes) excede o limite de segurança ({1} bytes)",
+	"Enjoying {0}? A rating helps other developers find it.": "Gostando do {0}? Uma avaliação ajuda outros desenvolvedores a encontrá-lo.",
+	"Rate": "Avaliar",
+	"Later": "Mais tarde",
+	"Don't Ask Again": "Não perguntar novamente",
 	"Large file: {0} lines (threshold: {1}); extraction may be slow": "Arquivo grande: {0} linhas (limite: {1}); a extração pode ser lenta",
 	"URLs-LE: Ready": "$(link) URLs-LE",
 	"URLs-LE: URL extraction": "URLs-LE: extração de URL",

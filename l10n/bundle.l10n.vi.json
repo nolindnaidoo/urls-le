@@ -1,5 +1,9 @@
 {
 	"File size ({0} bytes) exceeds safety threshold ({1} bytes)": "Kích thước tệp ({0} byte) vượt quá ngưỡng an toàn ({1} byte)",
+	"Enjoying {0}? A rating helps other developers find it.": "Bạn thích {0}? Một lượt đánh giá giúp các nhà phát triển khác tìm thấy tiện ích này.",
+	"Rate": "Đánh giá",
+	"Later": "Để sau",
+	"Don't Ask Again": "Không hỏi lại",
 	"Large file: {0} lines (threshold: {1}); extraction may be slow": "Tệp lớn: {0} dòng (ngưỡng: {1}); việc trích xuất có thể chậm",
 	"URLs-LE: Ready": "$(link) URLs-LE",
 	"URLs-LE: URL extraction": "URLs-LE: Trích xuất URL",

@@ -1,5 +1,9 @@
 {
 	"File size ({0} bytes) exceeds safety threshold ({1} bytes)": "Размер файла ({0} байт) превышает порог безопасности ({1} байт)",
+	"Enjoying {0}? A rating helps other developers find it.": "Нравится {0}? Оценка помогает другим разработчикам найти это расширение.",
+	"Rate": "Оценить",
+	"Later": "Позже",
+	"Don't Ask Again": "Больше не спрашивать",
 	"Large file: {0} lines (threshold: {1}); extraction may be slow": "Большой файл: {0} строк (порог: {1}); извлечение может быть медленным",
 	"URLs-LE: Ready": "$(link) URL-адреса-LE",
 	"URLs-LE: URL extraction": "URLs-LE: извлечение URL",

@@ -1,5 +1,9 @@
 {
 	"File size ({0} bytes) exceeds safety threshold ({1} bytes)": "Ukuran file ({0} byte) melebihi ambang batas keamanan ({1} byte)",
+	"Enjoying {0}? A rating helps other developers find it.": "Suka dengan {0}? Penilaian membantu pengembang lain menemukannya.",
+	"Rate": "Beri Nilai",
+	"Later": "Nanti",
+	"Don't Ask Again": "Jangan Tanya Lagi",
 	"Large file: {0} lines (threshold: {1}); extraction may be slow": "File besar: {0} baris (ambang batas: {1}); ekstraksi mungkin lambat",
 	"URLs-LE: Ready": "URLs-LE: Siap",
 	"URLs-LE: URL extraction": "URLs-LE: Ekstraksi URL",

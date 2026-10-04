@@ -1,5 +1,9 @@
 {
 	"File size ({0} bytes) exceeds safety threshold ({1} bytes)": "Розмір файлу ({0} байт) перевищує поріг безпеки ({1} байт)",
+	"Enjoying {0}? A rating helps other developers find it.": "Подобається {0}? Оцінка допомагає іншим розробникам знайти це розширення.",
+	"Rate": "Оцінити",
+	"Later": "Пізніше",
+	"Don't Ask Again": "Більше не питати",
 	"Large file: {0} lines (threshold: {1}); extraction may be slow": "Великий файл: {0} рядків (поріг: {1}); видобування може бути повільним",
 	"URLs-LE: Ready": "$(link) URL-адреси-LE",
 	"URLs-LE: URL extraction": "URLs-LE: видобування URL",
