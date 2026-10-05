@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import type { Notifier } from '../ui/notifier';
 import { replaceDocumentContent } from '../utils/document';
 import { sanitizeErrorMessage } from '../utils/errors';
+import { hasPosition, onValues } from '../utils/positions';
 
 export function registerDedupeCommand(
 	context: vscode.ExtensionContext,
@@ -38,7 +39,9 @@ async function performDedupe(
 	// Blank lines are dropped from the output but must not be reported as
 	// removed duplicates.
 	const lines = extractNonEmptyLines(document);
-	const deduped = deduplicateLines(lines);
+	// By URL: with positions shown every line is different, and a dedupe
+	// over whole lines would remove nothing.
+	const deduped = onValues(lines, deduplicateLines);
 
 	const applied = await replaceDocumentContent(document, deduped);
 	if (!applied) {
@@ -47,12 +50,16 @@ async function performDedupe(
 	}
 
 	const removed = lines.length - deduped.length;
+	const summary = vscode.l10n.t(
+		'Removed {0} duplicate URLs ({1} remaining)',
+		removed,
+		deduped.length,
+	);
+	// A URL found five times has five positions, and only one can stay.
 	notifier.showInfo(
-		vscode.l10n.t(
-			'Removed {0} duplicate URLs ({1} remaining)',
-			removed,
-			deduped.length,
-		),
+		lines.some(hasPosition)
+			? `${summary}. ${vscode.l10n.t('Each value shows its first position only.')}`
+			: summary,
 	);
 }
 

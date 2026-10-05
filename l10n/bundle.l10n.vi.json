@@ -24,5 +24,6 @@
 	"Results too large for clipboard ({0} bytes), skipping clipboard copy": "Kết quả quá lớn đối với bảng nhớ tạm ({0} byte), bỏ qua việc sao chép",
 	"Failed to copy to clipboard: {0}": "Không thể sao chép vào bảng nhớ tạm: {0}",
 	"Deduplication failed: {0}": "Quá trình loại bỏ trùng lặp thất bại: {0}",
-	"Removed {0} duplicate URLs ({1} remaining)": "Đã xóa các URL trùng lặp trên {0} (vẫn còn {1})"
+	"Removed {0} duplicate URLs ({1} remaining)": "Đã xóa các URL trùng lặp trên {0} (vẫn còn {1})",
+	"Each value shows its first position only.": "Mỗi giá trị chỉ hiển thị vị trí đầu tiên của nó."
 }

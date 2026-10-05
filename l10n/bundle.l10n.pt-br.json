@@ -24,5 +24,6 @@
 	"Results too large for clipboard ({0} bytes), skipping clipboard copy": "Resultados grandes demais para a área de transferência ({0} bytes); cópia ignorada",
 	"Failed to copy to clipboard: {0}": "Falha ao copiar para a área de transferência: {0}",
 	"Deduplication failed: {0}": "Falha na deduplicação: {0}",
-	"Removed {0} duplicate URLs ({1} remaining)": "Removidas as URLs duplicadas de {0} (restam {1})"
+	"Removed {0} duplicate URLs ({1} remaining)": "Removidas as URLs duplicadas de {0} (restam {1})",
+	"Each value shows its first position only.": "Cada valor mostra apenas sua primeira posição."
 }

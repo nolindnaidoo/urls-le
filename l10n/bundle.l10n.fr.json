@@ -24,5 +24,6 @@
 	"Results too large for clipboard ({0} bytes), skipping clipboard copy": "Résultats trop volumineux pour le presse-papiers ({0} octets), copie ignorée",
 	"Failed to copy to clipboard: {0}": "Échec de la copie dans le presse-papiers : {0}",
 	"Deduplication failed: {0}": "Échec de la déduplication : {0}",
-	"Removed {0} duplicate URLs ({1} remaining)": "Suppression des URL en double de {0} (il reste {1})"
+	"Removed {0} duplicate URLs ({1} remaining)": "Suppression des URL en double de {0} (il reste {1})",
+	"Each value shows its first position only.": "Chaque valeur n'affiche que sa première position."
 }

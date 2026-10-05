@@ -24,5 +24,6 @@
 	"Results too large for clipboard ({0} bytes), skipping clipboard copy": "结果过大，无法复制到剪贴板（{0} 字节），已跳过复制",
 	"Failed to copy to clipboard: {0}": "复制到剪贴板失败：{0}",
 	"Deduplication failed: {0}": "去重失败：{0}",
-	"Removed {0} duplicate URLs ({1} remaining)": "已删除 {0} 的重复 URL（{1} 仍保留）"
+	"Removed {0} duplicate URLs ({1} remaining)": "已删除 {0} 的重复 URL（{1} 仍保留）",
+	"Each value shows its first position only.": "每个值仅显示其第一个位置。"
 }

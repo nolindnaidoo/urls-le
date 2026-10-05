@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import type { Notifier } from '../ui/notifier';
 import { replaceDocumentContent } from '../utils/document';
 import { sanitizeErrorMessage } from '../utils/errors';
+import { onValues } from '../utils/positions';
 
 type SortOrder = 'asc' | 'desc' | 'domain' | 'length-asc' | 'length-desc';
 
@@ -82,7 +83,10 @@ async function performSort(
 ): Promise<void> {
 	const document = editor.document;
 	const lines = extractNonEmptyLines(document);
-	const sorted = sortLines(lines, sortOption.value);
+	// By URL, so a position shown on a line travels with it.
+	const sorted = onValues(lines, (values) =>
+		sortLines(values, sortOption.value),
+	);
 
 	const applied = await replaceDocumentContent(document, sorted);
 	if (!applied) {

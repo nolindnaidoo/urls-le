@@ -24,5 +24,6 @@
 	"Results too large for clipboard ({0} bytes), skipping clipboard copy": "Результаты слишком велики для буфера обмена ({0} байт), копирование пропущено",
 	"Failed to copy to clipboard: {0}": "Не удалось скопировать в буфер обмена: {0}",
 	"Deduplication failed: {0}": "Ошибка дедупликации: {0}",
-	"Removed {0} duplicate URLs ({1} remaining)": "Удалены дубликаты URL-адресов {0} (остался {1})"
+	"Removed {0} duplicate URLs ({1} remaining)": "Удалены дубликаты URL-адресов {0} (остался {1})",
+	"Each value shows its first position only.": "Для каждого значения показана только его первая позиция."
 }

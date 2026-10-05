@@ -4,6 +4,7 @@ import { extractUrls } from '../extraction/extract';
 import type { Configuration, ExtractionResult } from '../types';
 import { copyResultsToClipboard } from '../utils/clipboard';
 import { sanitizeErrorMessage } from '../utils/errors';
+import { bareValue, onValues, withPosition } from '../utils/positions';
 import { handleSafetyChecks } from '../utils/safety';
 import type { CommandDependencies } from './dependencies';
 import { displayResults } from './output';
@@ -103,16 +104,20 @@ async function performExtraction(
 		return;
 	}
 
+	// Each URL with where it was found. The screen and the clipboard are
+	// each asked separately whether they want that.
 	const formattedUrls = formatUrls(result, config);
 	const delivered = await displayResults(
-		formattedUrls,
+		config.showPositions ? formattedUrls : formattedUrls.map(bareValue),
 		document,
 		config,
 		token,
 		deps,
 	);
 	await copyResultsToClipboard(
-		formattedUrls,
+		config.clipboardIncludesPositions
+			? formattedUrls
+			: formattedUrls.map(bareValue),
 		config.copyToClipboardEnabled,
 		token,
 		deps.notifier,
@@ -138,10 +143,13 @@ async function performExtraction(
 }
 
 function formatUrls(result: ExtractionResult, config: Configuration): string[] {
-	const values = result.urls
+	const lines = result.urls
 		.filter((url) => url?.value && typeof url.value === 'string')
-		.map((url) => url.value);
-	return config.dedupeEnabled ? [...new Set(values)] : values;
+		.map((url) => withPosition(url.value, url.position));
+	// By URL, keeping the first: with positions every line would differ.
+	return config.dedupeEnabled
+		? onValues(lines, (values) => [...new Set(values)])
+		: lines;
 }
 
 function handleExtractionFailure(

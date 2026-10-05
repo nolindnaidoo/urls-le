@@ -24,5 +24,6 @@
 	"Results too large for clipboard ({0} bytes), skipping clipboard copy": "Ergebnisse zu groß für die Zwischenablage ({0} Byte), Kopieren wird übersprungen",
 	"Failed to copy to clipboard: {0}": "Kopieren in die Zwischenablage fehlgeschlagen: {0}",
 	"Deduplication failed: {0}": "Deduplizierung fehlgeschlagen: {0}",
-	"Removed {0} duplicate URLs ({1} remaining)": "Doppelte URLs unter {0} wurden entfernt ({1} bleibt bestehen)"
+	"Removed {0} duplicate URLs ({1} remaining)": "Doppelte URLs unter {0} wurden entfernt ({1} bleibt bestehen)",
+	"Each value shows its first position only.": "Jeder Wert zeigt nur seine erste Position."
 }
