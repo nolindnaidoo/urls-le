@@ -102,14 +102,6 @@
 				"category": "%manifest.command.category%"
 			}
 		],
-		"keybindings": [
-			{
-				"command": "urls-le.extractUrls",
-				"key": "ctrl+alt+u",
-				"mac": "cmd+alt+u",
-				"when": "editorTextFocus"
-			}
-		],
 		"menus": {
 			"editor/context": [
 				{
