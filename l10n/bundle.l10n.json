@@ -24,5 +24,6 @@
   "Results too large for clipboard ({0} bytes), skipping clipboard copy": "Results too large for clipboard ({0} bytes), skipping clipboard copy",
   "Failed to copy to clipboard: {0}": "Failed to copy to clipboard: {0}",
   "Removed {0} duplicate URLs ({1} remaining)": "Removed {0} duplicate URLs ({1} remaining)",
-  "Deduplication failed: {0}": "Deduplication failed: {0}"
+  "Deduplication failed: {0}": "Deduplication failed: {0}",
+  "Each value shows its first position only.": "Each value shows its first position only."
 }

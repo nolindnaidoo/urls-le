@@ -24,5 +24,6 @@
 	"Results too large for clipboard ({0} bytes), skipping clipboard copy": "결과가 클립보드에 비해 너무 큽니다({0}바이트). 복사를 건너뜁니다",
 	"Failed to copy to clipboard: {0}": "클립보드에 복사하지 못했습니다: {0}",
 	"Deduplication failed: {0}": "중복 제거 실패: {0}",
-	"Removed {0} duplicate URLs ({1} remaining)": "{0}의 중복 URL을 삭제했습니다({1}은 남아 있음)."
+	"Removed {0} duplicate URLs ({1} remaining)": "{0}의 중복 URL을 삭제했습니다({1}은 남아 있음).",
+	"Each value shows its first position only.": "각 값에는 첫 번째 위치만 표시됩니다."
 }

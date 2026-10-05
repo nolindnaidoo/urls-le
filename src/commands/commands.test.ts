@@ -96,6 +96,25 @@ describe('urls-le.postProcess.dedupe', () => {
 		);
 	});
 
+	it('dedupes by URL when positions are shown, keeping the first, and says so', async () => {
+		_setConfig('urls-le.notificationsLevel', 'all');
+		registerDedupeCommand(makeContext(), createNotifier());
+		_setActiveEditor(
+			_createDocument({
+				content: '1:1\thttps://a.com\n2:1\thttps://b.com\n9:4\thttps://a.com\n',
+			}),
+		);
+		await runCommand('urls-le.postProcess.dedupe');
+
+		// Whole lines all differ here. Only by URL is there a duplicate at all.
+		expect(appliedEdits[0]?.replacements[0]?.newText).toBe(
+			'1:1\thttps://a.com\n2:1\thttps://b.com',
+		);
+		expect(_shownMessages()[0]?.message).toBe(
+			'Removed 1 duplicate URLs (2 remaining). Each value shows its first position only.',
+		);
+	});
+
 	it('suppresses the success toast at the default silent level', async () => {
 		registerDedupeCommand(makeContext(), createNotifier());
 		_setActiveEditor(
@@ -129,6 +148,27 @@ describe('urls-le.postProcess.sort', () => {
 			'https://a.com\nhttps://b.com\nhttps://c.com',
 		);
 		expect(_shownMessages()[0]?.message).toContain('Sorted 3 URLs');
+	});
+
+	it('sorts by URL when positions are shown, and each keeps its own', async () => {
+		registerSortCommand(makeContext(), createNotifier());
+		_setActiveEditor(
+			_createDocument({
+				content: '1:1\thttps://c.com\n2:1\thttps://a.com\n10:1\thttps://b.com',
+			}),
+		);
+		_respondToQuickPick(
+			(items) =>
+				(items as Array<{ label: string; value: string }>).find(
+					(item) => item.value === 'asc',
+				) ?? items[0],
+		);
+		await runCommand('urls-le.postProcess.sort');
+
+		// By the line number these would come out 1, 10, 2.
+		expect(appliedEdits[0]?.replacements[0]?.newText).toBe(
+			'2:1\thttps://a.com\n10:1\thttps://b.com\n1:1\thttps://c.com',
+		);
 	});
 
 	it('sorts by domain', async () => {
@@ -216,6 +256,50 @@ describe('urls-le.extractUrls', () => {
 		await runCommand('urls-le.extractUrls');
 
 		expect(_clipboardText()).toBe('https://a.com\nhttps://b.com');
+	});
+
+	it('copies each URL with its position only when the clipboard setting says so', async () => {
+		registerExtractCommand(makeContext(), makeDeps([]));
+		_setConfig('urls-le.copyToClipboardEnabled', true);
+		_setConfig('urls-le.showPositions', true);
+		const document = {
+			content: "const api = 'https://api.example.com/v1';",
+			languageId: 'javascript',
+		};
+
+		// Shown on screen is one setting. Copied is another, and it is still off.
+		_setActiveEditor(_createDocument(document));
+		await runCommand('urls-le.extractUrls');
+		expect(_clipboardText()).toBe('https://api.example.com/v1');
+
+		_setConfig('urls-le.clipboardIncludesPositions', true);
+		_setActiveEditor(_createDocument(document));
+		await runCommand('urls-le.extractUrls');
+		expect(_clipboardText()).toMatch(
+			/^1:\d+\thttps:\/\/api\.example\.com\/v1$/,
+		);
+	});
+
+	it('keeps the first position of a URL when dedupeEnabled is set', async () => {
+		registerExtractCommand(makeContext(), makeDeps([]));
+		_setConfig('urls-le.copyToClipboardEnabled', true);
+		_setConfig('urls-le.clipboardIncludesPositions', true);
+		_setConfig('urls-le.dedupeEnabled', true);
+		_setActiveEditor(
+			_createDocument({
+				content: 'https://a.com\nhttps://a.com\nhttps://b.com',
+				languageId: 'yaml',
+			}),
+		);
+
+		await runCommand('urls-le.extractUrls');
+
+		const lines = _clipboardText().split('\n');
+		expect(lines.map((line) => line.replace(/^\d+:\d+\t/, ''))).toEqual([
+			'https://a.com',
+			'https://b.com',
+		]);
+		expect(lines[0]).toMatch(/^1:/);
 	});
 
 	it('warns and stops when no editor is active', async () => {

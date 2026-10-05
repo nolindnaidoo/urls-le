@@ -24,5 +24,6 @@
 	"Results too large for clipboard ({0} bytes), skipping clipboard copy": "結果がクリップボードには大きすぎます ({0} バイト)。コピーをスキップします",
 	"Failed to copy to clipboard: {0}": "クリップボードへのコピーに失敗しました: {0}",
 	"Deduplication failed: {0}": "重複排除に失敗しました: {0}",
-	"Removed {0} duplicate URLs ({1} remaining)": "{0} の重複URLを削除しました（{1} は残っています）"
+	"Removed {0} duplicate URLs ({1} remaining)": "{0} の重複URLを削除しました（{1} は残っています）",
+	"Each value shows its first position only.": "各値には最初の位置のみが表示されます。"
 }

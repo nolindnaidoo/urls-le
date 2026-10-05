@@ -3,6 +3,7 @@ import type { Configuration } from '../types';
 import { handleSafetyChecks } from './safety';
 
 const mockConfig: Configuration = {
+	clipboardIncludesPositions: false,
 	copyToClipboardEnabled: true,
 	dedupeEnabled: true,
 	notificationsLevel: 'all',
@@ -11,6 +12,7 @@ const mockConfig: Configuration = {
 	safetyEnabled: true,
 	safetyFileSizeWarnBytes: 1000,
 	safetyLargeOutputLinesThreshold: 100,
+	showPositions: false,
 	statusBarEnabled: true,
 	telemetryEnabled: false,
 };

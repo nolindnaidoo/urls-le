@@ -19,6 +19,7 @@ describe('config defaults parity with package.json', () => {
 	const props = manifest.contributes.configuration.properties;
 
 	const KEY_MAP: Record<string, keyof typeof CONFIG_DEFAULTS> = {
+		'urls-le.clipboardIncludesPositions': 'clipboardIncludesPositions',
 		'urls-le.copyToClipboardEnabled': 'copyToClipboardEnabled',
 		'urls-le.dedupeEnabled': 'dedupeEnabled',
 		'urls-le.notificationsLevel': 'notificationsLevel',
@@ -28,6 +29,7 @@ describe('config defaults parity with package.json', () => {
 		'urls-le.safety.fileSizeWarnBytes': 'safetyFileSizeWarnBytes',
 		'urls-le.safety.largeOutputLinesThreshold':
 			'safetyLargeOutputLinesThreshold',
+		'urls-le.showPositions': 'showPositions',
 		'urls-le.statusBar.enabled': 'statusBarEnabled',
 		'urls-le.telemetryEnabled': 'telemetryEnabled',
 	};

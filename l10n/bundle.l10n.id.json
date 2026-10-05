@@ -24,5 +24,6 @@
 	"Results too large for clipboard ({0} bytes), skipping clipboard copy": "Hasil terlalu besar untuk papan klip ({0} byte), penyalinan dilewati",
 	"Failed to copy to clipboard: {0}": "Gagal menyalin ke papan klip: {0}",
 	"Deduplication failed: {0}": "Penghapusan duplikat gagal: {0}",
-	"Removed {0} duplicate URLs ({1} remaining)": "URL duplikat {0} telah dihapus (masih tersisa {1})"
+	"Removed {0} duplicate URLs ({1} remaining)": "URL duplikat {0} telah dihapus (masih tersisa {1})",
+	"Each value shows its first position only.": "Setiap nilai hanya menampilkan posisi pertamanya."
 }

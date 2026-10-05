@@ -24,5 +24,6 @@
 	"Results too large for clipboard ({0} bytes), skipping clipboard copy": "Resultados demasiado grandes para el portapapeles ({0} bytes); se omite la copia",
 	"Failed to copy to clipboard: {0}": "No se pudo copiar al portapapeles: {0}",
 	"Deduplication failed: {0}": "Error al deduplicar: {0}",
-	"Removed {0} duplicate URLs ({1} remaining)": "Se han eliminado las URL duplicadas de {0} (quedan {1})"
+	"Removed {0} duplicate URLs ({1} remaining)": "Se han eliminado las URL duplicadas de {0} (quedan {1})",
+	"Each value shows its first position only.": "Cada valor muestra solo su primera posición."
 }
