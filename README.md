@@ -52,7 +52,6 @@ Open a file, press `Ctrl+Alt+U` (`Cmd+Alt+U` on Mac), and every URL in the docum
 | **Cursor, VSCodium, Windsurf** | The same extension | [Open VSX](https://open-vsx.org/extension/nolindnaidoo/urls-le) |
 | **A terminal or a CI step** | The same run over a whole tree, with exit codes | `cargo install urls-le` · [crates.io](https://crates.io/crates/urls-le) |
 | **Any MCP agent, via Node** | `extract_urls` over stdio | `npx urls-le-mcp` · [npm](https://www.npmjs.com/package/urls-le-mcp) |
-| **Zed** | The MCP server as a context server | [add it by hand](https://zed.dev/docs/ai/mcp) *(no listing yet)* |
 
 ## Use it from an AI agent
 
@@ -61,7 +60,6 @@ The same extraction engine runs as an [MCP](https://modelcontextprotocol.io) ser
 | Editor | How |
 |---|---|
 | **VS Code** 1.101+ | Nothing to install — the extension registers `extract_urls` with agent mode |
-| **Zed** | No listing yet — [add the MCP server by hand](https://zed.dev/docs/ai/mcp) |
 | **Claude Code** | `claude mcp add urls-le -- npx -y urls-le-mcp` |
 | **Cursor, Windsurf, anything else** | point it at `npx urls-le-mcp` |
 
