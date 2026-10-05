@@ -38,7 +38,7 @@
 
 ## What it does
 
-Open a file, press `Ctrl+Alt+U` (`Cmd+Alt+U` on Mac), and every URL in the document lands in a new editor — deduplicate and sort it from there. Works in VS Code and in VS Code–based editors like Cursor and VSCodium (installable from Open VSX).
+Open a file, run `URLs-LE: Extract URLs`, and every URL in the document lands in a new editor — deduplicate and sort it from there. Works in VS Code and in VS Code–based editors like Cursor and VSCodium (installable from Open VSX).
 
 - **Link auditing** — every link, autolink, and plain URL in Markdown and HTML (code blocks and comments excluded)
 - **Source review** — URLs in string literals, template literals, and comments across JS/TS
@@ -167,11 +167,13 @@ Extracted protocols: `http`, `https`, `ftp`, `file`, `mailto` (requires an `@`),
 
 | Command | Description |
 |---|---|
-| `URLs-LE: Extract URLs` (`Ctrl+Alt+U` / `Cmd+Alt+U`) | Extract all URLs from the active document |
+| `URLs-LE: Extract URLs` | Extract all URLs from the active document |
 | `URLs-LE: Deduplicate URLs` | Remove duplicate lines from the results |
 | `URLs-LE: Sort URLs` | Sort results alphabetically, by domain, or by length |
 | `URLs-LE: Open Settings` | Open URLs-LE settings |
 | `URLs-LE: Help` | Built-in documentation |
+
+No command is bound to a key by default. Give any of them one under **Keyboard Shortcuts** in the editor.
 
 ## Settings
 
