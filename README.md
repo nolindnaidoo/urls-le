@@ -113,6 +113,82 @@ That prints the tool list and exits — if you see `extract_urls`, the server wo
 
 </details>
 
+## Across a folder or a workspace
+
+Extract reads the document you have open. A scan reads many files from disk and gives one report.
+
+- **The whole workspace**: run `URLs-LE: Extract URLs from Workspace` from the command palette.
+- **One folder**: right-click it in the Explorer and choose `Extract URLs from Folder`, or run `URLs-LE: Extract URLs from Folder` and pick one.
+
+A project writes the same URL in many places, so the report is the distinct URLs, the most widely used first, with how often each is written and where:
+
+```markdown
+# URLs-LE workspace report
+
+`my-project` · 3 file(s) read · 2 distinct URL(s), 5 occurrence(s) in 3 file(s)
+
+| URL | Occurrences | Files |
+|---|---|---|
+| `https://example.com/docs` | 3 | 2 |
+| `https://api.example.com/v1` | 2 | 2 |
+
+## `https://example.com/docs` (3)
+
+- `config.json` · **2:12**
+- `docs/a.md` · **1:5**, **1:34**
+
+## `https://api.example.com/v1` (2)
+
+- `docs/a.md` · **2:6**
+- `src/b.ts` · **1:14**
+```
+
+That is with `urls-le.showPositions` on. It is off by default, and then each line is the file and how many times the URL is in it: `docs/a.md (2)`. The copy on the clipboard follows `urls-le.clipboardIncludesPositions`, as it does for Extract.
+
+**What a scan reads.** Files come from disk, so an unsaved edit is not seen. A file over the safety size, or one that is not UTF-8 text, is left unread. It stops at 5,000 files or 10,000 listed occurrences. The report ends with a line for each thing it left out, so a short report is never mistaken for a clean project.
+
+**What it skips, and how to change that.** Three switches are on by default, and each can be turned off on its own in Settings:
+
+| Switch | Skips |
+|---|---|
+| `scanUseDefaultExcludes` | Dependency folders, build output, tool caches and lockfiles. The full list is below |
+| `scanRespectGitignore` | Whatever the project's `.gitignore` files skip |
+| `scanSkipBinaryFiles` | Images, fonts, archives and other files that are not text |
+
+Two lists adjust the result without turning a switch off. To skip more, add a pattern to `scanExcludes`. To read something a switch would skip, add it to `scanAlwaysInclude`:
+
+```jsonc
+{
+	// Also skip the test fixtures.
+	"urls-le.workspace.scanExcludes": ["**/fixtures/**"],
+	// Read the vendored code, though the built-in list skips it.
+	"urls-le.workspace.scanAlwaysInclude": ["**/vendor/**"]
+}
+```
+
+`URLs-LE: Open Settings` opens all of these in the Settings editor.
+
+<details>
+<summary>The built-in list</summary>
+
+Folders, wherever they appear:
+
+<!-- built-in-folders -->
+`.git`, `.hg`, `.svn`, `node_modules`, `bower_components`, `jspm_packages`, `.pnpm-store`, `.yarn`, `vendor`, `site-packages`, `Pods`, `Carthage`, `dist`, `build`, `out`, `target`, `_build`, `_site`, `dist-newstyle`, `zig-out`, `storybook-static`, `cdk.out`, `DerivedData`, `CMakeFiles`, `.next`, `.nuxt`, `.output`, `.svelte-kit`, `.angular`, `.astro`, `.docusaurus`, `.vuepress`, `.expo`, `.turbo`, `.parcel-cache`, `.cache`, `.sass-cache`, `.jekyll-cache`, `.dart_tool`, `.pub-cache`, `.gradle`, `.kotlin`, `.cxx`, `.externalNativeBuild`, `captures`, `ephemeral`, `.symlinks`, `.swiftpm`, `.build`, `.bundle`, `.stack-work`, `.zig-cache`, `.godot`, `elm-stuff`, `.vercel`, `.netlify`, `.serverless`, `.aws-sam`, `.terraform`, `.venv`, `venv`, `__pycache__`, `.tox`, `.nox`, `.mypy_cache`, `.pytest_cache`, `.ruff_cache`, `.ipynb_checkpoints`, `.eggs`, `coverage`, `htmlcov`, `.nyc_output`, `.vscode-test`, `.idea`, `.vs`, `xcuserdata`, `*.egg-info`
+<!-- /built-in-folders -->
+
+Files, wherever they appear:
+
+<!-- built-in-files -->
+`*.min.js`, `*.min.css`, `*.map`, `*.snap`, `*.lock`, `package-lock.json`, `pnpm-lock.yaml`, `npm-shrinkwrap.json`, `go.sum`, `*.pbxproj`, `*.iml`, `local.properties`, `output-metadata.json`, `.flutter-plugins`, `.flutter-plugins-dependencies`, `.packages`, `Generated.xcconfig`, `flutter_export_environment.sh`, `GeneratedPluginRegistrant.*`, `fastlane/report.xml`, `fastlane/test_output/**`, `doc/api/**`
+<!-- /built-in-files -->
+
+Not on the list, because they are ordinary folders in many projects: `bin`, `obj`, `tmp`, `logs`, `public`, `generated`. A project that generates those ignores them in git, and the scan reads `.gitignore`.
+
+</details>
+
+The settings that shape a scan are under [Settings](#settings).
+
 ## The CLI
 
 The same extraction runs from a terminal or a shell pipeline: a Rust CLI
@@ -168,6 +244,8 @@ Extracted protocols: `http`, `https`, `ftp`, `file`, `mailto` (requires an `@`),
 | Command | Description |
 |---|---|
 | `URLs-LE: Extract URLs` | Extract all URLs from the active document |
+| `URLs-LE: Extract URLs from Workspace` | The distinct URLs in every file in the workspace, and where each one is |
+| `URLs-LE: Extract URLs from Folder` | The same for one folder. Also on a folder in the Explorer |
 | `URLs-LE: Deduplicate URLs` | Remove duplicate lines from the results |
 | `URLs-LE: Sort URLs` | Sort results alphabetically, by domain, or by length |
 | `URLs-LE: Open Settings` | Open URLs-LE settings |
@@ -186,6 +264,14 @@ No command is bound to a key by default. Give any of them one under **Keyboard S
 | `urls-le.clipboardIncludesPositions` | `false` | Include the line and column in that copy |
 | `urls-le.dedupeEnabled` | `false` | Deduplicate extraction results automatically |
 | `urls-le.notificationsLevel` | `silent` | `all` = every notification, `important` = warnings + errors, `silent` = errors only |
+| `urls-le.workspace.scanPatterns` | `["**/*"]` | The files a folder or workspace scan reads |
+| `urls-le.workspace.scanUseDefaultExcludes` | `true` | Skip dependency folders, build output, caches and lockfiles |
+| `urls-le.workspace.scanRespectGitignore` | `true` | Skip what the project's `.gitignore` files skip |
+| `urls-le.workspace.scanSkipBinaryFiles` | `true` | Skip images, fonts, archives and other files that are not text |
+| `urls-le.workspace.scanExcludes` | `[]` | More files to skip, as glob patterns |
+| `urls-le.workspace.scanAlwaysInclude` | `[]` | Files to read even when one of the three above would skip them |
+| `urls-le.workspace.scanMaxFiles` | `5000` | The most files one scan reads |
+| `urls-le.workspace.scanMaxResults` | `10000` | The most occurrences one scan lists before it stops reading |
 | `urls-le.safety.enabled` | `true` | Guardrails for very large files |
 | `urls-le.safety.fileSizeWarnBytes` | `1000000` | Refuse extraction above this file size |
 | `urls-le.safety.largeOutputLinesThreshold` | `50000` | Warn above this line count |
@@ -243,12 +329,12 @@ a build only tells you how busy the runner was.
 <!-- coverage:start -->
 | Metric | Coverage |
 | --- | --- |
-| Statements | 94.69% |
-| Branches | 86.45% |
-| Functions | 94.79% |
-| Lines | 94.91% |
+| Statements | 94.73% |
+| Branches | 85.98% |
+| Functions | 95.92% |
+| Lines | 95.53% |
 
-346 test cases across 25 files, plus an integration suite that runs
+395 test cases across 28 files, plus an integration suite that runs
 in a real VS Code extension host and an end-to-end test that installs the
 built `.vsix` into a clean profile.
 

@@ -67,6 +67,25 @@ export async function extractUrls(
 	);
 }
 
+/**
+ * The same extraction with nothing to await, for a caller that reads many
+ * files in a row and checks its own cancellation between them.
+ *
+ * It applies the limits `extractUrls` applies: a document over the size
+ * limit yields nothing, and one over the count limit yields the first of
+ * them.
+ */
+export function extractUrlsFromText(
+	content: string,
+	languageId: string,
+): readonly Url[] {
+	if (content.length > MAX_CONTENT_SIZE) return [];
+	return extractUrlsByFileType(
+		content,
+		determineFileType(languageId),
+	).urls.slice(0, MAX_URL_COUNT);
+}
+
 function extractUrlsByFileType(
 	content: string,
 	fileType: FileType,
