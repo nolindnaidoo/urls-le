@@ -24,6 +24,8 @@ export function registerHelpCommand(
 
 ## Commands
 - **Extract URLs**: Extract from the current document
+- **Extract URLs from Workspace**: The distinct URLs in every file in the workspace, and where each one is
+- **Extract URLs from Folder**: The same for one folder. Also on a folder in the Explorer
 - **Deduplicate URLs**: Remove duplicate lines in the current document
 - **Sort URLs**: Sort lines alphabetically, by domain, or by length
 - **Open Settings**: Open the URLs-LE settings

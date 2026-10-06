@@ -1,4 +1,7 @@
 import * as assert from 'node:assert';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import * as vscode from 'vscode';
 
 const EXTENSION_ID = 'nolindnaidoo.urls-le';
@@ -30,6 +33,8 @@ describe('URLs-LE integration', function () {
 		const commands = await vscode.commands.getCommands(true);
 		for (const id of [
 			'urls-le.extractUrls',
+			'urls-le.extractWorkspace',
+			'urls-le.extractFolder',
 			'urls-le.postProcess.dedupe',
 			'urls-le.postProcess.sort',
 			'urls-le.openSettings',
@@ -107,5 +112,29 @@ describe('URLs-LE integration', function () {
 			editor.document.getText(),
 			'https://a.com\nhttps://b.com\nhttps://c.com',
 		);
+	});
+	it('extracts the distinct URLs of a folder from disk, with how often and where', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'urls-le-extract-'));
+		for (const dir of ['docs', 'node_modules', 'generated']) mkdirSync(join(root, dir));
+		writeFileSync(join(root, '.gitignore'), 'generated/\n');
+		writeFileSync(join(root, 'docs', 'a.md'), 'See https://example.com/docs and https://example.com/docs again.\n');
+		writeFileSync(join(root, 'config.json'), '{\n  "home": "https://example.com/docs"\n}\n');
+		writeFileSync(join(root, 'node_modules', 'x.js'), "const skip = 'https://skip.example.com';\n");
+		writeFileSync(join(root, 'generated', 'g.md'), 'https://generated.example.com\n');
+		writeFileSync(join(root, 'logo.png'), Buffer.from([0x89, 0x50, 0x00, 0x47]));
+
+		await vscode.commands.executeCommand('urls-le.extractFolder', vscode.Uri.file(root));
+
+		const report = vscode.workspace.textDocuments.find(
+			(doc) => doc.languageId === 'markdown' && doc.getText().includes('urls-le-extract-'),
+		);
+		assert.ok(report, 'no workspace report was opened');
+		const text = report.getText();
+		// The .gitignore itself is read, and holds no URL.
+		assert.match(text, /3 file\(s\) read · 1 distinct URL\(s\), 3 occurrence\(s\) in 2 file\(s\)/);
+		assert.ok(text.includes('| `https://example.com/docs` | 3 | 2 |'));
+		assert.ok(text.includes('- `config.json`\n- `docs/a.md` (2)'));
+		assert.ok(!text.includes('skip.example.com') && !text.includes('generated.example.com'));
+		assert.match(text, /1 file\(s\) ignored by \.gitignore/);
 	});
 });

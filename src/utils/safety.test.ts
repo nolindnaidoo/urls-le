@@ -15,6 +15,14 @@ const mockConfig: Configuration = {
 	showPositions: false,
 	statusBarEnabled: true,
 	telemetryEnabled: false,
+	workspaceScanAlwaysInclude: [],
+	workspaceScanExcludes: [],
+	workspaceScanMaxFiles: 5000,
+	workspaceScanMaxResults: 10000,
+	workspaceScanPatterns: ['**/*'],
+	workspaceScanRespectGitignore: true,
+	workspaceScanSkipBinaryFiles: true,
+	workspaceScanUseDefaultExcludes: true,
 };
 
 describe('Safety Checks', () => {
