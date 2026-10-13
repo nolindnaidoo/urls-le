@@ -519,6 +519,8 @@ export function _setClipboardError(error: Error | undefined): void {
 }
 
 export const env = {
+	/** What `vscode.env.appName` reports; `_setAppName` makes it another host. */
+	appName: 'Visual Studio Code',
 	clipboard: {
 		writeText: async (text: string) => {
 			// The clipboard is the one output that can be denied by the OS; the
@@ -627,6 +629,7 @@ export function _cancelAfterProgress(n: number | undefined): void {
 }
 
 export function _resetMockState(): void {
+	env.appName = 'Visual Studio Code';
 	cancelAfterChecks = undefined;
 	checksSeen = 0;
 	openDocumentError = undefined;
@@ -648,4 +651,8 @@ export function _resetMockState(): void {
 	workspaceFiles.clear();
 	openedDocuments.length = 0;
 	openDialogResponder = undefined;
+}
+
+export function _setAppName(name: string): void {
+	env.appName = name;
 }
