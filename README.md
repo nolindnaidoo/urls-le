@@ -28,7 +28,7 @@
 ---
 
 <p align="center">
-  <img src="src/assets/images/demo.gif" alt="URLs-LE Demo" style="max-width: 100%; height: auto;" />
+  <img src="assets/demos/editor.gif" alt="URLs-LE in VS Code" style="max-width: 100%; height: auto;" />
 </p>
 
 > **Useful?** A star or rating is how other developers find it —
@@ -62,6 +62,10 @@ The same extraction engine runs as an [MCP](https://modelcontextprotocol.io) ser
 | **VS Code** 1.101+ | Nothing to install — the extension registers `extract_urls` with agent mode |
 | **Claude Code** | `claude mcp add urls-le -- npx -y urls-le-mcp` |
 | **Cursor, Windsurf, anything else** | point it at `npx urls-le-mcp` |
+
+<p align="center">
+  <img src="assets/demos/mcp.gif" alt="An agent in Claude Code calling the urls-le MCP server" style="max-width: 100%; height: auto;" />
+</p>
 
 ```
 extract_urls(content, format?, filename?, dedupe?, maxResults?)
@@ -200,6 +204,10 @@ document differently.
 urls-le .                     # every URL in the tree
 urls-le --dedupe docs/        # one line per distinct URL
 urls-le mcp                   # the same extraction over MCP on stdio
+
+<p align="center">
+  <img src="assets/demos/cli.gif" alt="urls-le in a terminal" style="max-width: 100%; height: auto;" />
+</p>
 
 # the point of the whole thing:
 urls-le . | jq -r '.urls[].value' | sort -u | lychee -

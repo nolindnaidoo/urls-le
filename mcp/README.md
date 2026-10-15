@@ -15,6 +15,8 @@
   </a>
 </p>
 
+![An agent in Claude Code calling the urls-le MCP server](https://raw.githubusercontent.com/nolindnaidoo/urls-le/main/assets/demos/mcp.gif)
+
 An [MCP](https://modelcontextprotocol.io) server that extracts URLs from
 documentation, configuration and code — the extraction engine behind the
 [URLs-LE](https://letools.dev/tools/urls-le)
