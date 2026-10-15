@@ -7,6 +7,16 @@ this repository release on their own cadence.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- The `extract_urls` tool told an agent that the formats it knows exclude
+  "code fences, comments, non-string tokens", which read as every format
+  excluding all three, so an agent expected a URL in a Markdown comment to be
+  skipped. It now says which format excludes what, and that a comment in
+  Markdown is scanned. Extraction is unchanged.
+
 ## [0.2.5] - 2026-10-11
 
 ### Fixed
