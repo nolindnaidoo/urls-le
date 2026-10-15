@@ -33,9 +33,10 @@ pub(crate) fn definition() -> Value {
         "name": "extract_urls",
         "description": "Extract every URL from a document, with its protocol and 1-based line and \
                         column. Reads any text document. Markdown, HTML, CSS, JavaScript, \
-                        TypeScript, JSON, YAML, Properties, TOML, INI and XML know what to \
-                        exclude — code fences, comments, non-string tokens; everything else is \
-                        scanned whole, and `fileType` says which happened.",
+                        TypeScript, JSON, YAML, Properties, TOML, INI and XML each know what to \
+                        exclude: Markdown its code fences and inline code, HTML its comments, \
+                        JSON everything that is not a string. A comment in Markdown is scanned. \
+                        Everything else is scanned whole, and `fileType` says which happened.",
         "inputSchema": {
             "type": "object",
             "properties": {
