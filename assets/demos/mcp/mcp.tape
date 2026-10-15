@@ -28,7 +28,7 @@ Enter
 Sleep 5s
 Show
 Sleep 1s
-Type "Use urls-le to list the URLs in links.md. One short line each."
+Type "Use urls-le to list the URLs in links.md. One short line each, nothing else."
 Sleep 500ms
 Enter
 Sleep 24s
