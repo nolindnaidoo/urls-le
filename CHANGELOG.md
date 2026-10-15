@@ -13,6 +13,12 @@ separate product on its own cadence and keeps its own
 
 ### Fixed
 
+- The `extract_urls` tool told an agent that the formats it knows exclude
+  "code fences, comments, non-string tokens", which read as every format
+  excluding all three, so an agent expected a URL in a Markdown comment to be
+  skipped. It now says which format excludes what, and that a comment in
+  Markdown is scanned. Extraction is unchanged.
+
 - The rating prompt's Rate button opened the Marketplace review page for
   every install, including one from Open VSX in VSCodium, Cursor or
   Windsurf, because it told the registries apart by a publisher name the

@@ -40,7 +40,7 @@
 
 Open a file, run `URLs-LE: Extract URLs`, and every URL in the document lands in a new editor — deduplicate and sort it from there. Works in VS Code and in VS Code–based editors like Cursor and VSCodium (installable from Open VSX).
 
-- **Link auditing** — every link, autolink, and plain URL in Markdown and HTML (code blocks and comments excluded)
+- **Link auditing** — every link, autolink, and plain URL in Markdown and HTML (code blocks excluded in Markdown, comments excluded in HTML)
 - **Source review** — URLs in string literals, template literals, and comments across JS/TS
 - **Config sweep** — URLs in JSON strings, YAML values, Java properties, TOML/INI values, and XML (Maven POMs, feeds)
 
