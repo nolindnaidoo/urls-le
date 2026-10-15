@@ -205,13 +205,13 @@ urls-le .                     # every URL in the tree
 urls-le --dedupe docs/        # one line per distinct URL
 urls-le mcp                   # the same extraction over MCP on stdio
 
-<p align="center">
-  <img src="assets/demos/cli.gif" alt="urls-le in a terminal" style="max-width: 100%; height: auto;" />
-</p>
-
 # the point of the whole thing:
 urls-le . | jq -r '.urls[].value' | sort -u | lychee -
 ```
+
+<p align="center">
+  <img src="assets/demos/cli.gif" alt="urls-le in a terminal" style="max-width: 100%; height: auto;" />
+</p>
 
 **Exit codes follow grep** — 0 URLs found, 1 none found, 2 the question
 was malformed — so `if urls-le src/; then …` works and finding nothing
