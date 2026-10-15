@@ -101,6 +101,10 @@ crate/src/
 - **`--dedupe` is opt-in**, because it is opt-in in the extension. Every
   occurrence is a real occurrence.
 - **stdout is protocol, stderr is human. There is no `--json` flag.**
+  stdout stays silent when it is a terminal, because the stderr listing
+  already covers a person reading it. Anything that can parse gets every
+  report, and the listing is a projection of the same reports so the two
+  cannot drift.
 - **Parity scope is extraction only** — `src/extraction/**`.
 
 ## Control-flow style

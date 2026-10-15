@@ -56,7 +56,7 @@ and CI fails on drift.
 ## Sixty seconds
 
 ```bash
-urls-le .                       # every URL in the tree
+urls-le .                       # every URL in the tree; JSON on stdout when piped
 urls-le --dedupe docs/          # one line per distinct URL
 cat README.md | urls-le --stdin --format markdown
 
@@ -70,6 +70,9 @@ urls-le . | jq -r '.urls[].value' | sort -u | lychee -
 ./docs/guide.md:3:44  https://example.com/ref
 3 URLs in 2 files
 ```
+
+The listing above is stderr. The JSON report, one object per line, goes to
+stdout when it is piped or redirected and is left out at a terminal.
 
 **Exit codes follow grep** — `0` URLs found, `1` none found, `2` the
 question was malformed. Finding none is an answer, not an error, which is

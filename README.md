@@ -201,7 +201,7 @@ in [`crate/`](crate/README.md), sharing one corpus with the extension —
 document differently.
 
 ```bash
-urls-le .                     # every URL in the tree
+urls-le .                     # every URL in the tree; JSON on stdout when piped
 urls-le --dedupe docs/        # one line per distinct URL
 urls-le mcp                   # the same extraction over MCP on stdio
 
