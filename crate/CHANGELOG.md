@@ -7,7 +7,13 @@ this repository release on their own cadence.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.6] - 2026-10-15
+
+### Changed
+
+- **stdout is silent at a terminal.** The JSON reports printed on the same
+  screen as the stderr listing and said the same thing again. Piped or
+  redirected, stdout carries every report exactly as before.
 
 ### Fixed
 
@@ -283,6 +289,7 @@ function is what stops that recurring in a second language.
   vanish from the report entirely, which reads to whoever ran it as
   "that file was clean".
 
+[0.2.6]: https://crates.io/crates/urls-le/0.2.6
 [0.2.5]: https://crates.io/crates/urls-le/0.2.5
 [0.2.4]: https://crates.io/crates/urls-le/0.2.4
 [0.2.3]: https://crates.io/crates/urls-le/0.2.3
