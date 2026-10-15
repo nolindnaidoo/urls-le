@@ -1,0 +1,16 @@
+{
+  "files": [
+    "links.md"
+  ],
+  "steps": [
+    {
+      "wait": 1500
+    },
+    {
+      "command": "URLs-LE: Extract URLs"
+    },
+    {
+      "wait": 5000
+    }
+  ]
+}
