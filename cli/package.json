@@ -1,0 +1,47 @@
+{
+	"name": "url-le",
+	"version": "2.5.0",
+	"description": "Get every URL out of a codebase, with the file, line and column each came from.",
+	"keywords": [
+		"urls",
+		"links",
+		"audit",
+		"markdown",
+		"html",
+		"json",
+		"cli",
+		"urls-le",
+		"nolindnaidoo",
+		"letools"
+	],
+	"license": "MIT",
+	"author": {
+		"name": "Nolin Naidoo",
+		"url": "https://nolindnaidoo.com"
+	},
+	"homepage": "https://letools.dev/tools/urls-le",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/nolindnaidoo/urls-le.git",
+		"directory": "cli"
+	},
+	"bugs": {
+		"url": "https://github.com/nolindnaidoo/urls-le/issues"
+	},
+	"type": "commonjs",
+	"bin": {
+		"urls-le": "cli.js"
+	},
+	"files": [
+		"cli.js",
+		"README.md",
+		"LICENSE"
+	],
+	"engines": {
+		"node": ">=20"
+	},
+	"publishConfig": {
+		"access": "public",
+		"provenance": true
+	}
+}

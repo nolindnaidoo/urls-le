@@ -61,6 +61,14 @@ artifact users actually install.
   the active buffer, read by a person. The CLI is terminal-first: a tree walk,
   exit codes and JSON Lines, none of which has an editor equivalent. That
   is not drift, and nothing holds them equal — see `crate/SPEC.md`.
+- **The npm command line is the crate's surface, not the extension's.**
+  `src/cli/` builds the npm package `url-le`, which installs the same
+  `urls-le` command the crate does, so it is held to the Rust CLI byte for
+  byte by `bun run check:cli-parity` (after `bun run build:cli` and a
+  `cargo build` in `crate/`), MCP replies included. A change to the
+  crate's flags, walk, limits, positions, exit codes or output changes
+  `src/cli/` in the same commit. `--version` is compared too, because every
+  surface carries one version; see AGENTS.md, Release.
 - **The CLI has no opinions and must not grow any** — no link checking,
   no verdicts, no filtering. See `crate/SPEC.md`; a contract test
   enforces it.

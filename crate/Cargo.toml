@@ -1,6 +1,6 @@
 [package]
 name = "urls-le"
-version = "0.2.6"
+version = "2.5.0"
 edition = "2024"
 rust-version = "1.88"
 license = "MIT"

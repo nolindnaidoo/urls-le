@@ -50,7 +50,7 @@ Open a file, run `URLs-LE: Extract URLs`, and every URL in the document lands in
 |---|---|---|
 | **VS Code** | The extraction, in your editor, on a keystroke | [Marketplace](https://marketplace.visualstudio.com/items?itemName=nolindnaidoo.urls-le) |
 | **Cursor, VSCodium, Windsurf** | The same extension | [Open VSX](https://open-vsx.org/extension/nolindnaidoo/urls-le) |
-| **A terminal or a CI step** | The same run over a whole tree, with exit codes | `cargo install urls-le` · [crates.io](https://crates.io/crates/urls-le) |
+| **A terminal or a CI step** | The same run over a whole tree, with exit codes | `npx url-le` · [npm](https://www.npmjs.com/package/url-le) or `cargo install urls-le` · [crates.io](https://crates.io/crates/urls-le) |
 | **Any MCP agent, via Node** | `extract_urls` over stdio | `npx urls-le-mcp` · [npm](https://www.npmjs.com/package/urls-le-mcp) |
 
 ## Use it from an AI agent
@@ -198,7 +198,11 @@ The settings that shape a scan are under [Settings](#settings).
 The same extraction runs from a terminal or a shell pipeline: a Rust CLI
 in [`crate/`](crate/README.md), sharing one corpus with the extension —
 [`crate/fixtures/`](crate/fixtures/) — so the two can never read a
-document differently.
+document differently. Install it from npm with `npm install -g url-le` (or
+run it with `npx url-le`) or from crates.io with `cargo install urls-le`.
+Both install the same `urls-le` command and are held to the same output
+byte for byte. The npm package is named `url-le` because `urls-le` was
+taken there.
 
 ```bash
 urls-le .                     # every URL in the tree; JSON on stdout when piped
@@ -338,12 +342,12 @@ a build only tells you how busy the runner was.
 <!-- coverage:start -->
 | Metric | Coverage |
 | --- | --- |
-| Statements | 95.05% |
-| Branches | 86.59% |
-| Functions | 96.20% |
-| Lines | 95.79% |
+| Statements | 81.98% |
+| Branches | 72.76% |
+| Functions | 81.97% |
+| Lines | 84.04% |
 
-431 test cases across 31 files, plus an integration suite that runs
+455 test cases across 32 files, plus an integration suite that runs
 in a real VS Code extension host and an end-to-end test that installs the
 built `.vsix` into a clean profile.
 

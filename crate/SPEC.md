@@ -261,6 +261,15 @@ every extractor is the whole-document scan minus an exclusion, so a
 mistyped name can only stop something being excluded, never hide a URL,
 and the report's `format` field says which pass ran.
 
+**Held equal: this surface and the npm one.** The npm package `url-le`
+installs a command named `urls-le`, built from the extension's `src/cli/`
+over the extension's engine, and nobody running `urls-le` can tell which
+one they have. It is held to everything in this section byte for byte —
+flags, walk, positions, limits, exit codes, stdout, stderr, and every
+reply `urls-le mcp` writes — by `scripts/check-cli-parity.ts`. A change
+to this surface changes `src/cli/` in the same commit. That includes
+`--version`: every surface in the repository carries one version.
+
 ## The MCP surface
 
 - **`extract_urls` belongs to both servers.** The npm server and this one

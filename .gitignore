@@ -124,3 +124,5 @@ crate/target/
 # missing on every machine but the one that wrote it.
 !crate/fixtures/
 !crate/fixtures/**
+cli/cli.js
+cli/LICENSE
