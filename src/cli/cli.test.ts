@@ -192,7 +192,8 @@ describe('collect', () => {
 	it('sorts by path component and gives each file its format', () => {
 		const root = tree();
 		const found = collect([root], WALK).map((target) => [
-			target.path.slice(root.length + 1),
+			// Targets keep the native separator; only the report turns it to `/`.
+			target.path.slice(root.length + 1).replaceAll('\\', '/'),
 			target.languageId,
 		]);
 		expect(found).toEqual([
