@@ -471,7 +471,7 @@ dependencies = [
 
 [[package]]
 name = "urls-le"
-version = "2.5.0"
+version = "2.5.1"
 dependencies = [
  "ignore",
  "regex",

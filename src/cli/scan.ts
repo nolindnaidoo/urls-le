@@ -52,9 +52,6 @@ export interface Extraction {
 	readonly fileType: string;
 }
 
-const MAX_CONTENT_BYTES = 10_000_000;
-const MAX_URL_COUNT = 50_000;
-
 export async function scanFile(
 	target: Target,
 	options: ScanOptions,
@@ -98,53 +95,22 @@ export async function scanContent(
 }
 
 /**
- * The crate's limits, in the crate's words. The size ceiling counts UTF-8
- * bytes, as a Rust `str` does, where the engine counts UTF-16 units, and a
- * refused document is an error, where the engine calls it a warning.
+ * The engine already applies the crate's limits in the crate's words: the
+ * size ceiling in UTF-8 bytes, a refused document as an error, and the
+ * 50,000-URL cut as a warning.
  */
 export async function extract(
 	content: string,
 	languageId: string,
 ): Promise<Extraction> {
-	const bytes = Buffer.byteLength(content, 'utf8');
-	if (bytes > MAX_CONTENT_BYTES) {
-		return {
-			urls: [],
-			diagnostics: [
-				{
-					severity: 'error',
-					code: 'format',
-					message: `Content too large (${bytes} characters), maximum size is 10MB`,
-				},
-			],
-			fileType: 'unknown',
-		};
-	}
-
 	const result = await extractUrls(content, languageId);
-	// The engine has already cut the list at the ceiling and said so. The
-	// crate says it in other words.
-	const truncated = result.errors.some(
-		(error) => error.recoveryAction === 'truncate',
-	);
-	const others = result.errors.filter(
-		(error) => error.recoveryAction !== 'truncate',
-	);
-	const diagnostics: ReportDiagnostic[] = others.map((error) => ({
-		severity: error.severity,
-		code: error.category,
-		message: error.message,
-	}));
-	if (truncated) {
-		diagnostics.push({
-			severity: 'warning',
-			code: 'parsing',
-			message: `Too many URLs, truncated to ${MAX_URL_COUNT}`,
-		});
-	}
 	return {
 		urls: result.urls.map(asFound),
-		diagnostics,
+		diagnostics: result.errors.map((error) => ({
+			severity: error.severity,
+			code: error.category,
+			message: error.message,
+		})),
 		fileType: result.fileType ?? languageId,
 	};
 }

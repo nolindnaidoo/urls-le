@@ -36,6 +36,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { TOOLS } from '../src/mcp/tools';
+import { createResponder } from '../src/mcp/transport';
 
 const ROOT = join(import.meta.dir, '..');
 
@@ -408,38 +409,42 @@ function buildCases(): Case[] {
 	return cases;
 }
 
-/** Key order is not the contract; the values are. */
-function canonical(value: unknown): unknown {
-	if (Array.isArray(value)) return value.map(canonical);
-	if (value && typeof value === 'object') {
-		const entries = Object.entries(value as Record<string, unknown>).sort(
-			([a], [b]) => (a < b ? -1 : a > b ? 1 : 0),
-		);
-		return Object.fromEntries(entries.map(([k, v]) => [k, canonical(v)]));
-	}
-	return value;
-}
-
 function show(value: unknown): string {
-	return JSON.stringify(canonical(value));
+	return JSON.stringify(value);
 }
 
-type Answer = { ok: unknown } | { error: string };
+/**
+ * The tool's text exactly as each server writes it, not a parse of it: the
+ * contract is byte-identical output, key order included, and comparing
+ * values would let the order drift unseen.
+ */
+type Answer = { ok: string } | { error: string };
+
+type ToolResult = {
+	isError?: boolean;
+	content?: Array<{ text?: string }>;
+};
 
 async function fromExtension(cases: readonly Case[]): Promise<Answer[]> {
-	const tool = TOOLS.find((candidate) => candidate.name === 'extract_urls');
-	if (!tool) throw new Error('the extension no longer offers extract_urls');
+	if (!TOOLS.some((candidate) => candidate.name === 'extract_urls')) {
+		throw new Error('the extension no longer offers extract_urls');
+	}
+	const respond = createResponder({ name: 'urls-le', version: '0' }, TOOLS);
 	const answers: Answer[] = [];
 	for (const testCase of cases) {
-		try {
-			answers.push({
-				ok: JSON.parse(JSON.stringify(await tool.handler(testCase.args))),
-			});
-		} catch (error) {
-			answers.push({
-				error: error instanceof Error ? error.message : String(error),
-			});
+		const response = await respond({
+			jsonrpc: '2.0',
+			id: testCase.index + 1,
+			method: 'tools/call',
+			params: { name: 'extract_urls', arguments: testCase.args },
+		});
+		if (!response || response.error) {
+			answers.push({ error: response?.error?.message ?? 'no reply' });
+			continue;
 		}
+		const result = response.result as ToolResult;
+		const text = result.content?.[0]?.text ?? '';
+		answers.push(result.isError ? { error: text } : { ok: text });
 	}
 	return answers;
 }
@@ -475,11 +480,7 @@ async function fromCrate(cases: readonly Case[]): Promise<Answer[]> {
 		if (line.trim() === '') continue;
 		const response = JSON.parse(line) as {
 			id: number;
-			result?: {
-				isError?: boolean;
-				structuredContent?: unknown;
-				content?: Array<{ text?: string }>;
-			};
+			result?: ToolResult;
 			error?: { message?: string };
 		};
 		if (response.error) {
@@ -491,7 +492,7 @@ async function fromCrate(cases: readonly Case[]): Promise<Answer[]> {
 			byId.set(response.id, { error: result.content?.[0]?.text ?? '' });
 			continue;
 		}
-		byId.set(response.id, { ok: result?.structuredContent });
+		byId.set(response.id, { ok: result?.content?.[0]?.text ?? '' });
 	}
 
 	return cases.map((testCase) => {

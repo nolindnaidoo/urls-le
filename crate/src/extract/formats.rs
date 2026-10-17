@@ -245,6 +245,9 @@ fn json_string_ranges(content: &str) -> Vec<(usize, usize)> {
         while index < bytes.len() {
             match bytes[index] {
                 b'\\' => index += 2,
+                // JSON has no raw line break inside a string, so the
+                // scanner on the other side ends the token there.
+                b'\n' | b'\r' => break,
                 b'"' => {
                     index += 1;
                     break;
@@ -390,6 +393,18 @@ mod tests {
             "}\n",
         );
         assert_eq!(values(content, FileType::Json), ["https://a.example"]);
+    }
+
+    /// A raw line break ends a string token, unclosed, as it does in
+    /// `jsonc-parser`. This read on to the next quote, so the closing
+    /// quote of one line opened a string on the next and the two servers
+    /// found different URLs in the same malformed document.
+    #[test]
+    fn a_line_break_ends_an_unclosed_json_string() {
+        let content = "{\"a\": \"https://a.example\n\", \"b\": \"https://b.example\"}\n";
+        assert_eq!(values(content, FileType::Json), ["https://a.example"]);
+        let carriage = "{\"a\": \"https://a.example\r\n\", \"b\": \"https://b.example\"}\n";
+        assert_eq!(values(carriage, FileType::Json), ["https://a.example"]);
     }
 
     /// An unterminated comment swallows the rest, which is what the

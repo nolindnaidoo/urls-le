@@ -8,8 +8,26 @@ describe('Extract.ts Edge Cases', () => {
 			const result = await extractUrls(largeContent, 'markdown');
 
 			expect(result.success).toBe(false);
-			expect(result.errors).toHaveLength(1);
-			expect(result.errors[0]?.message).toContain('Content too large');
+			expect(result.errors).toEqual([
+				{
+					category: 'format',
+					severity: 'error',
+					message:
+						'Content too large (10000001 characters), maximum size is 10MB',
+					recoverable: false,
+					recoveryAction: 'abort',
+				},
+			]);
+		});
+
+		// The crate's `str` is UTF-8, so the ceiling counts bytes. Five million
+		// two-byte characters is under it in UTF-16 units and over it in bytes.
+		it('should measure the ceiling in UTF-8 bytes, as the crate does', async () => {
+			const result = await extractUrls('é'.repeat(5_000_001), 'markdown');
+
+			expect(result.errors[0]?.message).toBe(
+				'Content too large (10000002 characters), maximum size is 10MB',
+			);
 		});
 
 		it('should accept content at exactly 10MB', async () => {
@@ -41,7 +59,9 @@ describe('Extract.ts Edge Cases', () => {
 
 			expect(result.urls.length).toBe(50_000);
 			expect(result.errors).toHaveLength(1);
-			expect(result.errors[0]?.message).toContain('truncated');
+			expect(result.errors[0]?.message).toBe(
+				'Too many URLs, truncated to 50000',
+			);
 		});
 
 		it('should not truncate when URL count is at limit', async () => {

@@ -6,6 +6,7 @@
  * `preserve_order`.
  */
 
+import { sortedKeys } from '../mcp/envelope';
 import { resolveFormat, SUPPORTED_FORMATS } from '../mcp/fileType';
 import { TOOLS } from '../mcp/tools';
 import { readTree } from './run';
@@ -148,7 +149,7 @@ async function handle(
 	if (id === undefined) return undefined;
 
 	const handled = await dispatch(method, field(request, 'params'), version);
-	return JSON.stringify(sorted({ jsonrpc: '2.0', id, ...handled }));
+	return JSON.stringify(sortedKeys({ jsonrpc: '2.0', id, ...handled }));
 }
 
 async function dispatch(
@@ -212,7 +213,7 @@ async function outcome(
 ): Promise<unknown> {
 	let envelope: unknown;
 	try {
-		envelope = sorted(await tool(args));
+		envelope = sortedKeys(await tool(args));
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		return { content: [{ type: 'text', text: message }], isError: true };
@@ -357,16 +358,4 @@ function hasField(value: unknown, name: string): boolean {
 		return false;
 	}
 	return Object.hasOwn(value, name);
-}
-
-/** A `serde_json::Value` object: keys in the order of their UTF-8 bytes. */
-function sorted<T>(value: T): T {
-	if (Array.isArray(value)) return value.map(sorted) as T;
-	if (typeof value !== 'object' || value === null) return value;
-	const entries = Object.entries(value).sort(([left], [right]) =>
-		Buffer.compare(Buffer.from(left), Buffer.from(right)),
-	);
-	return Object.fromEntries(
-		entries.map(([key, item]) => [key, sorted(item)]),
-	) as T;
 }
