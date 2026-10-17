@@ -32,6 +32,13 @@ with its own `CLAUDE.md`.
 - Write regression tests for every bug you fix; keep unit tests free of
   clocks, randomness, and the filesystem outside `resolve`/`walk`/
   `audit`.
+- **The command line has a twin.** The npm package `url-le`, built
+  from the extension's `src/cli/`, installs a `urls-le` that mirrors
+  `cli.rs`, `scan.rs`, `walk.rs`, `extract/mod.rs` and `mcp/` byte for
+  byte, and `bun ../scripts/check-cli-parity.ts` fails on any
+  difference. A change to a flag, a message, the walk, a limit, a
+  position, an exit code or an MCP reply changes `src/cli/` in the same
+  commit.
 - **Run the binary, not only the tests.** The scanner's quadratic
   claimed-offset lookup only showed when a test actually built a
   document with 50,000 URLs in it — the unit suite had nothing large

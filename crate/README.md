@@ -83,9 +83,11 @@ what makes `if urls-le src/; then …` work.
 | Route | Command | Worth knowing |
 |---|---|---|
 | **cargo** | `cargo install urls-le` | Any platform, needs **Rust 1.88+**. |
+| **npm** | `npm install -g url-le` or `npx url-le` | Needs **Node 20+**. The same `urls-le` command, held to this one byte for byte. The package is `url-le` because `urls-le` was taken on npm. |
 | **From source** | `git clone https://github.com/nolindnaidoo/urls-le`<br>`cd urls-le/crate && cargo build --release` | The same build CI runs. |
 
-No runtime, no network, nothing written.
+The cargo build needs no runtime. Neither one touches the network or
+writes a file.
 
 ## Why it has no opinions
 
