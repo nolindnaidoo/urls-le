@@ -14,6 +14,12 @@ version and releases from one tag.
 
 ### Fixed
 
+- **`mcp` no longer ends the session on a frame that is not UTF-8**, in
+  the crate or the npm package. Such a frame is dropped like one that is not
+  JSON, and the requests after it are served. The npm server reads frames
+  with `src/cli/frames.ts`, the crate server's framing in one file shared
+  across the family, and `check:cli-pipes` now feeds both servers eighteen
+  malformed frames and requests and compares the answers.
 - **TOML now parses exactly as the Rust crate does.** The extension, the
   npm MCP server and the npm command line read TOML with `@iarna/toml`,
   which follows TOML 0.5 and refuses documents the crate's TOML 1.0
