@@ -17,6 +17,9 @@
   <a href="https://www.npmjs.com/package/urls-le-mcp">
     <img src="https://img.shields.io/npm/v/urls-le-mcp?style=for-the-badge&label=MCP%20server&color=blue&logo=npm" alt="urls-le-mcp on npm" />
   </a>
+  <a href="https://www.npmjs.com/package/url-le">
+    <img src="https://img.shields.io/npm/v/url-le?style=for-the-badge&label=npm%20CLI&color=blue&logo=npm" alt="url-le on npm" />
+  </a>
   <a href="https://crates.io/crates/urls-le">
     <img src="https://img.shields.io/crates/v/urls-le?style=for-the-badge&label=Rust%20CLI&color=blue&logo=rust" alt="urls-le on crates.io" />
   </a>
@@ -216,6 +219,22 @@ urls-le . | jq -r '.urls[].value' | sort -u | lychee -
 <p align="center">
   <img src="assets/demos/cli.gif" alt="urls-le in a terminal" style="max-width: 100%; height: auto;" />
 </p>
+
+**Install it from npm** ([`url-le`](https://www.npmjs.com/package/url-le)) **or from crates.io** ([`urls-le`](https://crates.io/crates/urls-le)). Both install the same `urls-le` command.
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/url-le">
+    <img src="https://img.shields.io/npm/v/url-le?style=for-the-badge&label=npm%20CLI&color=blue&logo=npm" alt="url-le on npm" />
+  </a>
+  <a href="https://crates.io/crates/urls-le">
+    <img src="https://img.shields.io/crates/v/urls-le?style=for-the-badge&label=Rust%20CLI&color=blue&logo=rust" alt="urls-le on crates.io" />
+  </a>
+</p>
+
+```bash
+npm install -g url-le   # or run it once: npx url-le
+cargo install urls-le
+```
 
 **Exit codes follow grep** — 0 URLs found, 1 none found, 2 the question
 was malformed — so `if urls-le src/; then …` works and finding nothing
