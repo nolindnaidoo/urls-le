@@ -159,6 +159,13 @@ function build(): void {
 		'[package]\nhomepage = "https://toml.example/a"\n# https://toml.example/comment\nrepo = "https://toml.example/a"\nesc = "https://toml.example/\\u0041"\nmulti = """\nhttps://toml.example/multi\n"""\n',
 	);
 	file('repo/bad.toml', 'a = "https://toml.example/broken"\n[b\n');
+	// TOML 1.0 that @iarna/toml refused, and escaped URLs the locator cannot
+	// place, listed in serde_json's key order rather than the file's.
+	file('repo/mixed.toml', 'a = ["https://mixed.example/x", 1, 2.5]\n');
+	file(
+		'repo/order.toml',
+		'z = "https://z.example/\\u0041"\n2 = "https://two.example/\\u0042"\na = "https://a.example/\\u0043"\n',
+	);
 	file(
 		'repo/feed.xml',
 		'<feed href="https://xml.example/a"><!-- https://xml.example/c --></feed>\n',
@@ -266,6 +273,7 @@ function cases(): readonly Case[] {
 		{ args: [at('data.json'), at('settings.jsonc'), at('ci.yml')] },
 		{ args: [at('app.properties'), at('setup.ini'), at('.env')] },
 		{ args: [at('Cargo.toml'), at('bad.toml'), at('feed.xml')] },
+		{ args: [at('mixed.toml'), at('order.toml')] },
 		{ args: [at('script.py'), at('table.csv'), at('dockerfile')] },
 		{ args: [at('crlf.md'), at('bom.md'), at('empty.md'), at('none.md')] },
 		{ args: [at('none.md')] },
