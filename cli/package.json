@@ -1,6 +1,6 @@
 {
 	"name": "url-le",
-	"version": "2.5.1",
+	"version": "2.5.2",
 	"description": "Get every URL out of a codebase, with the file, line and column each came from.",
 	"keywords": [
 		"urls",

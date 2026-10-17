@@ -18,8 +18,8 @@ const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 
 // The npm package installs the command `urls-le`, the name the crate
 // installs too. A manifest naming anything else would publish a second
-// command nobody documented. The package name is free to differ: `urls-le` was
-// already taken on npm, so it publishes as `url-le`.
+// command nobody documented. The package name can differ, since npm decides
+// which names it accepts, and check-cli-package.js holds the READMEs to it.
 const commands = Object.keys(manifest.bin ?? {});
 if (commands.length !== 1 || manifest.bin[root.name] !== 'cli.js') {
 	console.error(
@@ -37,8 +37,8 @@ const args = [
 	'--target=node20',
 	'--main-fields=module,main',
 	'--banner:js=#!/usr/bin/env node',
-	// The engine's TOML fallback warns on the console. stderr is the crate's
-	// summary and nothing else, so the warning is not part of this build:
+	// stderr is the crate's listing and summary and nothing else, so nothing
+	// the engine warns on the console is part of this build: console.warn is
 	// marked pure, and dropped by the syntax pass even in a development build.
 	'--pure:console.warn',
 	'--minify-syntax',
