@@ -309,13 +309,13 @@ describe('mcp', () => {
 		expect(written).toEqual([]);
 	});
 
-	it('ends with exit 2 on a line that is not UTF-8', async () => {
+	it('drops a line that is not UTF-8 and serves the next', async () => {
 		const { status, written } = await session([
 			Buffer.from([0x7b, 0xff, 0x7d, 0x0a]),
 			'{"jsonrpc":"2.0","id":1,"method":"ping"}\n',
 		]);
-		expect(status).toBe(2);
-		expect(written).toEqual([]);
+		expect(status).toBe(0);
+		expect(written).toEqual(['{"id":1,"jsonrpc":"2.0","result":{}}\n']);
 	});
 
 	it('reports a scan of a missing path as a tool failure', async () => {
