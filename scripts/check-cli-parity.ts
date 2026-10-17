@@ -156,7 +156,7 @@ function build(): void {
 	);
 	file(
 		'repo/Cargo.toml',
-		'[package]\nhomepage = "https://toml.example/a"\n# https://toml.example/comment\nrepo = "https://toml.example/a"\nesc = "https://toml.example/\\u0041"\n',
+		'[package]\nhomepage = "https://toml.example/a"\n# https://toml.example/comment\nrepo = "https://toml.example/a"\nesc = "https://toml.example/\\u0041"\nmulti = """\nhttps://toml.example/multi\n"""\n',
 	);
 	file('repo/bad.toml', 'a = "https://toml.example/broken"\n[b\n');
 	file(
@@ -384,6 +384,7 @@ function mcpLines(): readonly string[] {
 		extract({ content: '{"a": "https:\\/\\/j.example\\/x", "k": 1}', format: 'json' }),
 		extract({ content: '// "https://c.example"\n{"a": "https://c.example/b"}', filename: 'x.jsonc' }),
 		extract({ content: 'a = "https://t.example/\\u0041"\n', format: 'toml' }),
+		extract({ content: '{"a": "https://j.example/1\n", "b": "https://j.example/2"}', format: 'json' }),
 		extract({ content: 'a = "https://t.example/x"\n[', format: 'toml' }),
 		extract({ content: '; https://i.example/a\nb = https://i.example/b\n', filename: 'setup.cfg' }),
 		extract({ content: 'https://p.example/a', filename: 'app.py' }),

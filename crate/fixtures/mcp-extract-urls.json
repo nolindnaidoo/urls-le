@@ -568,6 +568,33 @@
 		}
 	},
 	{
+		"name": "a line break ends an unclosed JSON string",
+		"content": "{\"a\": \"https://a.example\n\", \"b\": \"https://b.example\"}\n",
+		"arguments": {
+			"format": "json"
+		},
+		"expected": {
+			"ok": true,
+			"data": {
+				"urls": [
+					{
+						"value": "https://a.example",
+						"protocol": "https",
+						"line": 1,
+						"column": 8
+					}
+				],
+				"fileType": "json"
+			},
+			"diagnostics": [],
+			"meta": {
+				"tool": "extract_urls",
+				"count": 1,
+				"truncated": false
+			}
+		}
+	},
+	{
 		"name": "a document that is not INI is read, not dropped",
 		"content": "; https://in-a-comment.example\nbare https://a.example with no equals sign\n",
 		"arguments": {

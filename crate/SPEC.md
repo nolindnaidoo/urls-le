@@ -273,8 +273,10 @@ to this surface changes `src/cli/` in the same commit. That includes
 ## The MCP surface
 
 - **`extract_urls` belongs to both servers.** The npm server and this one
-  offer the same tool: same schema, same envelope, byte-identical output.
-  `fixtures/mcp-extract-urls.json` runs against both.
+  offer the same tool: same schema, same envelope, byte-identical output,
+  keys sorted on both. `fixtures/mcp-extract-urls.json` runs against both,
+  and `scripts/differential.ts` compares the text each server returns byte
+  for byte.
 - **`urls_le_scan` is this server's own**: files or directories in, the
   same reports the CLI writes.
 

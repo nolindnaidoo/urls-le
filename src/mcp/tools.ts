@@ -6,6 +6,7 @@ import {
 	MAX_MAX_RESULTS,
 	readMaxResults,
 	readString,
+	sortedKeys,
 	toDiagnostics,
 } from './envelope';
 import { resolveFormat, SUPPORTED_FORMATS } from './fileType';
@@ -91,12 +92,14 @@ async function extract(args: Record<string, unknown>): Promise<unknown> {
 	// truncation.
 	const { items, truncated } = capped(deduped, maxResults);
 
-	return envelope(
-		'extract_urls',
-		{ urls: items, fileType: result.fileType ?? languageId },
-		items.length,
-		toDiagnostics(result),
-		truncated,
+	return sortedKeys(
+		envelope(
+			'extract_urls',
+			{ urls: items, fileType: result.fileType ?? languageId },
+			items.length,
+			toDiagnostics(result),
+			truncated,
+		),
 	);
 }
 

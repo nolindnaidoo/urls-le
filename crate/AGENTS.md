@@ -160,8 +160,9 @@ pixelactions and scrape-le:
   other flag. A test asserts no MCP output contains `--`.
 - **`extract_urls` belongs to both servers.** The npm server
   (`src/mcp/tools.ts`) and this one offer the same tool: same schema,
-  same envelope, byte-identical output. `fixtures/mcp-extract-urls.json`
-  runs against both, so changing one without the other fails a build.
+  same envelope, byte-identical output, keys sorted on both.
+  `fixtures/mcp-extract-urls.json` runs against both, so changing one
+  without the other fails a build.
   Every tool here returns that envelope — `{ ok, data, diagnostics,
   meta }` — where `ok` means the check ran, never that the answer was
   yes.
@@ -220,7 +221,7 @@ The bar, enforced by review:
     on the exit code rather than on the write.
   - `../scripts/differential.ts` — generated documents and argument
     shapes through **both** MCP servers, requiring the shared
-    `extract_urls` to answer identically. Scoped to that tool: the two
+    `extract_urls` to return the same text byte for byte. Scoped to that tool: the two
     *surfaces* are meant to differ. Seed printed on every run.
   - `extract/fuzz.rs` — a seeded net over the pure layer. Deterministic
     by default, sixty seconds in CI. Any panic, any hang, and any

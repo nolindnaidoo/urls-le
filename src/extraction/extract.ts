@@ -17,7 +17,11 @@ import { extractFromToml } from './formats/toml';
 import { extractFromXml } from './formats/xml';
 import { extractFromYaml } from './formats/yaml';
 
-const MAX_CONTENT_SIZE = 10_000_000; // 10MB
+/**
+ * Measured in UTF-8 bytes, as the crate's `str` measures it, so the shared
+ * `extract_urls` tool refuses the same documents from either server.
+ */
+const MAX_CONTENT_BYTES = 10_000_000;
 const MAX_URL_COUNT = 50_000;
 
 export async function extractUrls(
@@ -31,10 +35,11 @@ export async function extractUrls(
 	}
 
 	// Fail fast: Validate content size
-	if (content.length > MAX_CONTENT_SIZE) {
+	const bytes = Buffer.byteLength(content, 'utf8');
+	if (bytes > MAX_CONTENT_BYTES) {
 		return createErrorResult(
 			'unknown',
-			`Content too large (${content.length} characters), maximum size is 10MB`,
+			`Content too large (${bytes} characters), maximum size is 10MB`,
 		);
 	}
 
@@ -53,11 +58,7 @@ export async function extractUrls(
 
 	// Check URL count limits
 	if (extractionResult.urls.length > MAX_URL_COUNT) {
-		return createTruncatedResult(
-			extractionResult.urls,
-			fileType,
-			extractionResult.urls.length,
-		);
+		return createTruncatedResult(extractionResult.urls, fileType);
 	}
 
 	return createSuccessResult(
@@ -79,7 +80,7 @@ export function extractUrlsFromText(
 	content: string,
 	languageId: string,
 ): readonly Url[] {
-	if (content.length > MAX_CONTENT_SIZE) return [];
+	if (Buffer.byteLength(content, 'utf8') > MAX_CONTENT_BYTES) return [];
 	return extractUrlsByFileType(
 		content,
 		determineFileType(languageId),
@@ -153,11 +154,13 @@ function createErrorResult(
 		urls: Object.freeze([]),
 		errors: Object.freeze([
 			{
-				category: 'parsing' as const,
-				severity: 'warning' as const,
+				// A refused document was not examined, so it is an error: the
+				// envelope's `ok` turns false, as the crate's does.
+				category: 'format' as const,
+				severity: 'error' as const,
 				message,
-				recoverable: true,
-				recoveryAction: 'truncate' as const,
+				recoverable: false,
+				recoveryAction: 'abort' as const,
 			},
 		]),
 		fileType,
@@ -167,7 +170,6 @@ function createErrorResult(
 function createTruncatedResult(
 	urls: Url[],
 	fileType: FileType,
-	originalCount: number,
 ): ExtractionResult {
 	const truncatedUrls = urls.slice(0, MAX_URL_COUNT);
 	return Object.freeze({
@@ -177,7 +179,7 @@ function createTruncatedResult(
 			{
 				category: 'parsing' as const,
 				severity: 'warning' as const,
-				message: `URL count (${originalCount}) exceeds limit (${MAX_URL_COUNT}), truncated results`,
+				message: `Too many URLs, truncated to ${MAX_URL_COUNT}`,
 				recoverable: true,
 				recoveryAction: 'truncate' as const,
 			},

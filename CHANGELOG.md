@@ -10,6 +10,21 @@ npm command line. The Rust CLI in `crate/` keeps its own
 [CHANGELOG](crate/CHANGELOG.md). From 2.5.0 every surface carries one
 version and releases from one tag.
 
+## [2.5.1] - 2026-10-17
+
+### Fixed
+
+- **The shared `extract_urls` tool now answers the same from both
+  servers on every input.** Over 10 MB, the extension counted UTF-16
+  units and reported a `parsing` warning, where the crate counts UTF-8
+  bytes and reports a `format` error with `ok: false`. The extension now
+  does what the crate does, and words the 50,000-URL cut the crate's way:
+  `Too many URLs, truncated to 50000`.
+- **`extract_urls` returns its keys sorted**, as the crate's server always
+  has, so the two servers' text is the same bytes as SPEC.md said it was.
+  `scripts/differential.ts` now compares that text byte for byte rather
+  than as parsed values.
+
 ## [2.5.0] - 2026-10-16
 
 ### Changed
