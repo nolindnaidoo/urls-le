@@ -1,4 +1,4 @@
-import * as toml from '@iarna/toml';
+import { loadToml, type TomlValue } from '../../parsers/toml/load';
 import type { Url } from '../../types';
 import {
 	locateParsedValues,
@@ -6,23 +6,28 @@ import {
 	toUnpositionedUrls,
 	toUrls,
 } from '../heuristics';
-import { collectStrings } from './collectStrings';
 
 /**
- * TOML (Cargo.toml, pyproject.toml): parse, walk string values, then
- * forward-locate each URL in the source for a real position — v1.x
- * returned no positions at all from this path. Comments never
- * contribute (the parser drops them). On a parse error the whole
- * content is scanned instead, now with positions.
+ * The crate's `toml`: toml 1.1 at preserve_order, its strings collected the
+ * way `serde_json::to_value` hands them over — a table's keys in byte order,
+ * since that `Map` sorts — then located in the source. A document that does
+ * not parse falls back to a scan of the whole text.
  */
 export function extractFromToml(content: string): readonly Url[] {
-	try {
-		const parsed = toml.parse(content);
-		const strings = collectStrings(parsed);
-		const { located, unlocated } = locateParsedValues(content, strings);
-		return [...toUrls(content, located), ...toUnpositionedUrls(unlocated)];
-	} catch (error) {
-		console.warn('[URLs-LE] TOML parsing failed, using fallback:', error);
-		return toUrls(content, scanUrls(content));
-	}
+	const parsed = loadToml(content);
+	if (typeof parsed === 'string') return toUrls(content, scanUrls(content));
+	const { located, unlocated } = locateParsedValues(content, strings(parsed));
+	return [...toUrls(content, located), ...toUnpositionedUrls(unlocated)];
+}
+
+/** Every string in the tree; a datetime's text is digits and never a URL. */
+function strings(value: TomlValue): string[] {
+	if (value.type === 'string') return [value.text];
+	if (value.type === 'array') return value.items.flatMap(strings);
+	if (value.type !== 'table') return [];
+	return [...value.entries]
+		.sort(([left], [right]) =>
+			Buffer.compare(Buffer.from(left), Buffer.from(right)),
+		)
+		.flatMap(([, item]) => strings(item));
 }

@@ -10,6 +10,19 @@ npm command line. The Rust CLI in `crate/` keeps its own
 [CHANGELOG](crate/CHANGELOG.md). From 2.5.0 every surface carries one
 version and releases from one tag.
 
+## [2.6.0] - 2026-10-17
+
+### Fixed
+
+- **TOML now parses exactly as the Rust crate does.** The extension, the
+  npm MCP server and the npm command line read TOML with `@iarna/toml`,
+  which follows TOML 0.5 and refuses documents the crate's TOML 1.0
+  parser reads. They now read with the transcription of the crate's
+  parser in `src/parsers/`, shared with units-le, and walk a table's
+  strings in the crate's order. A URL that cannot be placed in the source
+  (one written with an escape sequence) is now listed in that order too,
+  where it used to follow the file's.
+
 ## [2.5.2] - 2026-10-17
 
 ### Fixed

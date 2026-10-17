@@ -35,7 +35,12 @@ extraction/formats/*.ts   one extractor per format; scan-based ones filter the
                         properties: comment lines), parser-based ones
                         (json/toml/ini) walk tokens or values, and
                         plaintext.ts is the unfiltered scan every other
-                        languageId gets
+                        languageId gets. toml.ts reads with src/parsers/
+parsers/                jsonc-parser, saphyr, toml, rust-ini and csv,
+                        transcribed; urls-le reads TOML with it. Shared byte
+                        for byte with units-le, numbers-le, string-le and
+                        paths-le, held there by letools-site's fleet check, and
+                        held to the pinned crates by parsers.test.ts
 ui/                     notifier (window messages, gated by notificationsLevel:
                         all -> everything, important -> warn+error, silent ->
                         error only), statusBar
@@ -359,4 +364,4 @@ because skipping one is how the numbers drift apart again.
 
 - A URL ends at whitespace or any of ``< > " { } | \ ^ ` [ ] ; ) '`` — URLs containing raw spaces extract as space-terminated partials; trailing `.`/`,` are kept (legal URL characters).
 - YAML and JS/TS extraction includes comments by design (a URL in a commented-out line is still discoverable); Markdown code blocks, HTML comments, and Properties comment lines are excluded. A languageId with no extractor of its own gets the same unfiltered scan, so nothing in it is excluded either.
-- TOML/INI positions come from forward-locate over the source (no offsets from @iarna/toml or ini); repeated identical values resolve to successive occurrences, and values whose raw form differs from the parsed form (escape sequences) are reported without a position.
+- TOML/INI positions come from forward-locate over the source (no offsets from the TOML parser or the INI scan); repeated identical values resolve to successive occurrences, and values whose raw form differs from the parsed form (escape sequences) are reported without a position.
