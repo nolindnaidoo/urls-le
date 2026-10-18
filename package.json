@@ -3,7 +3,7 @@
 	"publisher": "nolindnaidoo",
 	"displayName": "URLs-LE: URL & Link Extractor",
 	"description": "URL and link extractor: find every URL in a codebase, with its protocol and exact position",
-	"version": "2.6.0",
+	"version": "2.6.1",
 	"license": "MIT",
 	"author": {
 		"name": "nolindnaidoo",

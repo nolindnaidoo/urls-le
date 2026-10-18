@@ -1,6 +1,6 @@
 {
 	"name": "urls-le-mcp",
-	"version": "2.6.0",
+	"version": "2.6.1",
 	"mcpName": "io.github.nolindnaidoo/urls-le",
 	"description": "MCP server that extracts URLs from documentation, config and code — the engine behind the URLs-LE editor extension.",
 	"keywords": [
