@@ -49,5 +49,6 @@
 	"{0} distinct URL(s), {1} occurrence(s) in {2} file(s)": "{2} 個のファイルに {0} 種類の URL、{1} 件の出現",
 	"No URLs found.": "URL が見つかりません。",
 	"URL": "URL",
-	"Occurrences": "出現回数"
+	"Occurrences": "出現回数",
+	"{0} file(s) could not be read.": "{0} 個のファイルを読み取れませんでした。"
 }

@@ -49,5 +49,6 @@
 	"{0} distinct URL(s), {1} occurrence(s) in {2} file(s)": "{2} 个文件中有 {0} 个不同的 URL，共出现 {1} 次",
 	"No URLs found.": "未找到 URL。",
 	"URL": "URL",
-	"Occurrences": "出现次数"
+	"Occurrences": "出现次数",
+	"{0} file(s) could not be read.": "{0} 个文件无法读取。"
 }

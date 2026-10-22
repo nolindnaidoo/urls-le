@@ -49,5 +49,6 @@
   "{0} distinct URL(s), {1} occurrence(s) in {2} file(s)": "{0} distinct URL(s), {1} occurrence(s) in {2} file(s)",
   "No URLs found.": "No URLs found.",
   "URL": "URL",
-  "Occurrences": "Occurrences"
+  "Occurrences": "Occurrences",
+  "{0} file(s) could not be read.": "{0} file(s) could not be read."
 }
