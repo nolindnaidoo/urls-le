@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import type { Telemetry } from '../telemetry/telemetry';
 import type { Notifier } from '../ui/notifier';
 import type { StatusBar } from '../ui/statusBar';
+import { guarded } from './guard';
 
 export function registerHelpCommand(
 	context: vscode.ExtensionContext,
@@ -11,10 +12,12 @@ export function registerHelpCommand(
 		statusBar: StatusBar;
 	}>,
 ): void {
-	const command = vscode.commands.registerCommand('urls-le.help', async () => {
-		deps.telemetry.event('command-help');
+	const command = vscode.commands.registerCommand(
+		'urls-le.help',
+		guarded(deps.notifier, async () => {
+			deps.telemetry.event('command-help');
 
-		const helpText = `
+			const helpText = `
 # URLs-LE Help
 
 ## Quick Start
@@ -53,15 +56,16 @@ Enjoying it? A rating helps more than you'd think:
 Built by nolindnaidoo (https://github.com/nolindnaidoo) — MIT licensed.
 		`.trim();
 
-		const doc = await vscode.workspace.openTextDocument({
-			content: helpText,
-			language: 'markdown',
-		});
-		await vscode.window.showTextDocument(doc, {
-			preview: false,
-			viewColumn: vscode.ViewColumn.Beside,
-		});
-	});
+			const doc = await vscode.workspace.openTextDocument({
+				content: helpText,
+				language: 'markdown',
+			});
+			await vscode.window.showTextDocument(doc, {
+				preview: false,
+				viewColumn: vscode.ViewColumn.Beside,
+			});
+		}),
+	);
 
 	context.subscriptions.push(command);
 }

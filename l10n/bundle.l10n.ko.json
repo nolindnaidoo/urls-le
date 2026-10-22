@@ -50,5 +50,6 @@
 	"No URLs found.": "URL을 찾을 수 없습니다.",
 	"URL": "URL",
 	"Occurrences": "등장 횟수",
-	"{0} file(s) could not be read.": "파일 {0}개를 읽을 수 없습니다."
+	"{0} file(s) could not be read.": "파일 {0}개를 읽을 수 없습니다.",
+	"URLs-LE could not finish: {0}": "URLs-LE을(를) 완료할 수 없습니다: {0}"
 }

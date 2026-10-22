@@ -50,5 +50,6 @@
 	"No URLs found.": "URL не найдены.",
 	"URL": "URL",
 	"Occurrences": "Вхождения",
-	"{0} file(s) could not be read.": "Не удалось прочитать файлов: {0}."
+	"{0} file(s) could not be read.": "Не удалось прочитать файлов: {0}.",
+	"URLs-LE could not finish: {0}": "URLs-LE не удалось завершить: {0}"
 }

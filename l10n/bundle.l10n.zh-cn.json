@@ -50,5 +50,6 @@
 	"No URLs found.": "未找到 URL。",
 	"URL": "URL",
 	"Occurrences": "出现次数",
-	"{0} file(s) could not be read.": "{0} 个文件无法读取。"
+	"{0} file(s) could not be read.": "{0} 个文件无法读取。",
+	"URLs-LE could not finish: {0}": "URLs-LE 无法完成：{0}"
 }

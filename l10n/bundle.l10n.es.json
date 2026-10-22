@@ -50,5 +50,6 @@
 	"No URLs found.": "No se encontraron URL.",
 	"URL": "URL",
 	"Occurrences": "Apariciones",
-	"{0} file(s) could not be read.": "{0} archivo(s) no se pudieron leer."
+	"{0} file(s) could not be read.": "{0} archivo(s) no se pudieron leer.",
+	"URLs-LE could not finish: {0}": "URLs-LE no pudo terminar: {0}"
 }

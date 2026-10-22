@@ -50,5 +50,6 @@
 	"No URLs found.": "Tidak ada URL yang ditemukan.",
 	"URL": "URL",
 	"Occurrences": "Kemunculan",
-	"{0} file(s) could not be read.": "{0} file tidak dapat dibaca."
+	"{0} file(s) could not be read.": "{0} file tidak dapat dibaca.",
+	"URLs-LE could not finish: {0}": "URLs-LE tidak dapat menyelesaikan: {0}"
 }

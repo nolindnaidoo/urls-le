@@ -3,6 +3,7 @@ import type { Notifier } from '../ui/notifier';
 import { replaceDocumentContent } from '../utils/document';
 import { sanitizeErrorMessage } from '../utils/errors';
 import { onValues } from '../utils/positions';
+import { guarded } from './guard';
 
 type SortOrder = 'asc' | 'desc' | 'domain' | 'length-asc' | 'length-desc';
 
@@ -17,7 +18,7 @@ export function registerSortCommand(
 ): void {
 	const command = vscode.commands.registerCommand(
 		'urls-le.postProcess.sort',
-		async () => executeSortCommand(notifier),
+		guarded(notifier, async () => executeSortCommand(notifier)),
 	);
 
 	context.subscriptions.push(command);

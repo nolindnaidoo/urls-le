@@ -50,5 +50,6 @@
 	"No URLs found.": "URL が見つかりません。",
 	"URL": "URL",
 	"Occurrences": "出現回数",
-	"{0} file(s) could not be read.": "{0} 個のファイルを読み取れませんでした。"
+	"{0} file(s) could not be read.": "{0} 個のファイルを読み取れませんでした。",
+	"URLs-LE could not finish: {0}": "URLs-LE を完了できませんでした: {0}"
 }

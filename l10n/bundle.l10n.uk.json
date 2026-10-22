@@ -50,5 +50,6 @@
 	"No URLs found.": "URL не знайдено.",
 	"URL": "URL",
 	"Occurrences": "Входження",
-	"{0} file(s) could not be read.": "Не вдалося прочитати файлів: {0}."
+	"{0} file(s) could not be read.": "Не вдалося прочитати файлів: {0}.",
+	"URLs-LE could not finish: {0}": "URLs-LE не вдалося завершити: {0}"
 }
