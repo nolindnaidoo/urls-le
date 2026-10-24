@@ -49,5 +49,7 @@
 	"{0} distinct URL(s), {1} occurrence(s) in {2} file(s)": "{0} URL(s) distinta(s), {1} ocorrência(s) em {2} arquivo(s)",
 	"No URLs found.": "Nenhuma URL encontrada.",
 	"URL": "URL",
-	"Occurrences": "Ocorrências"
+	"Occurrences": "Ocorrências",
+	"{0} file(s) could not be read.": "{0} arquivo(s) não puderam ser lidos.",
+	"URLs-LE could not finish: {0}": "O URLs-LE não pôde concluir: {0}"
 }

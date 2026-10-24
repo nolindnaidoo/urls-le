@@ -7,6 +7,7 @@ import { sanitizeErrorMessage } from '../utils/errors';
 import { bareValue, onValues, withPosition } from '../utils/positions';
 import { handleSafetyChecks } from '../utils/safety';
 import type { CommandDependencies } from './dependencies';
+import { guarded } from './guard';
 import { displayResults } from './output';
 
 export function registerExtractCommand(
@@ -15,7 +16,7 @@ export function registerExtractCommand(
 ): void {
 	const command = vscode.commands.registerCommand(
 		'urls-le.extractUrls',
-		async () => executeExtractCommand(deps),
+		guarded(deps.notifier, async () => executeExtractCommand(deps)),
 	);
 
 	context.subscriptions.push(command);

@@ -3,6 +3,7 @@ import type { Notifier } from '../ui/notifier';
 import { replaceDocumentContent } from '../utils/document';
 import { sanitizeErrorMessage } from '../utils/errors';
 import { hasPosition, onValues } from '../utils/positions';
+import { guarded } from './guard';
 
 export function registerDedupeCommand(
 	context: vscode.ExtensionContext,
@@ -10,7 +11,7 @@ export function registerDedupeCommand(
 ): void {
 	const command = vscode.commands.registerCommand(
 		'urls-le.postProcess.dedupe',
-		async () => executeDedupeCommand(notifier),
+		guarded(notifier, async () => executeDedupeCommand(notifier)),
 	);
 
 	context.subscriptions.push(command);

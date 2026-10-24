@@ -49,5 +49,7 @@
 	"{0} distinct URL(s), {1} occurrence(s) in {2} file(s)": "{0} URL berbeda, {1} kemunculan dalam {2} file",
 	"No URLs found.": "Tidak ada URL yang ditemukan.",
 	"URL": "URL",
-	"Occurrences": "Kemunculan"
+	"Occurrences": "Kemunculan",
+	"{0} file(s) could not be read.": "{0} file tidak dapat dibaca.",
+	"URLs-LE could not finish: {0}": "URLs-LE tidak dapat menyelesaikan: {0}"
 }

@@ -49,5 +49,7 @@
 	"{0} distinct URL(s), {1} occurrence(s) in {2} file(s)": "Різних URL: {0}, входжень: {1}, файлів: {2}",
 	"No URLs found.": "URL не знайдено.",
 	"URL": "URL",
-	"Occurrences": "Входження"
+	"Occurrences": "Входження",
+	"{0} file(s) could not be read.": "Не вдалося прочитати файлів: {0}.",
+	"URLs-LE could not finish: {0}": "URLs-LE не вдалося завершити: {0}"
 }

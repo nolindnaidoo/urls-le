@@ -49,5 +49,7 @@
 	"{0} distinct URL(s), {1} occurrence(s) in {2} file(s)": "{0} URL khác nhau, {1} lần xuất hiện trong {2} tệp",
 	"No URLs found.": "Không tìm thấy URL nào.",
 	"URL": "URL",
-	"Occurrences": "Số lần xuất hiện"
+	"Occurrences": "Số lần xuất hiện",
+	"{0} file(s) could not be read.": "Không thể đọc {0} tệp.",
+	"URLs-LE could not finish: {0}": "URLs-LE không thể hoàn thành: {0}"
 }

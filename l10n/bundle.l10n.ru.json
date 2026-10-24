@@ -49,5 +49,7 @@
 	"{0} distinct URL(s), {1} occurrence(s) in {2} file(s)": "Различных URL: {0}, вхождений: {1}, файлов: {2}",
 	"No URLs found.": "URL не найдены.",
 	"URL": "URL",
-	"Occurrences": "Вхождения"
+	"Occurrences": "Вхождения",
+	"{0} file(s) could not be read.": "Не удалось прочитать файлов: {0}.",
+	"URLs-LE could not finish: {0}": "URLs-LE не удалось завершить: {0}"
 }
