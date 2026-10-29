@@ -89,7 +89,7 @@ describe('urls-le.postProcess.dedupe', () => {
 
 		expect(appliedEdits).toHaveLength(1);
 		expect(appliedEdits[0]?.replacements[0]?.newText).toBe(
-			'https://a.com\nhttps://b.com\nhttps://c.com',
+			'https://a.com\nhttps://b.com\nhttps://c.com\n',
 		);
 		// 5 non-empty lines, 3 unique -> 2 duplicates (blank lines not counted)
 		expect(_shownMessages()[0]?.message).toBe(
@@ -109,7 +109,7 @@ describe('urls-le.postProcess.dedupe', () => {
 
 		// Whole lines all differ here. Only by URL is there a duplicate at all.
 		expect(appliedEdits[0]?.replacements[0]?.newText).toBe(
-			'1:1\thttps://a.com\n2:1\thttps://b.com',
+			'1:1\thttps://a.com\n2:1\thttps://b.com\n',
 		);
 		expect(_shownMessages()[0]?.message).toBe(
 			'Removed 1 duplicate URLs (2 remaining). Each value shows its first position only.',
@@ -125,6 +125,79 @@ describe('urls-le.postProcess.dedupe', () => {
 
 		expect(appliedEdits).toHaveLength(1); // the edit still happens
 		expect(_shownMessages()).toHaveLength(0); // the toast does not
+	});
+});
+
+describe('a line command keeps the document’s terminator', () => {
+	// Both commands split the document on newlines and wrote the lines back
+	// joined with one, so a document ending in a newline lost it, and a CRLF
+	// document was written back with bare newlines. A blank line inside is
+	// dropped on purpose, and an empty document stays empty.
+	async function dedupe(content: string): Promise<string | undefined> {
+		_setConfig('urls-le.notificationsLevel', 'all');
+		registerDedupeCommand(makeContext(), createNotifier());
+		_setActiveEditor(_createDocument({ content }));
+		await runCommand('urls-le.postProcess.dedupe');
+		return appliedEdits[0]?.replacements[0]?.newText;
+	}
+
+	async function sort(content: string): Promise<string | undefined> {
+		_setConfig('urls-le.notificationsLevel', 'all');
+		registerSortCommand(makeContext(), createNotifier());
+		_setActiveEditor(_createDocument({ content }));
+		_respondToQuickPick(
+			(items) =>
+				(items as Array<{ label: string; value: string }>).find(
+					(item) => item.value === 'asc',
+				) ?? items[0],
+		);
+		await runCommand('urls-le.postProcess.sort');
+		return appliedEdits[0]?.replacements[0]?.newText;
+	}
+
+	it('dedupe keeps a trailing newline, and adds none where there was none', async () => {
+		expect(await dedupe('https://b.com\nhttps://a.com\nhttps://b.com\n')).toBe(
+			'https://b.com\nhttps://a.com\n',
+		);
+		_resetMockState();
+		expect(await dedupe('https://b.com\nhttps://a.com\nhttps://b.com')).toBe(
+			'https://b.com\nhttps://a.com',
+		);
+	});
+
+	it('dedupe writes CRLF back to a CRLF document', async () => {
+		expect(
+			await dedupe('https://b.com\r\nhttps://a.com\r\nhttps://b.com\r\n'),
+		).toBe('https://b.com\r\nhttps://a.com\r\n');
+	});
+
+	it('dedupe drops a blank line inside and does not count it, and leaves an empty document empty', async () => {
+		expect(await dedupe('https://b.com\n\nhttps://a.com\n')).toBe(
+			'https://b.com\nhttps://a.com\n',
+		);
+		expect(_shownMessages()[0]?.message).toBe(
+			'Removed 0 duplicate URLs (2 remaining)',
+		);
+		_resetMockState();
+		expect(await dedupe('')).toBe('');
+	});
+
+	it('sort keeps a trailing newline, and adds none where there was none', async () => {
+		expect(await sort('https://b.com\nhttps://a.com\n')).toBe(
+			'https://a.com\nhttps://b.com\n',
+		);
+		_resetMockState();
+		expect(await sort('https://b.com\nhttps://a.com')).toBe(
+			'https://a.com\nhttps://b.com',
+		);
+	});
+
+	it('sort writes CRLF back to a CRLF document, and never puts a blank line first', async () => {
+		expect(await sort('https://b.com\r\n\r\nhttps://a.com\r\n')).toBe(
+			'https://a.com\r\nhttps://b.com\r\n',
+		);
+		_resetMockState();
+		expect(await sort('')).toBe('');
 	});
 });
 

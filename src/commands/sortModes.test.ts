@@ -45,7 +45,7 @@ function pickMode(value: string): void {
 const URLS =
 	'https://zeta.example.com/a\nhttps://alpha.example.com/bbbb\nhttps://mid.example.org/cc\n';
 
-/** The document as written after the sort, and the message shown. */
+/** The document as written after the sort, and the message shown. The input ends in a newline, so the output does. */
 function sorted(): { written: string | undefined; messages: string[] } {
 	return {
 		written: appliedEdits[0]?.replacements[0]?.newText,
@@ -73,7 +73,7 @@ describe('sort modes', () => {
 		await runSort();
 		expect(sorted()).toEqual({
 			written:
-				'https://alpha.example.com/bbbb\nhttps://mid.example.org/cc\nhttps://zeta.example.com/a',
+				'https://alpha.example.com/bbbb\nhttps://mid.example.org/cc\nhttps://zeta.example.com/a\n',
 			messages: ['info:Sorted 3 URLs (Alphabetical (A → Z))'],
 		});
 	});
@@ -84,7 +84,7 @@ describe('sort modes', () => {
 		await runSort();
 		expect(sorted()).toEqual({
 			written:
-				'https://zeta.example.com/a\nhttps://mid.example.org/cc\nhttps://alpha.example.com/bbbb',
+				'https://zeta.example.com/a\nhttps://mid.example.org/cc\nhttps://alpha.example.com/bbbb\n',
 			messages: ['info:Sorted 3 URLs (Alphabetical (Z → A))'],
 		});
 	});
@@ -101,7 +101,7 @@ describe('sort modes', () => {
 		await runSort();
 		expect(sorted()).toEqual({
 			written:
-				'https://alpha.example.com/zzz\nhttps://mid.example.org/cc\nhttps://zeta.example.com/a',
+				'https://alpha.example.com/zzz\nhttps://mid.example.org/cc\nhttps://zeta.example.com/a\n',
 			messages: ['info:Sorted 3 URLs (By Domain)'],
 		});
 	});
@@ -112,7 +112,7 @@ describe('sort modes', () => {
 		await runSort();
 		expect(sorted()).toEqual({
 			written:
-				'https://zeta.example.com/a\nhttps://mid.example.org/cc\nhttps://alpha.example.com/bbbb',
+				'https://zeta.example.com/a\nhttps://mid.example.org/cc\nhttps://alpha.example.com/bbbb\n',
 			messages: ['info:Sorted 3 URLs (By Length (Short → Long))'],
 		});
 	});
@@ -123,7 +123,7 @@ describe('sort modes', () => {
 		await runSort();
 		expect(sorted()).toEqual({
 			written:
-				'https://alpha.example.com/bbbb\nhttps://zeta.example.com/a\nhttps://mid.example.org/cc',
+				'https://alpha.example.com/bbbb\nhttps://zeta.example.com/a\nhttps://mid.example.org/cc\n',
 			messages: ['info:Sorted 3 URLs (By Length (Long → Short))'],
 		});
 	});

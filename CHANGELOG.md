@@ -14,6 +14,11 @@ version and releases from one tag.
 
 ### Fixed
 
+- Deduplicate and Sort wrote the lines back joined with a bare newline and
+  nothing after the last, so a document that ended in a newline lost it on
+  every run, and a CRLF document was handed bare newlines. Both write the
+  document's own line ending, and end in one exactly when the document did.
+  Extract's in-place route does the same.
 - A Markdown block fenced with `~~~` was read as text, so a URL inside it
   was extracted, while a block fenced with backticks was skipped as the
   README says fenced blocks are. Both markers open a fence now, and only

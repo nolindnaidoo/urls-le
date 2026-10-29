@@ -134,11 +134,16 @@ export interface MockDocumentInit {
 	readonly fileName?: string;
 }
 
+/** `vscode.EndOfLine`: what `TextDocument.eol` reports. */
+export const EndOfLine = { LF: 1, CRLF: 2 } as const;
+
 export function _createDocument(init: MockDocumentInit) {
 	const content = init.content;
 	const lines = content.split('\n');
 	return {
 		getText: () => content,
+		// The host reads the ending from the first line break it finds.
+		eol: content.includes('\r\n') ? EndOfLine.CRLF : EndOfLine.LF,
 		languageId: init.languageId ?? 'plaintext',
 		fileName: init.fileName ?? '/mock/document.txt',
 		uri: Uri.file(init.fileName ?? '/mock/document.txt'),

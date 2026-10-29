@@ -37,7 +37,7 @@ export async function displayResults(
 		return await openInNewFile(content, token, deps);
 	}
 
-	return await replaceInPlace(document, content, token, deps);
+	return await replaceInPlace(document, formattedUrls, token, deps);
 }
 
 async function openBeside(
@@ -89,16 +89,17 @@ async function openInNewFile(
 
 async function replaceInPlace(
 	document: vscode.TextDocument,
-	content: string,
+	lines: readonly string[],
 	token: vscode.CancellationToken,
 	deps: CommandDependencies,
 ): Promise<boolean> {
 	if (token.isCancellationRequested) return false;
 
 	try {
-		// The shared helper owns the full-document range and returns whether the
-		// edit landed; this file used to carry a second copy of both.
-		const applied = await replaceDocumentContent(document, [content]);
+		// The shared helper owns the full-document range, the document's line
+		// ending and whether the edit landed; this file used to carry a second
+		// copy of all three.
+		const applied = await replaceDocumentContent(document, lines);
 		if (!applied) {
 			deps.notifier.showError(
 				vscode.l10n.t('Failed to apply edits to document'),
