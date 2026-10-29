@@ -284,6 +284,41 @@ mod tests {
         assert_eq!(documented, implemented);
     }
 
+    /// The README and the SPEC each carry an options block for a reader
+    /// who never runs `--help`. Each names every flag the parser accepts
+    /// and no other: the README had left out `--strict`, and the SPEC
+    /// `--strict` and `--follow-symlinks`.
+    #[test]
+    fn the_readme_and_the_spec_name_every_flag() {
+        let mut implemented = FLAGS.to_vec();
+        implemented.sort_unstable();
+        for (name, heading, text) in [
+            ("README.md", "\n## Options\n", include_str!("../README.md")),
+            (
+                "SPEC.md",
+                "\n## The CLI surface\n",
+                include_str!("../SPEC.md"),
+            ),
+        ] {
+            let after = text.split_once(heading).map_or_else(
+                || panic!("{name} has no {heading:?} heading"),
+                |(_, rest)| rest,
+            );
+            let block = after
+                .split("```")
+                .nth(1)
+                .unwrap_or_else(|| panic!("{name}: no fenced block under {heading:?}"));
+            let mut documented: Vec<&str> = block
+                .split_whitespace()
+                .filter(|word| word.starts_with("--"))
+                .filter(|word| !matches!(*word, "--version" | "--help"))
+                .collect();
+            documented.sort_unstable();
+            documented.dedup();
+            assert_eq!(documented, implemented, "{name}");
+        }
+    }
+
     #[test]
     fn the_parser_accepts_every_flag_it_lists() {
         for flag in FLAGS {

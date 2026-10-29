@@ -158,6 +158,8 @@ not fail the run unless you ask with `--strict`.
 --dedupe             collapse repeated URLs to their first occurrence
 --format <format>    force a format instead of inferring from the name
 --stdin              read one document from stdin
+--strict             exit 2 if any file could not be read, rather than
+                     reporting it and carrying on
 --follow-symlinks    descend symlinked directories when walking a tree
 --hidden             walk hidden files and directories too
 --no-ignore          walk files that .gitignore excludes
