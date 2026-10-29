@@ -21,7 +21,7 @@
 	"manifest.settings.safety.warn.file-size.desc": "Refuser l'extraction lorsque la taille du fichier dépasse ce seuil en octets",
 	"manifest.settings.safety.warn.large-output.desc": "Avertir avant l'extraction lorsque le nombre de lignes du document dépasse ce seuil",
 	"manifest.settings.show.positions.desc": "Afficher la ligne et la colonne de chaque résultat",
-	"manifest.settings.statusbar.enabled.desc": "Afficher l'entrée de la barre d'état URL-LE pour un accès rapide",
+	"manifest.settings.statusbar.enabled.desc": "Afficher l'entrée de la barre d'état URLs-LE pour un accès rapide",
 	"manifest.settings.telemetry.desc": "Activer les journaux de télémétrie locaux uniquement dans le panneau de sortie",
 	"manifest.settings.title": "Paramètres URLs-LE",
 	"manifest.mcp.label": "URLs-LE : outils d'extraction d'URL pour le mode agent",

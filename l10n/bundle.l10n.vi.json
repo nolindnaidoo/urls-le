@@ -5,7 +5,7 @@
 	"Later": "Để sau",
 	"Don't Ask Again": "Không hỏi lại",
 	"Large file: {0} lines (threshold: {1}); extraction may be slow": "Tệp lớn: {0} dòng (ngưỡng: {1}); việc trích xuất có thể chậm",
-	"URLs-LE: Ready": "$(link) URLs-LE",
+	"URLs-LE: Ready": "URLs-LE: Sẵn sàng",
 	"URLs-LE: URL extraction": "URLs-LE: Trích xuất URL",
 	"URLs-LE: Extracting...": "URLs-LE: Đang trích xuất…",
 	"No active editor found": "Không tìm thấy trình chỉnh sửa hoạt động",

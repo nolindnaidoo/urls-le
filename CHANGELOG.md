@@ -14,6 +14,15 @@ version and releases from one tag.
 
 ### Fixed
 
+- The status bar read "$(link) URLs-LE" in Japanese, Portuguese, Russian,
+  Ukrainian, Vietnamese and Chinese, the text of a version that had an icon
+  and no word, and "URL-LE: Listo" in Spanish; the status bar setting's
+  description named the product "URL-LE" in eight languages. Every catalogue
+  carries the product name as written and the words the English has.
+- A failure whose thrown value was not an Error was reported as "Unknown
+  error", "Unknown error occurred" or "Unknown clipboard error" in every
+  language, and a denied clipboard was reported in English. All go through
+  the bundle.
 - A folder or workspace scan that reached the results limit inside the last
   file dropped the URLs after it without a word, since the note was tied to
   files left unread. The report says when the limit was reached inside a

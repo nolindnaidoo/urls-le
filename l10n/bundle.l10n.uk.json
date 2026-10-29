@@ -5,7 +5,7 @@
 	"Later": "Пізніше",
 	"Don't Ask Again": "Більше не питати",
 	"Large file: {0} lines (threshold: {1}); extraction may be slow": "Великий файл: {0} рядків (поріг: {1}); видобування може бути повільним",
-	"URLs-LE: Ready": "$(link) URL-адреси-LE",
+	"URLs-LE: Ready": "URLs-LE: Готово",
 	"URLs-LE: URL extraction": "URLs-LE: видобування URL",
 	"URLs-LE: Extracting...": "URLs-LE: видобування…",
 	"No active editor found": "Не знайдено активного редактора",

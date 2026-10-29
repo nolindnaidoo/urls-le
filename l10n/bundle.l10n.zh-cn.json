@@ -5,7 +5,7 @@
 	"Later": "稍后",
 	"Don't Ask Again": "不再询问",
 	"Large file: {0} lines (threshold: {1}); extraction may be slow": "大文件：{0} 行（阈值：{1}）；提取可能较慢",
-	"URLs-LE: Ready": "$(link) URLs-LE",
+	"URLs-LE: Ready": "URLs-LE：就绪",
 	"URLs-LE: URL extraction": "URLs-LE：URL 提取",
 	"URLs-LE: Extracting...": "URLs-LE：正在提取…",
 	"No active editor found": "未找到活动编辑器",

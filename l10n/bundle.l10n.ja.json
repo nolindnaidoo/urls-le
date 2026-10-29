@@ -5,7 +5,7 @@
 	"Later": "後で",
 	"Don't Ask Again": "今後表示しない",
 	"Large file: {0} lines (threshold: {1}); extraction may be slow": "大きなファイル: {0} 行 (しきい値: {1})。抽出に時間がかかる場合があります",
-	"URLs-LE: Ready": "$(link) URLs-LE",
+	"URLs-LE: Ready": "URLs-LE: 準備完了",
 	"URLs-LE: URL extraction": "URLs-LE: URL 抽出",
 	"URLs-LE: Extracting...": "URLs-LE: 抽出中…",
 	"No active editor found": "アクティブなエディタが見つかりません",

@@ -21,7 +21,7 @@
 	"manifest.settings.safety.warn.file-size.desc": "Отклонять извлечение, если размер файла превышает этот порог в байтах",
 	"manifest.settings.safety.warn.large-output.desc": "Предупреждать перед извлечением, если количество строк в документе превышает этот порог",
 	"manifest.settings.show.positions.desc": "Показывать строку и столбец каждого результата",
-	"manifest.settings.statusbar.enabled.desc": "Показывать строку состояния URL-LE для быстрого доступа",
+	"manifest.settings.statusbar.enabled.desc": "Показывать строку состояния URLs-LE для быстрого доступа",
 	"manifest.settings.telemetry.desc": "Включить локальные журналы телеметрии в панели вывода",
 	"manifest.settings.title": "Настройки URLs-LE",
 	"manifest.mcp.label": "URLs-LE — инструменты для извлечения URL-адресов в режиме агента",

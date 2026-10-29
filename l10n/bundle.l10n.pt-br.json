@@ -5,7 +5,7 @@
 	"Later": "Mais tarde",
 	"Don't Ask Again": "Não perguntar novamente",
 	"Large file: {0} lines (threshold: {1}); extraction may be slow": "Arquivo grande: {0} linhas (limite: {1}); a extração pode ser lenta",
-	"URLs-LE: Ready": "$(link) URLs-LE",
+	"URLs-LE: Ready": "URLs-LE: Pronto",
 	"URLs-LE: URL extraction": "URLs-LE: extração de URL",
 	"URLs-LE: Extracting...": "URLs-LE: extraindo…",
 	"No active editor found": "Nenhum editor ativo encontrado",
