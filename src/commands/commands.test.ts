@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
 	_clipboardText,
 	_createDocument,
+	_openedDocuments,
 	_registeredCommands,
 	_resetMockState,
 	_respondToQuickPick,
@@ -125,6 +126,70 @@ describe('urls-le.postProcess.dedupe', () => {
 
 		expect(appliedEdits).toHaveLength(1); // the edit still happens
 		expect(_shownMessages()).toHaveLength(0); // the toast does not
+	});
+});
+
+describe('two invocations at once', () => {
+	// Nothing serialises the commands: a second extract can start while the
+	// first is awaiting the host. Each must reach its own result with no state
+	// shared between them but the status bar, whose later text wins.
+	it('two extracts started together each open their own results', async () => {
+		const events: string[] = [];
+		registerExtractCommand(makeContext(), makeDeps(events));
+		_setConfig('urls-le.notificationsLevel', 'all');
+		_setActiveEditor(
+			_createDocument({
+				content: 'see https://a.example and https://b.example\n',
+				languageId: 'markdown',
+			}),
+		);
+		const handler = _registeredCommands().get('urls-le.extractUrls');
+		if (!handler) throw new Error('extract command not registered');
+		await Promise.all([handler(), handler()]);
+		expect(_openedDocuments().map((d) => d.getText())).toEqual([
+			'https://a.example\nhttps://b.example',
+			'https://a.example\nhttps://b.example',
+		]);
+		expect(events.filter((e) => e.startsWith('info:'))).toEqual([
+			'info:Extracted 2 URLs',
+			'info:Extracted 2 URLs',
+		]);
+		expect(events.filter((e) => e.startsWith('error:'))).toEqual([]);
+	});
+
+	it('a dedupe and a sort started together each write their own document', async () => {
+		_setConfig('urls-le.notificationsLevel', 'all');
+		registerDedupeCommand(makeContext(), createNotifier());
+		registerSortCommand(makeContext(), createNotifier());
+		_setActiveEditor(
+			_createDocument({
+				content: 'https://b.example\nhttps://a.example\nhttps://b.example\n',
+			}),
+		);
+		_respondToQuickPick(
+			(items) =>
+				(items as Array<{ label: string; value: string }>).find(
+					(item) => item.value === 'asc',
+				) ?? items[0],
+		);
+		const dedupe = _registeredCommands().get('urls-le.postProcess.dedupe');
+		const sort = _registeredCommands().get('urls-le.postProcess.sort');
+		if (!dedupe || !sort) throw new Error('commands not registered');
+		await Promise.all([dedupe(), sort()]);
+		expect(
+			appliedEdits.map((edit) => edit.replacements[0]?.newText).sort(),
+		).toEqual([
+			'https://a.example\nhttps://b.example\nhttps://b.example\n',
+			'https://b.example\nhttps://a.example\n',
+		]);
+		expect(
+			_shownMessages()
+				.map((m) => m.message)
+				.sort(),
+		).toEqual([
+			'Removed 1 duplicate URLs (2 remaining)',
+			'Sorted 3 URLs (Alphabetical (A → Z))',
+		]);
 	});
 });
 
