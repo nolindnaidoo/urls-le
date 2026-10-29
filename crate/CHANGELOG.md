@@ -8,6 +8,16 @@ in this repository carries one version and releases from one tag.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- A Markdown block fenced with `~~~` was read as text, so a URL inside it
+  was extracted, while a block fenced with backticks was skipped. Both
+  markers open a fence now, and only the marker that opened one closes
+  it, as CommonMark reads them. The extension changed the same way; the
+  corpus document carries a tilde block.
+
 ## [2.6.1] - 2026-10-18
 
 ### Changed

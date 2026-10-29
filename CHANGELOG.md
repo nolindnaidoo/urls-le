@@ -14,6 +14,11 @@ version and releases from one tag.
 
 ### Fixed
 
+- A Markdown block fenced with `~~~` was read as text, so a URL inside it
+  was extracted, while a block fenced with backticks was skipped as the
+  README says fenced blocks are. Both markers open a fence now, and only
+  the marker that opened one closes it, as CommonMark reads them. The same
+  change in the crate, so the shared tool answers alike.
 - A number setting cleared to an empty string or null read as 0 and was
   clamped to its floor, so the size guard became 1,000 bytes. It falls back
   to the default.

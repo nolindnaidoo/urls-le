@@ -57,18 +57,26 @@ fn markdown(content: &str) -> Vec<Url> {
     to_urls(content, &matches)
 }
 
-/// 1-based line numbers inside a triple-backtick fenced block, and
-/// the fence lines themselves.
+const FENCES: [&str; 2] = ["```", "~~~"];
+
+/// 1-based line numbers inside a fenced block, and the fence lines
+/// themselves. A fence is three backticks or three tildes, and only the
+/// marker that opened a block closes it, as `CommonMark` reads them: a
+/// tilde line inside a backtick block is text, and the other way round.
+/// Only backticks were read as fences, so a URL in a tilde block was
+/// extracted on both sides.
 fn fenced_lines(lines: &[&str]) -> Vec<usize> {
     let mut fenced = Vec::new();
-    let mut in_block = false;
+    let mut open: Option<&str> = None;
     for (index, line) in lines.iter().enumerate() {
-        let is_fence = js::trim_start(line).starts_with("```");
-        if is_fence || in_block {
+        let trimmed = js::trim_start(line);
+        let marker = FENCES.into_iter().find(|fence| trimmed.starts_with(fence));
+        let is_fence = open.map_or(marker.is_some(), |opened| marker == Some(opened));
+        if is_fence || open.is_some() {
             fenced.push(index + 1);
         }
         if is_fence {
-            in_block = !in_block;
+            open = if open.is_none() { marker } else { None };
         }
     }
     fenced
@@ -353,6 +361,24 @@ mod tests {
     fn a_fenced_block_is_excluded_from_markdown() {
         let content = "see https://a.example\n\n```\nhttps://b.example\n```\n";
         assert_eq!(values(content, FileType::Markdown), ["https://a.example"]);
+    }
+
+    /// A fence is three backticks or three tildes, and the closing fence
+    /// uses the same marker: a backtick line inside a tilde block is text,
+    /// and a tilde line inside a backtick block is text.
+    #[test]
+    fn a_tilde_fenced_block_is_excluded_from_markdown() {
+        let content = "intro https://a.example\n~~~\nhttps://fenced.example\n```\n\
+                       https://still-fenced.example\n~~~\nsee https://b.example\n```\n~~~\n\
+                       https://inside-backticks.example\n```\nhttps://c.example\n";
+        assert_eq!(
+            values(content, FileType::Markdown),
+            [
+                "https://a.example",
+                "https://b.example",
+                "https://c.example"
+            ]
+        );
     }
 
     #[test]

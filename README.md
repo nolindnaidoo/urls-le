@@ -251,7 +251,7 @@ opinions.
 
 | Format | Language IDs | Notes |
 |---|---|---|
-| Markdown | `markdown` | Fenced code blocks and inline code excluded |
+| Markdown | `markdown` | Fenced code blocks (``` or `~~~`) and inline code excluded |
 | HTML | `html` | `<!-- -->` comments excluded (multi-line supported) |
 | CSS | `css` | Quoted or bare `url(...)`, `@import` |
 | JavaScript / TypeScript | `javascript`, `typescript` | Strings, template literals, comments |
