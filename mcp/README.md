@@ -128,23 +128,28 @@ documented as carefully as what it does — see the
 `io.github.nolindnaidoo/urls-le` —
 [registry.modelcontextprotocol.io](https://registry.modelcontextprotocol.io)
 
-## Nine more like it
+## Fifteen more like it
 
 One tool each, same shape: content in, structured data out, no network and no
-filesystem. Every one is on npm as `<name>-mcp` and in the MCP registry as
-`io.github.nolindnaidoo/<name>`.
+filesystem. Every one is on npm as `<name>-mcp`.
 
 | Package | Tool | Extracts |
 |---|---|---|
+| [`string-le-mcp`](https://www.npmjs.com/package/string-le-mcp) | `extract_strings` | string values |
+| [`numbers-le-mcp`](https://www.npmjs.com/package/numbers-le-mcp) | `extract_numbers` | numeric values |
+| [`paths-le-mcp`](https://www.npmjs.com/package/paths-le-mcp) | `extract_paths` | file and directory paths |
 | [`colors-le-mcp`](https://www.npmjs.com/package/colors-le-mcp) | `extract_colors` | colors from stylesheets and code |
 | [`dates-le-mcp`](https://www.npmjs.com/package/dates-le-mcp) | `extract_dates` | dates and timestamps |
-| [`paths-le-mcp`](https://www.npmjs.com/package/paths-le-mcp) | `extract_paths` | file and directory paths |
-| [`numbers-le-mcp`](https://www.npmjs.com/package/numbers-le-mcp) | `extract_numbers` | numeric values |
-| [`string-le-mcp`](https://www.npmjs.com/package/string-le-mcp) | `extract_strings` | string values |
+| [`units-le-mcp`](https://www.npmjs.com/package/units-le-mcp) | `extract_units` | quantities with their units, normalized |
+| [`ids-le-mcp`](https://www.npmjs.com/package/ids-le-mcp) | `extract_ids` | UUIDs, ULIDs, NanoIDs, ObjectIds and Snowflakes |
+| [`ips-le-mcp`](https://www.npmjs.com/package/ips-le-mcp) | `extract_ips` | IP addresses, CIDR blocks and MACs |
 | [`regex-le-mcp`](https://www.npmjs.com/package/regex-le-mcp) | `extract_patterns` | regexes, with a ReDoS verdict |
+| [`versions-le-mcp`](https://www.npmjs.com/package/versions-le-mcp) | `compare_versions` | where one dependency is constrained differently |
+| [`i18n-le-mcp`](https://www.npmjs.com/package/i18n-le-mcp) | `check_catalogues` | an i18n catalog set, audited by its library's rules |
+| [`scrape-le-mcp`](https://www.npmjs.com/package/scrape-le-mcp) | `analyze_robots_txt` | whether a path may be crawled |
 | [`secrets-le-mcp`](https://www.npmjs.com/package/secrets-le-mcp) | `detect_secrets` | credentials, masked — never the value |
 | [`envsync-le-mcp`](https://www.npmjs.com/package/envsync-le-mcp) | `compare_env_files` | dotenv key drift, names only |
-| [`scrape-le-mcp`](https://www.npmjs.com/package/scrape-le-mcp) | `analyze_robots_txt` | whether a path may be crawled |
+| [`unicode-le-mcp`](https://www.npmjs.com/package/unicode-le-mcp) | `detect_unicode_risks` | the Unicode that hides meaning |
 
 Every tool in the family, one page: **[letools.dev](https://letools.dev)**
 
@@ -157,26 +162,32 @@ Architecture. [nolindnaidoo.com](https://nolindnaidoo.com) ·
 
 ### Also from the same workshop
 
-Twelve Rust tools built the same way: small, single-purpose, and driven by a
+Eighteen Rust tools built the same way: small, single-purpose, and driven by a
 machine rather than a person. pixelcoords and pixelactions make up one loop —
-pixelcoords answers *where*, pixelactions *acts* there. The ten LE crates are
-the terminal half of the extensions they sit in: the same detection, held to
-the extension's own corpus, and an exit code instead of a results editor.
+pixelcoords answers *where*, pixelactions *acts* there. The sixteen LE crates
+are the terminal half of the extensions they sit in: the same detection, held
+to the extension's own corpus, and an exit code instead of a results editor.
 
 | | | |
 |---|---|---|
 | **[pixelcoords](https://github.com/nolindnaidoo/pixelcoords)** | Freeze your screen, mark regions, get pixel-exact coordinates and crops | [site](https://pixelcoords.dev) · [crates.io](https://crates.io/crates/pixelcoords) · [docs.rs](https://docs.rs/pixelcoords) |
 | **[pixelactions](https://github.com/nolindnaidoo/pixelactions)** | Consume human-verified coordinates, perform the interaction, confirm it landed | [site](https://pixelactions.dev) · [crates.io](https://crates.io/crates/pixelactions) · [docs.rs](https://docs.rs/pixelactions) |
-| **[paths-le](https://github.com/nolindnaidoo/paths-le/tree/main/crate)** | Find every path in a codebase and report whether it still points at anything | [crates.io](https://crates.io/crates/paths-le) |
-| **[secrets-le](https://github.com/nolindnaidoo/secrets-le/tree/main/crate)** | Find hardcoded credentials, and never print one | [crates.io](https://crates.io/crates/secrets-le) |
-| **[urls-le](https://github.com/nolindnaidoo/urls-le/tree/main/crate)** | Extract every URL from a codebase, with its protocol and exact position | [crates.io](https://crates.io/crates/urls-le) |
-| **[regex-le](https://github.com/nolindnaidoo/regex-le/tree/main/crate)** | Find every regex in a codebase and report which can be driven into catastrophic backtracking | [crates.io](https://crates.io/crates/regex-le) |
 | **[string-le](https://github.com/nolindnaidoo/string-le/tree/main/crate)** | Get every string in a codebase out where a person can read them | [crates.io](https://crates.io/crates/string-le) |
 | **[numbers-le](https://github.com/nolindnaidoo/numbers-le/tree/main/crate)** | Find every hardcoded number in a codebase so a person can check them | [crates.io](https://crates.io/crates/numbers-le) |
-| **[envsync-le](https://github.com/nolindnaidoo/envsync-le/tree/main/crate)** | Compare the dotenv files in a tree and say which keys are missing from which | [crates.io](https://crates.io/crates/envsync-le) |
+| **[paths-le](https://github.com/nolindnaidoo/paths-le/tree/main/crate)** | Find every path in a codebase and report whether it still points at anything | [crates.io](https://crates.io/crates/paths-le) |
 | **[colors-le](https://github.com/nolindnaidoo/colors-le/tree/main/crate)** | Find every colour in a codebase, and say which are not in your palette | [crates.io](https://crates.io/crates/colors-le) |
+| **[urls-le](https://github.com/nolindnaidoo/urls-le/tree/main/crate)** | Extract every URL from a codebase, with its protocol and exact position | [crates.io](https://crates.io/crates/urls-le) |
 | **[dates-le](https://github.com/nolindnaidoo/dates-le/tree/main/crate)** | Extract every date and timestamp, and the exact instant each one resolves to | [crates.io](https://crates.io/crates/dates-le) |
+| **[units-le](https://github.com/nolindnaidoo/units-le/tree/main/crate)** | Extract every quantity with its unit, normalized, and refuse the ambiguous ones by name | [crates.io](https://crates.io/crates/units-le) |
+| **[ids-le](https://github.com/nolindnaidoo/ids-le/tree/main/crate)** | Extract every UUID, ULID, NanoID, ObjectId and Snowflake, and decode the time inside | [crates.io](https://crates.io/crates/ids-le) |
+| **[ips-le](https://github.com/nolindnaidoo/ips-le/tree/main/crate)** | Extract every IP address, CIDR block and MAC, normalized and classified by scope | [crates.io](https://crates.io/crates/ips-le) |
+| **[regex-le](https://github.com/nolindnaidoo/regex-le/tree/main/crate)** | Find every regex in a codebase and report which can be driven into catastrophic backtracking | [crates.io](https://crates.io/crates/regex-le) |
+| **[versions-le](https://github.com/nolindnaidoo/versions-le/tree/main/crate)** | Find where one dependency is constrained differently across a repository's manifests | [crates.io](https://crates.io/crates/versions-le) |
+| **[i18n-le](https://github.com/nolindnaidoo/i18n-le/tree/main/crate)** | Identify the i18n library a project uses, then audit its catalogs by that library's rules | [crates.io](https://crates.io/crates/i18n-le) |
 | **[scrape-le](https://github.com/nolindnaidoo/scrape-le/tree/main/crate)** | Check whether a page is scrapeable before the scraper is written | [crates.io](https://crates.io/crates/scrape-le) |
+| **[secrets-le](https://github.com/nolindnaidoo/secrets-le/tree/main/crate)** | Find hardcoded credentials, and never print one | [crates.io](https://crates.io/crates/secrets-le) |
+| **[envsync-le](https://github.com/nolindnaidoo/envsync-le/tree/main/crate)** | Compare the dotenv files in a tree and say which keys are missing from which | [crates.io](https://crates.io/crates/envsync-le) |
+| **[unicode-le](https://github.com/nolindnaidoo/unicode-le/tree/main/crate)** | Find the Unicode that hides meaning — bidi controls, invisibles, homoglyphs, mixed scripts | [crates.io](https://crates.io/crates/unicode-le) |
 
 ## Licence
 
