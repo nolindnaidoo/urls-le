@@ -15,7 +15,7 @@
 	"manifest.settings.notifications.level.option.all": "Показывать все уведомления",
 	"manifest.settings.notifications.level.option.important": "Показывать только важные уведомления",
 	"manifest.settings.notifications.level.option.silent": "Показывать только ошибки",
-	"manifest.settings.open.new-file.desc": "Открывать обработанный контент в новом редакторе",
+	"manifest.settings.open.new-file.desc": "Открывать результаты извлечения в новом редакторе вместо замены документа, если они не открываются сбоку. «Дедупликация URL-адресов» и «Сортировка URL-адресов» всегда изменяют документ на месте.",
 	"manifest.settings.open.side-by-side.desc": "Открывать результаты извлечения в новом редакторе сбоку",
 	"manifest.settings.safety.enabled.desc": "Включить проверки безопасности для больших файлов и операций",
 	"manifest.settings.safety.warn.file-size.desc": "Отклонять извлечение, если размер файла превышает этот порог в байтах",

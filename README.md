@@ -289,7 +289,7 @@ No command is bound to a key by default. Give any of them one under **Keyboard S
 | Setting | Default | Description |
 |---|---|---|
 | `urls-le.openResultsSideBySide` | `true` | Open results beside the current editor |
-| `urls-le.postProcess.openInNewFile` | `true` | Open results in a new file (when not side-by-side) |
+| `urls-le.postProcess.openInNewFile` | `true` | Open extraction results in a new file instead of over the document, when not side-by-side. Dedupe and Sort always edit in place |
 | `urls-le.showPositions` | `false` | Show the line and column of each URL |
 | `urls-le.copyToClipboardEnabled` | `false` | Also copy results to the clipboard |
 | `urls-le.clipboardIncludesPositions` | `false` | Include the line and column in that copy |

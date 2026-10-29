@@ -15,7 +15,7 @@
 	"manifest.settings.notifications.level.option.all": "すべての通知を表示",
 	"manifest.settings.notifications.level.option.important": "重要な通知のみを表示",
 	"manifest.settings.notifications.level.option.silent": "エラーのみ表示",
-	"manifest.settings.open.new-file.desc": "後処理済みコンテンツを新規エディターで開く",
+	"manifest.settings.open.new-file.desc": "抽出結果を横に開かない場合、ドキュメントを置き換えるのではなく新規エディターで開きます。「URL重複排除」と「URLソート」は常にドキュメントをその場で編集します。",
 	"manifest.settings.open.side-by-side.desc": "抽出結果を横に新規エディターで開く",
 	"manifest.settings.safety.enabled.desc": "大容量ファイルと操作の安全チェックを有効化",
 	"manifest.settings.safety.warn.file-size.desc": "ファイルサイズがこのしきい値 (バイト) を超えた場合は抽出を拒否します",

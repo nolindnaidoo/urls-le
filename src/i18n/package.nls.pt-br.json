@@ -15,7 +15,7 @@
 	"manifest.settings.notifications.level.option.all": "Mostrar todas as notificações",
 	"manifest.settings.notifications.level.option.important": "Mostrar apenas notificações importantes",
 	"manifest.settings.notifications.level.option.silent": "Mostrar apenas erros",
-	"manifest.settings.open.new-file.desc": "Abrir conteúdo pós-processado em um novo editor",
+	"manifest.settings.open.new-file.desc": "Abrir os resultados da extração em um novo editor em vez de substituir o documento, quando não forem abertos ao lado. \"Desduplicar URLs\" e \"Classificar URLs\" sempre editam o documento no lugar.",
 	"manifest.settings.open.side-by-side.desc": "Abrir resultados de extração em um novo editor ao lado",
 	"manifest.settings.safety.enabled.desc": "Habilitar verificações de segurança para arquivos e operações grandes",
 	"manifest.settings.safety.warn.file-size.desc": "Recusar a extração quando o tamanho do arquivo exceder este limite em bytes",
