@@ -32,16 +32,16 @@ export function registerHelpCommand(
 - **Deduplicate URLs**: Remove duplicate lines in the current document
 - **Sort URLs**: Sort lines alphabetically, by domain, or by length
 - **Open Settings**: Open the URLs-LE settings
-- **Help**: Show this document
+- **Help & Troubleshooting**: Show this document
 
 ## Supported Formats
-Markdown, HTML, CSS, JavaScript, TypeScript, JSON, YAML, Properties, TOML, INI, XML
+Markdown, HTML, CSS, JavaScript, TypeScript, JSON, YAML, Properties, TOML, INI, XML have a format-aware extractor. Every other document is scanned whole.
 
 ## Extracted URL Types
 http, https, ftp, file, mailto, tel
 
 ## Troubleshooting
-- **No URLs found?** Check the file's language mode matches a supported format
+- **No URLs found?** Every document is scanned whatever its language, so check that each URL carries one of the schemes above. In Markdown, a URL inside a fenced block or inline code is skipped on purpose
 - **Large file warning?** Adjust the safety file-size threshold in settings
 
 ## Support
