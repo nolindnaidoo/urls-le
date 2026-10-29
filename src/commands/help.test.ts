@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
@@ -60,7 +60,39 @@ describe('help', () => {
 		expect(help.startsWith('# URLs-LE Help')).toBe(true);
 	});
 
-	it('names every command the manifest declares, under the title the palette shows', async () => {
+	it('names every command the manifest declares, under the title the palette shows, in every language', async () => {
+		// The titles are translated twice, once in each manifest catalogue for
+		// the palette and once in each bundle for this document, so the two
+		// are held equal here: a user must find in the palette what the
+		// document names.
+		const i18n = join(ROOT, 'src', 'i18n');
+		const bundleDir = join(ROOT, 'l10n');
+		const manifest = JSON.parse(
+			readFileSync(join(ROOT, 'package.json'), 'utf8'),
+		) as { contributes: { commands: Array<{ title: string }> } };
+		const nlsKeys = manifest.contributes.commands.map((entry) =>
+			entry.title.replace(/^%|%$/g, ''),
+		);
+		const english = JSON.parse(
+			readFileSync(join(ROOT, 'package.nls.json'), 'utf8'),
+		) as Record<string, string>;
+		for (const file of readdirSync(bundleDir)) {
+			const locale =
+				file.match(/^bundle\.l10n(?:\.([a-z-]+))?\.json$/)?.[1] ?? '';
+			const bundle = JSON.parse(
+				readFileSync(join(bundleDir, file), 'utf8'),
+			) as Record<string, string>;
+			const nls =
+				locale === ''
+					? english
+					: (JSON.parse(
+							readFileSync(join(i18n, `package.nls.${locale}.json`), 'utf8'),
+						) as Record<string, string>);
+			for (const key of nlsKeys) {
+				expect(bundle[english[key] ?? ''], `${file}: ${key}`).toBe(nls[key]);
+			}
+		}
+
 		const help = await helpText();
 		const section = help.split('## Commands')[1]?.split('\n## ')[0] ?? '';
 		const named = [...section.matchAll(/^- \*\*([^*]+)\*\*/gm)]
