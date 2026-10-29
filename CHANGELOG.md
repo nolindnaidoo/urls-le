@@ -14,6 +14,14 @@ version and releases from one tag.
 
 ### Fixed
 
+- The npm command line passed over a FIFO, a socket or a device in a walk
+  without a word, refused one named outright as "Not a directory", and
+  passed over every symbolic link without a word unless `--follow-symlinks`
+  was given. A FIFO, a socket or a device is a `skipped` report saying "not
+  a regular file" now, met in a walk or named outright, and `--strict`
+  fails on it; the links a walk does not follow are counted, stderr ends
+  with "N symbolic links not followed", and `urls_le_scan` carries the
+  count as `symbolicLinks`.
 - The npm command line's MCP server dropped a frame that was not JSON, not
   UTF-8, not a JSON-RPC 2.0 request or led by a byte order mark without a
   word, where the extension's server answers a parse error; it answered a

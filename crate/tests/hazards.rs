@@ -456,8 +456,8 @@ fn links_pipes_and_loops_are_survived() {
     std::os::unix::fs::symlink("real.md", tree.path().join("link.md")).expect("a symlink");
     std::os::unix::fs::symlink("nowhere.md", tree.path().join("broken.md")).expect("a symlink");
 
-    // A FIFO blocks forever on open. The walk must not read it, which is
-    // what "only regular files are examined" buys.
+    // A FIFO blocks forever on open. The walk must not read it, and must
+    // not drop it either: it is named as `skipped`, "not a regular file".
     let fifo = tree.path().join("pipe.md");
     let made_fifo = std::process::Command::new("mkfifo")
         .arg(&fifo)
@@ -473,15 +473,43 @@ fn links_pipes_and_loops_are_survived() {
     assert_eq!(url_count(report_for(&reports(&plain), "real.md")), 1);
 
     // Symlinks are not followed by default — ripgrep's rule, and the
-    // reason `--follow-symlinks` exists. Pinned so it stays a decision.
+    // reason `--follow-symlinks` exists. Pinned so it stays a decision,
+    // and counted on stderr so it is not a silence.
     assert!(
         !reports(&plain).iter().any(|report| report["file"]
             .as_str()
             .is_some_and(|f| f.ends_with("link.md"))),
         "a symlink was walked without --follow-symlinks"
     );
+    assert!(
+        plain.stderr.contains("2 symbolic links not followed\n"),
+        "{}",
+        plain.stderr
+    );
 
     if made_fifo {
+        let listed = reports(&plain);
+        let pipe = report_for(&listed, "pipe.md");
+        assert!(was_skipped(pipe), "{pipe}");
+        assert_eq!(pipe["diagnostics"][0]["message"], "not a regular file");
+        assert_eq!(
+            run(&["--strict", &tree.path().to_string_lossy()]).code,
+            Some(2)
+        );
+
+        // Named outright it is the whole run: one skipped report, nothing
+        // found, which is exit 1 by grep's convention, and 2 under
+        // --strict. It answered "0 URLs in 0 files" and exit 0.
+        let named = run(&[&fifo.to_string_lossy()]);
+        assert_survived("links_pipes_and_loops_are_survived, a fifo named", &named);
+        assert_eq!(named.code, Some(1), "{}", named.stderr);
+        assert!(was_skipped(&reports(&named)[0]), "{}", named.stdout);
+        assert!(
+            named.stderr.contains("not a regular file"),
+            "{}",
+            named.stderr
+        );
+        assert_eq!(run(&["--strict", &fifo.to_string_lossy()]).code, Some(2));
         std::fs::remove_file(&fifo).expect("the fifo is removed");
     }
 

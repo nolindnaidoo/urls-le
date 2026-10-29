@@ -314,7 +314,7 @@ async function scan(args: unknown): Promise<unknown> {
 	refuseUnknown(args, ['path', 'paths', 'dedupe', 'hidden', 'ignored']);
 	const inputs = requestedPaths(args);
 	// Read as the schema types them: a `hidden: "yes"` was read as false.
-	const reports = await readTree(
+	const { reports, symlinks } = await readTree(
 		inputs,
 		{ dedupe: optionalBoolean(args, 'dedupe') },
 		{
@@ -340,9 +340,11 @@ async function scan(args: unknown): Promise<unknown> {
 			code: 'unreadable',
 			message: `${report.file} could not be examined, so this scan does not cover it`,
 		}));
+	// A link passed over has no report line; the count is carried so an
+	// agent reading `reports` as the whole tree is not wrong about it.
 	return envelope(
 		'urls_le_scan',
-		{ reports, urls },
+		{ reports, urls, symbolicLinks: symlinks },
 		reports.length,
 		diagnostics,
 		false,

@@ -347,8 +347,9 @@ fn scan_tool(arguments: &Value) -> Result<Value, Refusal> {
 
     // A path that is not there is a fact about the filesystem, not the
     // schema: a tool failure the model reads, not a protocol error.
-    let targets = walk::collect(&inputs, &walk_options).map_err(Refusal::Failure)?;
-    let reports: Vec<Value> = targets
+    let walked = walk::collect(&inputs, &walk_options).map_err(Refusal::Failure)?;
+    let reports: Vec<Value> = walked
+        .targets
         .iter()
         .map(|target| {
             serde_json::to_value(scan::scan_file(target, options)).expect("a report serializes")
@@ -384,9 +385,11 @@ fn scan_tool(arguments: &Value) -> Result<Value, Refusal> {
         .collect();
 
     let count = reports.len();
+    // A link passed over has no report line; the count is carried so an
+    // agent reading `reports` as the whole tree is not wrong about it.
     Ok(envelope(
         "urls_le_scan",
-        &json!({ "reports": reports, "urls": urls }),
+        &json!({ "reports": reports, "urls": urls, "symbolicLinks": walked.symlinks }),
         count,
         &diagnostics,
         false,

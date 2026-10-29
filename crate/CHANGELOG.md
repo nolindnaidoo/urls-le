@@ -12,6 +12,14 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- A FIFO, a socket or a device in a walk was passed over without a word,
+  and one named outright was walked as a directory and answered "0 URLs
+  in 0 files"; a symbolic link in a walk without `--follow-symlinks` was
+  passed over without a word. A FIFO, a socket or a device is a `skipped`
+  report saying "not a regular file" now, met in a walk or named
+  outright, and `--strict` fails on it; the links a walk does not follow
+  are counted, stderr ends with "N symbolic links not followed", and
+  `urls_le_scan` carries the count as `symbolicLinks`.
 - The MCP server dropped a frame that was not JSON, not UTF-8 or not a
   JSON-RPC 2.0 request without a word, where the npm servers answer a
   parse error; it answered a request with a null id, which they read as a

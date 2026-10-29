@@ -1,8 +1,10 @@
+import { execFileSync } from 'node:child_process';
 import {
 	chmodSync,
 	mkdirSync,
 	mkdtempSync,
 	rmdirSync,
+	symlinkSync,
 	unlinkSync,
 	writeFileSync,
 } from 'node:fs';
@@ -189,9 +191,66 @@ describe('collect', () => {
 		return root;
 	}
 
+	it('names a FIFO rather than opening or dropping it', () => {
+		// Reading a pipe with no writer never returns, so it was never opened;
+		// it was never named either, so it vanished from the report. Named
+		// outright it was walked as a directory and refused as not one.
+		if (process.platform === 'win32') return;
+		const root = mkdtempSync(join(tmpdir(), 'urls-le-fifo-'));
+		writeFileSync(join(root, 'kept.md'), 'https://a.example\n');
+		const fifo = join(root, 'pipe.md');
+		try {
+			execFileSync('mkfifo', [fifo]);
+		} catch {
+			unlinkSync(join(root, 'kept.md'));
+			rmdirSync(root);
+			return;
+		}
+		try {
+			const walked = collect([root], WALK);
+			expect(
+				walked.targets.map((target) => [target.path, target.unreadable]),
+			).toEqual([
+				[join(root, 'kept.md'), null],
+				[fifo, 'not a regular file'],
+			]);
+			expect(
+				collect([fifo], WALK).targets.map((target) => target.unreadable),
+			).toEqual(['not a regular file']);
+		} finally {
+			unlinkSync(fifo);
+			unlinkSync(join(root, 'kept.md'));
+			rmdirSync(root);
+		}
+	});
+
+	it('counts a symbolic link it does not follow', () => {
+		// Never followed without --follow-symlinks, by design; it was passed
+		// over without a line, so a reader could not tell the tree held more
+		// than the scan read.
+		if (process.platform === 'win32') return;
+		const root = mkdtempSync(join(tmpdir(), 'urls-le-symlink-'));
+		writeFileSync(join(root, 'a.md'), 'https://a.example\n');
+		symlinkSync(join(root, 'a.md'), join(root, 'link.md'));
+		try {
+			const walked = collect([root], WALK);
+			expect(walked.targets.map((target) => target.path)).toEqual([
+				join(root, 'a.md'),
+			]);
+			expect(walked.symlinks).toBe(1);
+			const followed = collect([root], { ...WALK, followSymlinks: true });
+			expect(followed.targets).toHaveLength(2);
+			expect(followed.symlinks).toBe(0);
+		} finally {
+			unlinkSync(join(root, 'link.md'));
+			unlinkSync(join(root, 'a.md'));
+			rmdirSync(root);
+		}
+	});
+
 	it('sorts by path component and gives each file its format', () => {
 		const root = tree();
-		const found = collect([root], WALK).map((target) => [
+		const found = collect([root], WALK).targets.map((target) => [
 			// Targets keep the native separator; only the report turns it to `/`.
 			target.path.slice(root.length + 1).replaceAll('\\', '/'),
 			target.languageId,
@@ -221,7 +280,7 @@ describe('collect', () => {
 			dirs.push(shut);
 			chmodSync(shut, 0o000);
 			try {
-				const found = collect([root], WALK);
+				const found = collect([root], WALK).targets;
 				const refused = found.find((target) => target.unreadable !== null);
 				expect(refused?.path).toBe(shut);
 				expect(refused?.languageId).toBe('plaintext');
@@ -276,6 +335,27 @@ describe('run', () => {
 
 	it('answers --version with the release', async () => {
 		expect((await capture(['--version'])).stdout).toBe('urls-le 9.9.9\n');
+	});
+
+	it('lists a symbolic link it did not follow on stderr', async () => {
+		if (process.platform === 'win32') return;
+		const root = mkdtempSync(join(tmpdir(), 'urls-le-run-symlink-'));
+		writeFileSync(join(root, 'a.md'), 'https://a.example\n');
+		symlinkSync(join(root, 'a.md'), join(root, 'link.md'));
+		try {
+			const { status, stderr } = await capture([root]);
+			expect(status).toBe(0);
+			expect(stderr).toContain(
+				'1 URL in 1 file\n1 symbolic link not followed\n',
+			);
+			const followed = await capture(['--follow-symlinks', root]);
+			expect(followed.stderr).toContain('2 URLs in 2 files\n');
+			expect(followed.stderr).not.toContain('symbolic link');
+		} finally {
+			unlinkSync(join(root, 'link.md'));
+			unlinkSync(join(root, 'a.md'));
+			rmdirSync(root);
+		}
 	});
 });
 
@@ -466,6 +546,26 @@ describe('mcp', () => {
 			{ code: -32602, message: 'the list of paths was empty' },
 			{ code: -32602, message: 'no file or directory was supplied to audit' },
 		]);
+	});
+
+	it('carries the symbolic links it did not follow in the envelope', async () => {
+		if (process.platform === 'win32') return;
+		const root = mkdtempSync(join(tmpdir(), 'urls-le-mcp-symlink-'));
+		writeFileSync(join(root, 'a.md'), 'https://a.example\n');
+		symlinkSync(join(root, 'a.md'), join(root, 'link.md'));
+		try {
+			const { written } = await session([
+				call('urls_le_scan', JSON.stringify({ path: root })),
+			]);
+			const data = JSON.parse(written[0] ?? '').result.structuredContent.data;
+			expect(data.symbolicLinks).toBe(1);
+			expect(data.reports).toHaveLength(1);
+			expect(data.urls).toBe(1);
+		} finally {
+			unlinkSync(join(root, 'link.md'));
+			unlinkSync(join(root, 'a.md'));
+			rmdirSync(root);
+		}
 	});
 
 	it('reads a cap written as an exponent or an integer-valued float as the crate does', async () => {

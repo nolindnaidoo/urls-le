@@ -46,6 +46,24 @@ export interface Target {
 	readonly unreadable: string | null;
 }
 
+/** What a walk reached, and what it passed over. */
+export interface Walked {
+	readonly targets: readonly Target[];
+	/**
+	 * Links met in a walk without `--follow-symlinks`. Never followed then,
+	 * by design; counted, as the crate counts them, because a reader has to
+	 * know the tree holds more than the scan read.
+	 */
+	readonly symlinks: number;
+}
+
+/**
+ * The reason a FIFO, a socket or a device is skipped, in the crate's words.
+ * Reading a pipe with no writer never returns, so one is never opened; one
+ * was never named either, so it vanished.
+ */
+const NOT_A_REGULAR_FILE = 'not a regular file';
+
 interface Ancestor {
 	readonly shown: string;
 	readonly key: string;
@@ -55,18 +73,25 @@ interface Walk {
 	readonly options: WalkOptions;
 	readonly repository: RepositoryRules | null;
 	readonly targets: Target[];
+	symlinks: number;
 }
 
 /** Every target, in a stable order. Throws a message naming a missing input. */
 export function collect(
 	inputs: readonly string[],
 	options: WalkOptions,
-): readonly Target[] {
+): Walked {
 	const targets: Target[] = [];
+	let symlinks = 0;
 	for (const input of inputs) {
-		targets.push(...targetsUnder(input, options));
+		const walked = targetsUnder(input, options);
+		targets.push(...walked.targets);
+		symlinks += walked.symlinks;
 	}
-	return Object.freeze(sortAndDedupe(targets));
+	return Object.freeze({
+		targets: Object.freeze(sortAndDedupe(targets)),
+		symlinks,
+	});
 }
 
 /** A name that resolves to nothing gets the whole-document scan. */
@@ -91,30 +116,41 @@ function unreadable(path: string, reason: string): Target {
 	});
 }
 
-function targetsUnder(input: string, options: WalkOptions): readonly Target[] {
-	let isFile: boolean;
+function targetsUnder(input: string, options: WalkOptions): Walked {
+	let stats: Stats;
 	try {
-		isFile = statSync(input).isFile();
+		stats = statSync(input);
 	} catch (error) {
 		throw new Error(`${input}: ${rustIoMessage(error)}`);
 	}
-	if (isFile) return [readable(input, options)];
+	if (stats.isFile()) {
+		return { targets: [readable(input, options)], symlinks: 0 };
+	}
+	// A FIFO, a socket or a device named outright: never opened, and never
+	// silent. It was walked as a directory and refused as not one.
+	if (!stats.isDirectory()) {
+		return {
+			targets: [unreadable(input, NOT_A_REGULAR_FILE)],
+			symlinks: 0,
+		};
+	}
 	return walkDirectory(input, options);
 }
 
-function walkDirectory(root: string, options: WalkOptions): readonly Target[] {
+function walkDirectory(root: string, options: WalkOptions): Walked {
 	const absolute = resolve(root);
 	const repoRoot = options.respectIgnore ? repositoryRoot(absolute) : null;
 	const walk: Walk = {
 		options,
 		repository: repoRoot ? repositoryRules(repoRoot) : null,
 		targets: [],
+		symlinks: 0,
 	};
 	const ancestors = options.followSymlinks
 		? [identity(root, statSync(absolute), absolute)]
 		: [];
 	visit(walk, root, absolute, parentRules(absolute, options), ancestors);
-	return walk.targets;
+	return { targets: walk.targets, symlinks: walk.symlinks };
 }
 
 /** The crate's `parents(true)`: ignore files above the walk root count too. */
@@ -175,13 +211,25 @@ function visitEntry(
 	const followed = followedKind(walk, entry, shown, absolute, ancestors);
 	if (followed === 'failed') return;
 	if (!walk.options.hidden && entry.name.startsWith('.')) return;
-	if (followed === null) return;
-	const isDir = followed.kind === 'dir';
+	const isDir = followed !== null && followed.kind === 'dir';
 	if (
 		walk.options.respectIgnore &&
 		isIgnored(absolute, isDir, chain, walk.repository)
 	)
 		return;
+	if (followed === null) {
+		// Neither a file nor a directory, after the filters the crate's
+		// walker applies before it yields an entry. A link is counted when
+		// links are not followed, as the crate counts it; anything else, a
+		// FIFO, a socket or a device, is named rather than opened or
+		// dropped, as the crate names it.
+		if (entry.isSymbolicLink() && !walk.options.followSymlinks) {
+			walk.symlinks += 1;
+			return;
+		}
+		walk.targets.push(unreadable(shown, NOT_A_REGULAR_FILE));
+		return;
+	}
 	if (!isDir) {
 		walk.targets.push(readable(shown, walk.options));
 		return;
