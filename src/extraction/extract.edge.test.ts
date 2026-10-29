@@ -244,23 +244,41 @@ describe('Extract.ts Edge Cases', () => {
 			expect(result.success).toBe(true);
 		});
 
-		it('should handle malformed JSON gracefully', async () => {
-			const content = '{invalid json';
-			const result = await extractUrls(content, 'json');
-
-			// Should handle gracefully (may succeed with empty results or fail with error)
-			expect(result.success === true || result.success === false).toBe(true);
-			if (!result.success) {
-				expect(result.errors.length).toBeGreaterThan(0);
-			}
+		it('reads a document that is not valid JSON through its string tokens, and reports no error', async () => {
+			// The JSON extractor scans tokens rather than parsing a tree, so a
+			// document with no closing brace still yields the URLs its strings
+			// hold, and nothing is refused.
+			expect(await extractUrls('{invalid json', 'json')).toEqual({
+				success: true,
+				urls: [],
+				errors: [],
+				fileType: 'json',
+			});
+			const result = await extractUrls('{"a": "https://a.example"', 'json');
+			expect(result.success).toBe(true);
+			expect(result.errors).toEqual([]);
+			expect(
+				result.urls.map((url) => [
+					url.value,
+					url.position?.line,
+					url.position?.column,
+				]),
+			).toEqual([['https://a.example', 1, 8]]);
 		});
 
-		it('should handle malformed YAML gracefully', async () => {
-			const content = 'invalid: yaml: structure:';
-			const result = await extractUrls(content, 'yaml');
-
-			// Should handle gracefully
-			expect(result.success === true || result.success === false).toBe(true);
+		it('scans a YAML document whole whether or not it would parse', async () => {
+			// YAML has no parser here: comments are scanned too, so a document
+			// that is not YAML is simply text.
+			expect(await extractUrls('invalid: yaml: structure:', 'yaml')).toEqual({
+				success: true,
+				urls: [],
+				errors: [],
+				fileType: 'yaml',
+			});
+			const result = await extractUrls('a: b: https://y.example\n', 'yaml');
+			expect(result.urls.map((url) => url.value)).toEqual([
+				'https://y.example',
+			]);
 		});
 	});
 

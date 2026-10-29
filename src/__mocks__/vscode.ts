@@ -446,25 +446,37 @@ export const window = {
 	showTextDocument: async (_document: unknown, _column?: unknown) => undefined,
 	createOutputChannel: (_name: string) => {
 		const linesOut: string[] = [];
-		return {
+		const channel = {
+			disposed: false,
 			appendLine: (line: string) => linesOut.push(line),
-			dispose: () => {},
+			dispose(): void {
+				(this as { disposed: boolean }).disposed = true;
+			},
 			_lines: linesOut,
 		};
+		outputChannels.push(channel);
+		return channel;
 	},
-	createStatusBarItem: (_alignment?: unknown, _priority?: number) => ({
-		text: '',
-		tooltip: '',
-		command: undefined as unknown,
-		visible: false,
-		show(): void {
-			(this as { visible: boolean }).visible = true;
-		},
-		hide(): void {
-			(this as { visible: boolean }).visible = false;
-		},
-		dispose: () => {},
-	}),
+	createStatusBarItem: (_alignment?: unknown, _priority?: number) => {
+		const item = {
+			text: '',
+			tooltip: '',
+			command: undefined as unknown,
+			visible: false,
+			disposed: false,
+			show(): void {
+				(this as { visible: boolean }).visible = true;
+			},
+			hide(): void {
+				(this as { visible: boolean }).visible = false;
+			},
+			dispose(): void {
+				(this as { disposed: boolean }).disposed = true;
+			},
+		};
+		statusBarItems.push(item);
+		return item;
+	},
 	createWebviewPanel: (
 		_viewType: string,
 		_title: string,
@@ -477,6 +489,44 @@ export const window = {
 		dispose: () => {},
 	}),
 };
+
+/**
+ * What the host was asked to create, with whether each was released. The
+ * tests that read a status bar item's text, an output channel's lines, or
+ * what is still live after deactivation could not before: the mock made each
+ * and handed it back to the code alone.
+ */
+const statusBarItems: Array<{
+	text: string;
+	tooltip: string;
+	command: unknown;
+	visible: boolean;
+	disposed: boolean;
+}> = [];
+
+export function _statusBarItems(): ReadonlyArray<{
+	text: string;
+	tooltip: string;
+	command: unknown;
+	visible: boolean;
+	disposed: boolean;
+}> {
+	return statusBarItems;
+}
+
+const outputChannels: Array<{ disposed: boolean; _lines: string[] }> = [];
+
+export function _outputChannels(): ReadonlyArray<{
+	disposed: boolean;
+	_lines: string[];
+}> {
+	return outputChannels;
+}
+
+/** How many configuration listeners are registered right now. */
+export function _configListenerCount(): number {
+	return configListeners.length;
+}
 
 // ---------------------------------------------------------- commands
 
@@ -651,6 +701,8 @@ export function _resetMockState(): void {
 	workspaceFiles.clear();
 	openedDocuments.length = 0;
 	openDialogResponder = undefined;
+	statusBarItems.length = 0;
+	outputChannels.length = 0;
 }
 
 export function _setAppName(name: string): void {
