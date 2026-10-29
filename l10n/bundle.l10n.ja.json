@@ -89,5 +89,6 @@
 	"Enjoying it? A rating helps more than you'd think:": "気に入りましたか？評価は思った以上に役立ちます:",
 	"Rate on VS Code Marketplace": "VS Code Marketplace で評価する",
 	"Rate on Open VSX": "Open VSX で評価する",
-	"Built by {0} — MIT licensed.": "{0} が開発 — MIT ライセンス。"
+	"Built by {0} — MIT licensed.": "{0} が開発 — MIT ライセンス。",
+	"Extracting URLs...": "URL を抽出しています…"
 }

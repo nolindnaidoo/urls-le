@@ -89,5 +89,6 @@
 	"Enjoying it? A rating helps more than you'd think:": "마음에 드시나요? 평점은 생각보다 큰 도움이 됩니다:",
 	"Rate on VS Code Marketplace": "VS Code Marketplace에서 평가하기",
 	"Rate on Open VSX": "Open VSX에서 평가하기",
-	"Built by {0} — MIT licensed.": "{0} 제작 — MIT 라이선스."
+	"Built by {0} — MIT licensed.": "{0} 제작 — MIT 라이선스.",
+	"Extracting URLs...": "URL 추출 중…"
 }

@@ -14,6 +14,11 @@ version and releases from one tag.
 
 ### Fixed
 
+- The help document was English in every language. Every sentence goes
+  through the bundle now, and its command list carries the titles the
+  palette shows in that language.
+- The progress notification's title, "Extracting URLs...", was English in
+  every language: the string was never in the bundle.
 - The status bar read "$(link) URLs-LE" in Japanese, Portuguese, Russian,
   Ukrainian, Vietnamese and Chinese, the text of a version that had an icon
   and no word, and "URL-LE: Listo" in Spanish; the status bar setting's

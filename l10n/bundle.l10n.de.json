@@ -89,5 +89,6 @@
 	"Enjoying it? A rating helps more than you'd think:": "Gefällt es Ihnen? Eine Bewertung hilft mehr, als man denkt:",
 	"Rate on VS Code Marketplace": "Im VS Code Marketplace bewerten",
 	"Rate on Open VSX": "Auf Open VSX bewerten",
-	"Built by {0} — MIT licensed.": "Entwickelt von {0} — MIT-lizenziert."
+	"Built by {0} — MIT licensed.": "Entwickelt von {0} — MIT-lizenziert.",
+	"Extracting URLs...": "URLs werden extrahiert …"
 }

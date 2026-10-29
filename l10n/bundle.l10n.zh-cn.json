@@ -89,5 +89,6 @@
 	"Enjoying it? A rating helps more than you'd think:": "喜欢吗？评分带来的帮助超乎你的想象：",
 	"Rate on VS Code Marketplace": "在 VS Code Marketplace 上评分",
 	"Rate on Open VSX": "在 Open VSX 上评分",
-	"Built by {0} — MIT licensed.": "由 {0} 开发 — MIT 许可。"
+	"Built by {0} — MIT licensed.": "由 {0} 开发 — MIT 许可。",
+	"Extracting URLs...": "正在提取 URL…"
 }
