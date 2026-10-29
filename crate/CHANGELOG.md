@@ -12,6 +12,15 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- The MCP server dropped a frame that was not JSON, not UTF-8 or not a
+  JSON-RPC 2.0 request without a word, where the npm servers answer a
+  parse error; it answered a request with a null id, which they read as a
+  notification; it refused an unknown method, an unknown tool and a call
+  naming no tool in its own words; and it held a frame until its newline
+  with no ceiling. It answers every malformed frame in the npm servers'
+  words now, reads a line that is not UTF-8 with replacement characters as
+  they do, refuses a frame over 16 MiB and serves the next line, and reads
+  a last line with no newline as the partial frame it is.
 - The MCP server answered an argument that does not fit the tool's schema
   as the tool's own failure, an `isError` result, and read a wrong type on
   an optional argument as absent: `format: 7` scanned the text as plain,

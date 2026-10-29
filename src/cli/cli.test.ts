@@ -287,7 +287,14 @@ describe('mcp', () => {
 				typeof item === 'string' ? Buffer.from(item) : item,
 			),
 		);
-		const status = await serve(input, (text) => written.push(text), '9.9.9');
+		const status = await serve(
+			input,
+			(text) => {
+				written.push(text);
+				return undefined;
+			},
+			'9.9.9',
+		);
 		return { status, written };
 	}
 
@@ -300,22 +307,109 @@ describe('mcp', () => {
 		]);
 	});
 
-	it('answers no notification and no frame that is not JSON', async () => {
-		const { written } = await session([
+	it('answers in serde_json’s key order and refuses what it cannot answer', async () => {
+		// A frame that is not JSON, or not UTF-8, was dropped without a word,
+		// and a client lost every request it then waited on. It is a parse
+		// error in the extension server's words now, and the next line is
+		// served.
+		const { status, written } = await session([
+			'{"jsonrpc":"2.0","id":1,"method":"initialize"}\n',
 			'{"jsonrpc":"2.0","method":"notifications/initialized"}\n',
 			'not json\n',
-			'   \n',
-		]);
-		expect(written).toEqual([]);
-	});
-
-	it('drops a line that is not UTF-8 and serves the next', async () => {
-		const { status, written } = await session([
 			Buffer.from([0x7b, 0xff, 0x7d, 0x0a]),
-			'{"jsonrpc":"2.0","id":1,"method":"ping"}\n',
+			'   \n',
+			'{"jsonrpc":"2.0","id":2,"method":"nope"}\n',
 		]);
 		expect(status).toBe(0);
-		expect(written).toEqual(['{"id":1,"jsonrpc":"2.0","result":{}}\n']);
+		expect(written).toEqual([
+			'{"id":1,"jsonrpc":"2.0","result":{"capabilities":{"tools":{}},"protocolVersion":"2025-06-18","serverInfo":{"name":"urls-le","version":"9.9.9"}}}\n',
+			'{"error":{"code":-32700,"message":"Invalid JSON"},"id":null,"jsonrpc":"2.0"}\n',
+			'{"error":{"code":-32700,"message":"Invalid JSON"},"id":null,"jsonrpc":"2.0"}\n',
+			'{"error":{"code":-32601,"message":"Unknown method: nope"},"id":2,"jsonrpc":"2.0"}\n',
+		]);
+	});
+
+	it('refuses malformed frames in the words the other two servers use, and a null id is a notification', async () => {
+		// The three servers this repository ships answered a malformed frame
+		// three different ways. The words are the extension server's.
+		const { written } = await session([
+			'{"id":1,"method":"ping"}\n',
+			'{"jsonrpc":"1.0","id":2,"method":"ping"}\n',
+			'[{"jsonrpc":"2.0","id":3,"method":"ping"}]\n',
+			'{"jsonrpc":"2.0","id":null,"method":"ping"}\n',
+			'{"jsonrpc":"2.0","id":4,"method":"notifications/initialized"}\n',
+			'{"jsonrpc":"2.0","id":5,"method":"tools/call","params":5}\n',
+			'{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"nope"}}\n',
+			'{"jsonrpc":"2.0","id":7,"method":"tools/call"}\n',
+			'{"jsonrpc":"2.0","id":8,"method":"initialize","params":{"protocolVersion":"1999-01-01"}}\n',
+		]);
+		const refused = {
+			jsonrpc: '2.0',
+			id: null,
+			error: { code: -32700, message: 'Not a JSON-RPC 2.0 request' },
+		};
+		expect(written.map((line) => JSON.parse(line))).toEqual([
+			refused,
+			refused,
+			refused,
+			{
+				jsonrpc: '2.0',
+				id: 4,
+				error: {
+					code: -32601,
+					message: 'Unknown method: notifications/initialized',
+				},
+			},
+			{
+				jsonrpc: '2.0',
+				id: 5,
+				error: { code: -32602, message: 'tools/call requires a string `name`' },
+			},
+			{
+				jsonrpc: '2.0',
+				id: 6,
+				error: { code: -32602, message: 'Unknown tool: nope' },
+			},
+			{
+				jsonrpc: '2.0',
+				id: 7,
+				error: { code: -32602, message: 'tools/call requires a string `name`' },
+			},
+			{
+				jsonrpc: '2.0',
+				id: 8,
+				result: {
+					capabilities: { tools: {} },
+					protocolVersion: '2025-06-18',
+					serverInfo: { name: 'urls-le', version: '9.9.9' },
+				},
+			},
+		]);
+	});
+
+	it('waits for the pipe to drain before reading the next frame', async () => {
+		const lines: string[] = [];
+		let drained = 0;
+		const input = Readable.from([
+			Buffer.from(
+				'{"jsonrpc":"2.0","id":1,"method":"ping"}\n{"jsonrpc":"2.0","id":2,"method":"ping"}\n',
+			),
+		]);
+		await serve(
+			input,
+			(line) => {
+				lines.push(line);
+				return new Promise((resolve) =>
+					setTimeout(() => {
+						drained += 1;
+						resolve();
+					}, 1),
+				);
+			},
+			'9.9.9',
+		);
+		expect(lines).toHaveLength(2);
+		expect(drained).toBe(2);
 	});
 
 	const call = (name: string, args: string) =>

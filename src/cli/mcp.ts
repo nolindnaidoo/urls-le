@@ -3,17 +3,20 @@
  * extension's. It offers `urls_le_scan` beside the shared `extract_urls`,
  * answers in the crate's words, and writes every reply with its keys sorted,
  * because the crate builds each one as a `serde_json::Value` without
- * `preserve_order`.
+ * `preserve_order`. The protocol around the tools refuses a malformed frame
+ * in the extension server's words, so a client cannot tell the three servers
+ * apart by what it sent.
  */
 
 import { sortedKeys } from '../mcp/envelope';
 import { resolveFormat, SUPPORTED_FORMATS } from '../mcp/fileType';
 import { TOOLS } from '../mcp/tools';
-import { requests } from './frames';
+import { type Frame, frames, type Request } from './frames';
 import { readTree } from './run';
 import { extract as extractDocument } from './scan';
 
 const PROTOCOL_VERSION = '2025-06-18';
+const PARSE_ERROR = -32700;
 const INVALID_PARAMS = -32602;
 const METHOD_NOT_FOUND = -32601;
 const DEFAULT_MAX_RESULTS = 500;
@@ -87,14 +90,30 @@ function definitionOf(name: string): unknown {
  */
 export async function serve(
 	input: AsyncIterable<Uint8Array>,
-	write: (line: string) => void,
+	write: (line: string) => Promise<void> | undefined,
 	version: string,
 ): Promise<number> {
-	for await (const request of requests(input)) {
-		const response = await handle(request, version);
-		if (response !== undefined) write(`${response}\n`);
+	for await (const frame of frames(input)) {
+		const response = await respond(frame, version);
+		if (response !== undefined) await write(`${response}\n`);
 	}
 	return 0;
+}
+
+/** A malformed frame is answered in the extension server's words, so a client that sent one learns what happened. */
+function respond(frame: Frame, version: string): Promise<string | undefined> {
+	if ('refusal' in frame) {
+		return Promise.resolve(
+			JSON.stringify(
+				sortedKeys({
+					jsonrpc: '2.0',
+					id: null,
+					error: { code: PARSE_ERROR, message: frame.refusal },
+				}),
+			),
+		);
+	}
+	return handle(frame.request, version);
 }
 
 function field(value: unknown, name: string): unknown {
@@ -107,16 +126,18 @@ function field(value: unknown, name: string): unknown {
 }
 
 async function handle(
-	request: unknown,
+	request: Request,
 	version: string,
 ): Promise<string | undefined> {
 	const id = field(request, 'id');
-	const method = field(request, 'method');
-	if (typeof method !== 'string') return undefined;
-	// A notification carries no id and gets no reply.
-	if (id === undefined) return undefined;
+	// A notification carries no id, or a null one, and gets no reply.
+	if (id === undefined || id === null) return undefined;
 
-	const handled = await dispatch(method, field(request, 'params'), version);
+	const handled = await dispatch(
+		request.method,
+		field(request, 'params'),
+		version,
+	);
 	return JSON.stringify(sortedKeys({ jsonrpc: '2.0', id, ...handled }));
 }
 
@@ -140,10 +161,7 @@ async function dispatch(
 	if (method === 'tools/call') return callTool(params);
 	if (method === 'ping') return { result: {} };
 	return {
-		error: {
-			code: METHOD_NOT_FOUND,
-			message: `this server does not implement ${method}`,
-		},
+		error: { code: METHOD_NOT_FOUND, message: `Unknown method: ${method}` },
 	};
 }
 
@@ -153,25 +171,20 @@ async function dispatch(
  * concluding the server is broken.
  */
 async function callTool(params: unknown): Promise<Handled> {
-	if (params === undefined) {
-		return {
-			error: { code: INVALID_PARAMS, message: 'no tool call was supplied' },
-		};
-	}
 	const name = field(params, 'name');
 	if (typeof name !== 'string') {
 		return {
-			error: { code: INVALID_PARAMS, message: 'the tool call named no tool' },
+			error: {
+				code: INVALID_PARAMS,
+				message: 'tools/call requires a string `name`',
+			},
 		};
 	}
 	const args = field(params, 'arguments') ?? {};
 	if (name === 'extract_urls') return outcome(extract, args);
 	if (name === 'urls_le_scan') return outcome(scan, args);
 	return {
-		error: {
-			code: INVALID_PARAMS,
-			message: `this server offers no tool named ${name}`,
-		},
+		error: { code: INVALID_PARAMS, message: `Unknown tool: ${name}` },
 	};
 }
 
