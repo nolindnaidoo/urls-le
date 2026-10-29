@@ -74,7 +74,7 @@ describe('sort modes', () => {
 		expect(sorted()).toEqual({
 			written:
 				'https://alpha.example.com/bbbb\nhttps://mid.example.org/cc\nhttps://zeta.example.com/a\n',
-			messages: ['info:Sorted 3 URLs (Alphabetical (A → Z))'],
+			messages: ['info:Sorted 3 URL(s) (Alphabetical (A → Z))'],
 		});
 	});
 
@@ -85,7 +85,7 @@ describe('sort modes', () => {
 		expect(sorted()).toEqual({
 			written:
 				'https://zeta.example.com/a\nhttps://mid.example.org/cc\nhttps://alpha.example.com/bbbb\n',
-			messages: ['info:Sorted 3 URLs (Alphabetical (Z → A))'],
+			messages: ['info:Sorted 3 URL(s) (Alphabetical (Z → A))'],
 		});
 	});
 
@@ -102,7 +102,7 @@ describe('sort modes', () => {
 		expect(sorted()).toEqual({
 			written:
 				'https://alpha.example.com/zzz\nhttps://mid.example.org/cc\nhttps://zeta.example.com/a\n',
-			messages: ['info:Sorted 3 URLs (By Domain)'],
+			messages: ['info:Sorted 3 URL(s) (By Domain)'],
 		});
 	});
 
@@ -113,7 +113,7 @@ describe('sort modes', () => {
 		expect(sorted()).toEqual({
 			written:
 				'https://zeta.example.com/a\nhttps://mid.example.org/cc\nhttps://alpha.example.com/bbbb\n',
-			messages: ['info:Sorted 3 URLs (By Length (Short → Long))'],
+			messages: ['info:Sorted 3 URL(s) (By Length (Short → Long))'],
 		});
 	});
 
@@ -124,7 +124,7 @@ describe('sort modes', () => {
 		expect(sorted()).toEqual({
 			written:
 				'https://alpha.example.com/bbbb\nhttps://zeta.example.com/a\nhttps://mid.example.org/cc\n',
-			messages: ['info:Sorted 3 URLs (By Length (Long → Short))'],
+			messages: ['info:Sorted 3 URL(s) (By Length (Long → Short))'],
 		});
 	});
 

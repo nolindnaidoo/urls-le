@@ -138,7 +138,7 @@ async function performExtraction(
 	}
 
 	deps.notifier.showInfo(
-		vscode.l10n.t('Extracted {0} URLs', result.urls.length),
+		vscode.l10n.t('Extracted {0} URL(s)', result.urls.length),
 	);
 	deps.telemetry.event('extract-success', { count: result.urls.length });
 	// Not awaited: it resolves when the toast is answered, and a command that

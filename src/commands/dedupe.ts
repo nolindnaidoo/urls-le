@@ -52,7 +52,7 @@ async function performDedupe(
 
 	const removed = lines.length - deduped.length;
 	const summary = vscode.l10n.t(
-		'Removed {0} duplicate URLs ({1} remaining)',
+		'Removed {0} duplicate URL(s) ({1} remaining)',
 		removed,
 		deduped.length,
 	);

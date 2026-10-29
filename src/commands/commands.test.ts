@@ -94,7 +94,7 @@ describe('urls-le.postProcess.dedupe', () => {
 		);
 		// 5 non-empty lines, 3 unique -> 2 duplicates (blank lines not counted)
 		expect(_shownMessages()[0]?.message).toBe(
-			'Removed 2 duplicate URLs (3 remaining)',
+			'Removed 2 duplicate URL(s) (3 remaining)',
 		);
 	});
 
@@ -113,7 +113,7 @@ describe('urls-le.postProcess.dedupe', () => {
 			'1:1\thttps://a.com\n2:1\thttps://b.com\n',
 		);
 		expect(_shownMessages()[0]?.message).toBe(
-			'Removed 1 duplicate URLs (2 remaining). Each value shows its first position only.',
+			'Removed 1 duplicate URL(s) (2 remaining). Each value shows its first position only.',
 		);
 	});
 
@@ -151,8 +151,8 @@ describe('two invocations at once', () => {
 			'https://a.example\nhttps://b.example',
 		]);
 		expect(events.filter((e) => e.startsWith('info:'))).toEqual([
-			'info:Extracted 2 URLs',
-			'info:Extracted 2 URLs',
+			'info:Extracted 2 URL(s)',
+			'info:Extracted 2 URL(s)',
 		]);
 		expect(events.filter((e) => e.startsWith('error:'))).toEqual([]);
 	});
@@ -187,8 +187,8 @@ describe('two invocations at once', () => {
 				.map((m) => m.message)
 				.sort(),
 		).toEqual([
-			'Removed 1 duplicate URLs (2 remaining)',
-			'Sorted 3 URLs (Alphabetical (A → Z))',
+			'Removed 1 duplicate URL(s) (2 remaining)',
+			'Sorted 3 URL(s) (Alphabetical (A → Z))',
 		]);
 	});
 });
@@ -241,7 +241,7 @@ describe('a line command keeps the document’s terminator', () => {
 			'https://b.com\nhttps://a.com\n',
 		);
 		expect(_shownMessages()[0]?.message).toBe(
-			'Removed 0 duplicate URLs (2 remaining)',
+			'Removed 0 duplicate URL(s) (2 remaining)',
 		);
 		_resetMockState();
 		expect(await dedupe('')).toBe('');
@@ -286,7 +286,7 @@ describe('urls-le.postProcess.sort', () => {
 		expect(appliedEdits[0]?.replacements[0]?.newText).toBe(
 			'https://a.com\nhttps://b.com\nhttps://c.com',
 		);
-		expect(_shownMessages()[0]?.message).toContain('Sorted 3 URLs');
+		expect(_shownMessages()[0]?.message).toContain('Sorted 3 URL(s)');
 	});
 
 	it('sorts by URL when positions are shown, and each keeps its own', async () => {
@@ -374,7 +374,7 @@ describe('urls-le.extractUrls', () => {
 		await runCommand('urls-le.extractUrls');
 
 		expect(events).toContain('command-extract-urls');
-		expect(events).toContain('info:Extracted 1 URLs');
+		expect(events).toContain('info:Extracted 1 URL(s)');
 		expect(events).toContain('statusbar:extracting');
 		expect(events).toContain('statusbar:idle');
 		expect(_clipboardText()).toBe('https://api.example.com/v1');
@@ -481,7 +481,7 @@ describe('urls-le.extractUrls', () => {
 		await runCommand('urls-le.extractUrls');
 
 		expect(events.some((e) => e.startsWith('error:'))).toBe(false);
-		expect(events).toContain('info:Extracted 1 URLs');
+		expect(events).toContain('info:Extracted 1 URL(s)');
 	});
 
 	it('replaces the document in place when both open settings are off', async () => {
@@ -518,7 +518,7 @@ describe('urls-le.extractUrls', () => {
 		await runCommand('urls-le.extractUrls');
 
 		expect(appliedEdits).toHaveLength(0);
-		expect(events).toContain('info:Extracted 1 URLs');
+		expect(events).toContain('info:Extracted 1 URL(s)');
 	});
 
 	it('reports when no URLs are found', async () => {

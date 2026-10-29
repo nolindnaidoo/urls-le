@@ -96,7 +96,7 @@ async function performSort(
 	}
 
 	notifier.showInfo(
-		vscode.l10n.t('Sorted {0} URLs ({1})', sorted.length, sortOption.label),
+		vscode.l10n.t('Sorted {0} URL(s) ({1})', sorted.length, sortOption.label),
 	);
 }
 

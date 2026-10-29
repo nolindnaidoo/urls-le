@@ -14,6 +14,11 @@ version and releases from one tag.
 
 ### Fixed
 
+- "Extracted 1 URLs", "Sorted 1 URLs" and "Removed 1 duplicate URLs" read
+  as "URL(s)" now. In all twelve languages the dedupe summary read its count
+  as the place the duplicates were removed from, and in Japanese and Chinese
+  the sort summary read the order's name as a second count; each says what
+  the English says.
 - The extension's MCP server, run as `urls-le-mcp`, died on an unhandled
   EPIPE with a Node stack trace when the client closed the pipe, which a
   host logs as the server crashing. It exits 2 quietly, as the other two
