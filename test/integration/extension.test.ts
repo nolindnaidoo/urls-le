@@ -29,17 +29,16 @@ describe('URLs-LE integration', function () {
 
 	it('registers every declared command', async () => {
 		const extension = vscode.extensions.getExtension(EXTENSION_ID);
-		await extension?.activate();
+		assert.ok(extension, 'extension not found');
+		await extension.activate();
+		// The manifest's own list, so a command added there without a
+		// registration fails here rather than in a user's palette.
+		const declared = (
+			extension.packageJSON.contributes.commands as { command: string }[]
+		).map((entry) => entry.command);
+		assert.ok(declared.length >= 7, `only ${declared.length} commands declared`);
 		const commands = await vscode.commands.getCommands(true);
-		for (const id of [
-			'urls-le.extractUrls',
-			'urls-le.extractWorkspace',
-			'urls-le.extractFolder',
-			'urls-le.postProcess.dedupe',
-			'urls-le.postProcess.sort',
-			'urls-le.openSettings',
-			'urls-le.help',
-		]) {
+		for (const id of declared) {
 			assert.ok(commands.includes(id), `missing command: ${id}`);
 		}
 	});

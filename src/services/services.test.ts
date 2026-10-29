@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
 	_createExtensionContext,
@@ -22,20 +24,21 @@ beforeEach(() => {
 });
 
 describe('createServices / activate', () => {
-	it('activate registers every declared command', () => {
+	it('activate registers every command the manifest declares, and no other', () => {
+		// Read from the manifest rather than listed here: a list named five of
+		// seven and could not notice an eighth.
+		const manifest = JSON.parse(
+			readFileSync(join(__dirname, '..', '..', 'package.json'), 'utf8'),
+		) as { contributes: { commands: Array<{ command: string }> } };
+		const declared = manifest.contributes.commands
+			.map((entry) => entry.command)
+			.sort();
+		expect(declared.length).toBeGreaterThanOrEqual(7);
+
 		const context = _createExtensionContext();
 		activate(context as never);
 
-		const declared = [
-			'urls-le.extractUrls',
-			'urls-le.postProcess.dedupe',
-			'urls-le.postProcess.sort',
-			'urls-le.openSettings',
-			'urls-le.help',
-		];
-		for (const id of declared) {
-			expect(_registeredCommands().has(id), id).toBe(true);
-		}
+		expect([..._registeredCommands().keys()].sort()).toEqual(declared);
 		deactivate();
 	});
 
