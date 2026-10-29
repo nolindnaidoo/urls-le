@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import type { Notifier } from '../ui/notifier';
 import { replaceDocumentContent } from '../utils/document';
-import { sanitizeErrorMessage } from '../utils/errors';
+import { describeError, sanitizeErrorMessage } from '../utils/errors';
 import { onValues } from '../utils/positions';
 import { guarded } from './guard';
 
@@ -153,8 +153,6 @@ function sortAlphabetically(lines: string[], order: 'asc' | 'desc'): string[] {
 }
 
 function handleSortError(error: unknown, notifier: Notifier): void {
-	const message = sanitizeErrorMessage(
-		error instanceof Error ? error.message : 'Unknown error occurred',
-	);
+	const message = sanitizeErrorMessage(describeError(error));
 	notifier.showError(vscode.l10n.t('Sorting failed: {0}', message));
 }

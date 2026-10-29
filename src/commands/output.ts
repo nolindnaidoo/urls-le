@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import type { Configuration } from '../types';
 import { replaceDocumentContent } from '../utils/document';
+import { describeError } from '../utils/errors';
 import type { CommandDependencies } from './dependencies';
 
 /**
@@ -13,11 +14,6 @@ import type { CommandDependencies } from './dependencies';
  * notification, so the user really can interrupt between the extraction and
  * the write.
  */
-
-function describe(error: unknown): string {
-	if (error instanceof Error) return error.message;
-	return vscode.l10n.t('Unknown error');
-}
 
 /** Returns whether the results reached the user. */
 export async function displayResults(
@@ -58,7 +54,7 @@ async function openBeside(
 		deps.notifier.showError(
 			vscode.l10n.t(
 				'Failed to open results side by side: {0}',
-				describe(error),
+				describeError(error),
 			),
 		);
 		return false;
@@ -81,7 +77,10 @@ async function openInNewFile(
 		return true;
 	} catch (error) {
 		deps.notifier.showError(
-			vscode.l10n.t('Failed to open results in new file: {0}', describe(error)),
+			vscode.l10n.t(
+				'Failed to open results in new file: {0}',
+				describeError(error),
+			),
 		);
 		return false;
 	}
@@ -109,7 +108,10 @@ async function replaceInPlace(
 		return true;
 	} catch (error) {
 		deps.notifier.showError(
-			vscode.l10n.t('Failed to replace document content: {0}', describe(error)),
+			vscode.l10n.t(
+				'Failed to replace document content: {0}',
+				describeError(error),
+			),
 		);
 		return false;
 	}

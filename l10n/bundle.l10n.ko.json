@@ -52,5 +52,6 @@
 	"Occurrences": "등장 횟수",
 	"{0} file(s) could not be read.": "파일 {0}개를 읽을 수 없습니다.",
 	"URLs-LE could not finish: {0}": "URLs-LE을(를) 완료할 수 없습니다: {0}",
-	"The results limit of {0} was reached. The URLs after it in that file were not counted.": "결과 제한 {0}에 도달했습니다. 해당 파일에서 그 이후의 URL은 집계되지 않았습니다."
+	"The results limit of {0} was reached. The URLs after it in that file were not counted.": "결과 제한 {0}에 도달했습니다. 해당 파일에서 그 이후의 URL은 집계되지 않았습니다.",
+	"Clipboard access denied. Extracted URLs but could not copy to clipboard.": "클립보드 접근이 거부되었습니다. URL은 추출했지만 클립보드에 복사하지 못했습니다."
 }

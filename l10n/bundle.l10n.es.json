@@ -52,5 +52,6 @@
 	"Occurrences": "Apariciones",
 	"{0} file(s) could not be read.": "{0} archivo(s) no se pudieron leer.",
 	"URLs-LE could not finish: {0}": "URLs-LE no pudo terminar: {0}",
-	"The results limit of {0} was reached. The URLs after it in that file were not counted.": "Se alcanzó el límite de resultados de {0}. Las URL posteriores en ese archivo no se contaron."
+	"The results limit of {0} was reached. The URLs after it in that file were not counted.": "Se alcanzó el límite de resultados de {0}. Las URL posteriores en ese archivo no se contaron.",
+	"Clipboard access denied. Extracted URLs but could not copy to clipboard.": "Acceso al portapapeles denegado. Las URL se extrajeron, pero no se pudieron copiar al portapapeles."
 }

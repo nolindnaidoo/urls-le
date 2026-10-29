@@ -52,5 +52,6 @@
 	"Occurrences": "Ocorrências",
 	"{0} file(s) could not be read.": "{0} arquivo(s) não puderam ser lidos.",
 	"URLs-LE could not finish: {0}": "O URLs-LE não pôde concluir: {0}",
-	"The results limit of {0} was reached. The URLs after it in that file were not counted.": "O limite de resultados de {0} foi atingido. As URLs seguintes nesse arquivo não foram contadas."
+	"The results limit of {0} was reached. The URLs after it in that file were not counted.": "O limite de resultados de {0} foi atingido. As URLs seguintes nesse arquivo não foram contadas.",
+	"Clipboard access denied. Extracted URLs but could not copy to clipboard.": "Acesso à área de transferência negado. As URLs foram extraídas, mas não foi possível copiá-las para a área de transferência."
 }

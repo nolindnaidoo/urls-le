@@ -52,5 +52,6 @@
 	"Occurrences": "Вхождения",
 	"{0} file(s) could not be read.": "Не удалось прочитать файлов: {0}.",
 	"URLs-LE could not finish: {0}": "URLs-LE не удалось завершить: {0}",
-	"The results limit of {0} was reached. The URLs after it in that file were not counted.": "Достигнут лимит результатов {0}. Последующие URL в этом файле не были учтены."
+	"The results limit of {0} was reached. The URLs after it in that file were not counted.": "Достигнут лимит результатов {0}. Последующие URL в этом файле не были учтены.",
+	"Clipboard access denied. Extracted URLs but could not copy to clipboard.": "Доступ к буферу обмена запрещён. URL-адреса извлечены, но скопировать их в буфер обмена не удалось."
 }

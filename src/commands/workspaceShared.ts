@@ -4,6 +4,7 @@ import type { Configuration } from '../types';
 import type { Notifier } from '../ui/notifier';
 import type { RatingPrompt } from '../ui/ratingPrompt';
 import type { StatusBar } from '../ui/statusBar';
+import { describeError } from '../utils/errors';
 import type { ScanLimits } from '../workspace/scan';
 
 /** What the commands that read a folder have in common. */
@@ -70,11 +71,10 @@ export async function deliver(
 				report(config.clipboardIncludesPositions),
 			);
 		} catch (error) {
-			const message = error instanceof Error ? error.message : 'Unknown error';
 			deps.notifier.showWarning(
 				vscode.l10n.t(
 					'Could not copy the report to the clipboard: {0}',
-					message,
+					describeError(error),
 				),
 			);
 		}

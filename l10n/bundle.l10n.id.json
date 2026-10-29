@@ -52,5 +52,6 @@
 	"Occurrences": "Kemunculan",
 	"{0} file(s) could not be read.": "{0} file tidak dapat dibaca.",
 	"URLs-LE could not finish: {0}": "URLs-LE tidak dapat menyelesaikan: {0}",
-	"The results limit of {0} was reached. The URLs after it in that file were not counted.": "Batas hasil {0} telah tercapai. URL setelahnya di file tersebut tidak dihitung."
+	"The results limit of {0} was reached. The URLs after it in that file were not counted.": "Batas hasil {0} telah tercapai. URL setelahnya di file tersebut tidak dihitung.",
+	"Clipboard access denied. Extracted URLs but could not copy to clipboard.": "Akses papan klip ditolak. URL berhasil diekstrak, tetapi tidak dapat disalin ke papan klip."
 }

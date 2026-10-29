@@ -52,5 +52,6 @@
 	"Occurrences": "Occurrences",
 	"{0} file(s) could not be read.": "{0} fichier(s) n'ont pas pu être lus.",
 	"URLs-LE could not finish: {0}": "URLs-LE n'a pas pu terminer : {0}",
-	"The results limit of {0} was reached. The URLs after it in that file were not counted.": "La limite de résultats de {0} a été atteinte. Les URL suivantes dans ce fichier n'ont pas été comptées."
+	"The results limit of {0} was reached. The URLs after it in that file were not counted.": "La limite de résultats de {0} a été atteinte. Les URL suivantes dans ce fichier n'ont pas été comptées.",
+	"Clipboard access denied. Extracted URLs but could not copy to clipboard.": "Accès au presse-papiers refusé. Les URL ont été extraites mais n’ont pas pu être copiées dans le presse-papiers."
 }
