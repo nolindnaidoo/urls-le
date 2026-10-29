@@ -148,7 +148,10 @@ async function checkMcpExtractUrls(): Promise<void> {
 		content?: string;
 		arguments: Record<string, unknown>;
 		expected?: unknown;
+		/** A schema violation: `-32602`, in these words, from both servers. */
 		expectedError?: string;
+		/** A tool failure on what it was given: an `isError` result. */
+		expectedFailure?: string;
 	}>;
 
 	const tool = TOOLS.find((t) => t.name === 'extract_urls');
@@ -162,18 +165,29 @@ async function checkMcpExtractUrls(): Promise<void> {
 		if (testCase.file !== undefined) args.content = readDocument(testCase.file);
 		else if (testCase.content !== undefined) args.content = testCase.content;
 
-		if (testCase.expectedError !== undefined) {
+		const refusal = testCase.expectedError ?? testCase.expectedFailure;
+		if (refusal !== undefined) {
 			try {
 				await tool.handler(args);
 				fail(
-					`mcp extract "${testCase.name}": expected it to fail with ${JSON.stringify(testCase.expectedError)}`,
+					`mcp extract "${testCase.name}": expected it to fail with ${JSON.stringify(refusal)}`,
 				);
 			} catch (error) {
 				const message = error instanceof Error ? error.message : String(error);
-				if (message !== testCase.expectedError) {
+				if (message !== refusal) {
 					fail(
-						`mcp extract "${testCase.name}": expected error ${JSON.stringify(testCase.expectedError)}, got ${JSON.stringify(message)}`,
+						`mcp extract "${testCase.name}": expected error ${JSON.stringify(refusal)}, got ${JSON.stringify(message)}`,
 					);
+				}
+				// A schema violation is -32602 on every server, and a tool
+				// failure never is; the corpus holds the code as well as the
+				// words, because the crate answers the same case the same way.
+				const code = (error as { code?: unknown })?.code;
+				if (testCase.expectedError !== undefined && code !== -32602) {
+					fail(`mcp extract "${testCase.name}": the refusal carries no -32602 code`);
+				}
+				if (testCase.expectedFailure !== undefined && code === -32602) {
+					fail(`mcp extract "${testCase.name}": a tool failure carries the -32602 code`);
 				}
 			}
 			continue;

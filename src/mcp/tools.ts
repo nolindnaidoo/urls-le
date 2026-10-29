@@ -5,7 +5,10 @@ import {
 	envelope,
 	MAX_MAX_RESULTS,
 	readMaxResults,
+	readOptionalBoolean,
+	readOptionalString,
 	readString,
+	refuseUnknown,
 	sortedKeys,
 	toDiagnostics,
 } from './envelope';
@@ -42,7 +45,17 @@ const MAX_RESULTS_SCHEMA = {
 	description: `Cap on returned URLs (default ${DEFAULT_MAX_RESULTS}). meta.truncated reports whether any were dropped.`,
 };
 
+/** The schema's properties, which `additionalProperties: false` closes. */
+const EXTRACT_ARGUMENTS = [
+	'content',
+	'format',
+	'filename',
+	'dedupe',
+	'maxResults',
+] as const;
+
 async function extract(args: Record<string, unknown>): Promise<unknown> {
+	refuseUnknown(args, EXTRACT_ARGUMENTS);
 	// A leading byte-order mark is not part of the document. VS Code strips it
 	// before the engine ever sees a buffer, and the Rust CLI strips it before
 	// reading a file — so this tool was the one entry where it survived, and it
@@ -52,9 +65,11 @@ async function extract(args: Record<string, unknown>): Promise<unknown> {
 	const content = raw.startsWith('\ufeff') ? raw.slice(1) : raw;
 	const maxResults = readMaxResults(args);
 
-	const format = typeof args.format === 'string' ? args.format : undefined;
-	const filename =
-		typeof args.filename === 'string' ? args.filename : undefined;
+	// Read as the schema types them. A `format: 7` was read as absent and a
+	// `dedupe: "yes"` as false, silences the schema never allowed.
+	const format = readOptionalString(args, 'format');
+	const filename = readOptionalString(args, 'filename');
+	const dedupe = readOptionalBoolean(args, 'dedupe') === true;
 
 	// Only a caller who named neither lands here — every name resolves, to the
 	// plain-text scan if nothing else. The message stays because the engine's
@@ -80,12 +95,11 @@ async function extract(args: Record<string, unknown>): Promise<unknown> {
 	// caller to know it happened. Keeping first occurrence rather than last
 	// preserves document order, so positions stay ascending and a model can
 	// still reason about where in the file something appeared.
-	const deduped =
-		args.dedupe === true
-			? values.filter(
-					(u, i, all) => all.findIndex((o) => o.value === u.value) === i,
-				)
-			: values;
+	const deduped = dedupe
+		? values.filter(
+				(u, i, all) => all.findIndex((o) => o.value === u.value) === i,
+			)
+		: values;
 
 	// Capped after dedupe, not before: capping first would return 500 rows that
 	// collapse to 30, which is neither the first 500 unique URLs nor an honest

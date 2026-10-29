@@ -14,6 +14,16 @@ version and releases from one tag.
 
 ### Fixed
 
+- Both MCP servers answered an argument that does not fit the tool's
+  schema as the tool's own failure, an `isError` result, and read a wrong
+  type on an optional argument as absent: `format: 7` scanned the text as
+  plain, `dedupe: "yes"` was false, `hidden: "yes"` was false, an entry of
+  `paths` that is not a string vanished without a word, and an argument the
+  schema does not declare was accepted. All three servers refuse these as a
+  protocol error, `-32602`, in one set of words, and `additionalProperties:
+  false` is enforced. The npm command line's server refused a cap written
+  as `1E20` where the extension's server clamped it; a whole number however
+  it is written is a cap on all three.
 - The extension's MCP server answered `initialize` with whatever protocol
   version the client asked for and a `listChanged: false` capability, where
   the crate's server answers its own version and `tools: {}`; it replied to

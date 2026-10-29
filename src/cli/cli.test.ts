@@ -318,20 +318,81 @@ describe('mcp', () => {
 		expect(written).toEqual(['{"id":1,"jsonrpc":"2.0","result":{}}\n']);
 	});
 
-	it('reports a scan of a missing path as a tool failure', async () => {
+	const call = (name: string, args: string) =>
+		`{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"${name}","arguments":${args}}}\n`;
+	const refusal = (reply: string) => JSON.parse(reply).error;
+
+	it('refuses a wrong-typed or undeclared argument as a protocol error, and a path that is not there as a tool failure', async () => {
+		// A `hidden: "yes"` was read as false and a `format: 7` as absent, and
+		// an argument the schema does not declare was accepted, on this
+		// server and the crate's alike. A path that is not there is a fact
+		// about the filesystem, not the schema: a result carrying isError.
 		const { written } = await session([
-			`${JSON.stringify({
-				jsonrpc: '2.0',
-				id: 1,
-				method: 'tools/call',
-				params: { name: 'urls_le_scan', arguments: {} },
-			})}\n`,
+			call('extract_urls', '{"content":"x","format":7}'),
+			call(
+				'extract_urls',
+				'{"content":"x","format":"markdown","dedupe":"yes"}',
+			),
+			call('extract_urls', '{"content":"x","format":"markdown","filename":7}'),
+			call(
+				'extract_urls',
+				'{"content":"x","format":"markdown","bogus":1,"another":2}',
+			),
+			call('urls_le_scan', '{"path":"x","hidden":"yes"}'),
+			call('urls_le_scan', '{"path":"x","bogus":1}'),
+			call('urls_le_scan', '{"path":"/no/such/place-xyz"}'),
 		]);
-		expect(JSON.parse(written[0] as string).result).toEqual({
-			content: [
-				{ text: 'no file or directory was supplied to audit', type: 'text' },
-			],
-			isError: true,
-		});
+		expect(written.slice(0, 6).map(refusal)).toEqual([
+			{ code: -32602, message: 'format must be a string' },
+			{ code: -32602, message: 'dedupe must be a boolean' },
+			{ code: -32602, message: 'filename must be a string' },
+			{ code: -32602, message: 'unknown arguments: another, bogus' },
+			{ code: -32602, message: 'hidden must be a boolean' },
+			{ code: -32602, message: 'unknown argument: bogus' },
+		]);
+		const failure = JSON.parse(written[6] as string).result;
+		expect(failure.isError).toBe(true);
+		expect(failure.content[0].text).toContain('/no/such/place-xyz');
+	});
+
+	it('names a path entry that is not a string rather than dropping it, and refuses a scan that names nothing', async () => {
+		// `["dir", 7]` was answered for `dir` alone and the 7 vanished without
+		// a word, on this server and the crate's alike.
+		const { written } = await session([
+			call('urls_le_scan', '{"paths":["a",7]}'),
+			call('urls_le_scan', '{"paths":[null]}'),
+			call('urls_le_scan', '{"path":7}'),
+			call('urls_le_scan', '{"paths":[]}'),
+			call('urls_le_scan', '{}'),
+		]);
+		expect(written.map(refusal)).toEqual([
+			{ code: -32602, message: 'entry 1 of paths is not a string' },
+			{ code: -32602, message: 'entry 0 of paths is not a string' },
+			{ code: -32602, message: 'path must be a string' },
+			{ code: -32602, message: 'the list of paths was empty' },
+			{ code: -32602, message: 'no file or directory was supplied to audit' },
+		]);
+	});
+
+	it('reads a cap written as an exponent or an integer-valued float as the crate does', async () => {
+		// `1E20` was refused here and clamped by the extension's server; JSON
+		// Schema's `integer` is any number with a zero fractional part.
+		const { written } = await session([
+			call(
+				'extract_urls',
+				'{"content":"https://a.example https://b.example","format":"markdown","maxResults":1E20}',
+			),
+			call(
+				'extract_urls',
+				'{"content":"https://a.example https://b.example","format":"markdown","maxResults":1.0}',
+			),
+		]);
+		const meta = written.map(
+			(reply) => JSON.parse(reply).result.structuredContent.meta,
+		);
+		expect(meta).toEqual([
+			{ count: 2, tool: 'extract_urls', truncated: false },
+			{ count: 1, tool: 'extract_urls', truncated: true },
+		]);
 	});
 });

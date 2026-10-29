@@ -290,6 +290,72 @@ describe('protocol', () => {
 		expect(reply?.error?.code).toBe(-32602);
 	});
 
+	it('refuses an argument that does not fit the schema as a protocol error, in the words the other two servers use', async () => {
+		// It was an isError result, which a host shows to the agent as the
+		// tool's own failure; a wrong type on an optional argument was read as
+		// absent, and an argument the schema does not declare was accepted.
+		// The schema is what the agent read before sending, so a violation
+		// is -32602, and `additionalProperties: false` is enforced.
+		for (const [args, message] of [
+			[{}, 'content is required and must be a string'],
+			[
+				{ content: 'x', format: 'markdown', maxResults: 2.5 },
+				'maxResults must be a positive integer',
+			],
+			[{ content: 'x', format: 7 }, 'format must be a string'],
+			[
+				{ content: 'x', format: 'markdown', filename: 7 },
+				'filename must be a string',
+			],
+			[
+				{ content: 'x', format: 'markdown', dedupe: 'yes' },
+				'dedupe must be a boolean',
+			],
+			[
+				{ content: 'x', format: 'markdown', extra: true },
+				'unknown argument: extra',
+			],
+			[
+				{ content: 'x', format: 'markdown', extra: true, another: 1 },
+				'unknown arguments: another, extra',
+			],
+		] as const) {
+			const reply = await respond({
+				jsonrpc: '2.0',
+				id: 4,
+				method: 'tools/call',
+				params: { name: 'extract_urls', arguments: args },
+			});
+			expect(reply?.result, JSON.stringify(args)).toBeUndefined();
+			expect(reply?.error, JSON.stringify(args)).toEqual({
+				code: -32602,
+				message,
+			});
+		}
+	});
+
+	it('reads a cap written as an integer-valued float or exponent as the crate does', async () => {
+		// JSON Schema's `integer` is any number with a zero fractional part.
+		const reply = await respond({
+			jsonrpc: '2.0',
+			id: 5,
+			method: 'tools/call',
+			params: {
+				name: 'extract_urls',
+				arguments: {
+					content: 'https://a.example https://b.example',
+					format: 'markdown',
+					maxResults: 1e20,
+				},
+			},
+		});
+		expect(reply?.error).toBeUndefined();
+		const structured = reply?.result?.structuredContent as
+			| { meta: { count: number } }
+			| undefined;
+		expect(structured?.meta.count).toBe(2);
+	});
+
 	it('returns a tool failure as a result, not a protocol error', async () => {
 		// A model can read an isError result and correct itself; a JSON-RPC error
 		// reads as "the server is broken".

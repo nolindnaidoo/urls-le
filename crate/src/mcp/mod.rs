@@ -2,13 +2,18 @@
 //! Protocol on stdio, so a model can ask for the URLs rather than be
 //! handed the files and pattern-match them itself.
 //!
-//! Two rules the family's MCP surfaces established:
+//! Three rules the family's MCP surfaces established:
 //!
 //! - **An empty answer is not an error.** A document with no URLs comes
 //!   back as an ordinary result carrying `ok: true` — the scan ran.
 //!   Only a malformed question is a protocol error.
 //! - **Refusals speak the caller's vocabulary.** An MCP caller has no
 //!   command line, so no message here mentions a flag.
+//! - **An argument that does not fit the schema is a protocol error.**
+//!   Three servers ship from this repository, and a client cannot be
+//!   allowed to tell them apart by what it sent: the same `-32602`, in the
+//!   same words, for a wrong type, an undeclared argument or a cap that is
+//!   not a whole number.
 //!
 //! Read-only by construction: nothing on this surface writes, so unlike
 //! pixelactions there is no consent gate to design.
@@ -29,6 +34,75 @@ const PROTOCOL_VERSION: &str = "2025-06-18";
 /// JSON-RPC error codes, from the spec.
 const INVALID_PARAMS: i64 = -32602;
 const METHOD_NOT_FOUND: i64 = -32601;
+
+/// Why a tool did not answer.
+///
+/// An argument that does not fit the tool's schema is a protocol error,
+/// `-32602`, in the words the npm server and the extension's use: a host
+/// counts it against the sender, and the schema is what the agent read
+/// before sending. A tool that fails on what it was given at run time,
+/// a path that is not there, is a result carrying `isError`, so a model
+/// reads the reason and reacts rather than concluding the server is
+/// broken.
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) enum Refusal {
+    InvalidParams(String),
+    Failure(String),
+}
+
+impl Refusal {
+    #[cfg(test)]
+    pub(crate) fn message(&self) -> &str {
+        match self {
+            Self::InvalidParams(message) | Self::Failure(message) => message,
+        }
+    }
+}
+
+/// `additionalProperties: false`, enforced: an argument the schema does
+/// not declare is refused by name, the names sorted as serde sorts keys.
+pub(crate) fn refuse_unknown(arguments: &Value, known: &[&str]) -> Result<(), Refusal> {
+    let Some(object) = arguments.as_object() else {
+        return Ok(());
+    };
+    let unknown: Vec<&str> = object
+        .keys()
+        .map(String::as_str)
+        .filter(|key| !known.contains(key))
+        .collect();
+    match unknown.as_slice() {
+        [] => Ok(()),
+        [one] => Err(Refusal::InvalidParams(format!("unknown argument: {one}"))),
+        many => Err(Refusal::InvalidParams(format!(
+            "unknown arguments: {}",
+            many.join(", ")
+        ))),
+    }
+}
+
+/// An optional argument that must be a string when present.
+pub(crate) fn optional_str<'a>(
+    arguments: &'a Value,
+    name: &str,
+) -> Result<Option<&'a str>, Refusal> {
+    match arguments.get(name) {
+        None => Ok(None),
+        Some(value) => value
+            .as_str()
+            .map(Some)
+            .ok_or_else(|| Refusal::InvalidParams(format!("{name} must be a string"))),
+    }
+}
+
+/// An optional argument that must be a boolean when present; absent is false.
+pub(crate) fn optional_bool(arguments: &Value, name: &str) -> Result<bool, Refusal> {
+    match arguments.get(name) {
+        None => Ok(false),
+        Some(value) => value
+            .as_bool()
+            .ok_or_else(|| Refusal::InvalidParams(format!("{name} must be a boolean"))),
+    }
+}
 
 pub(crate) fn serve() -> ExitCode {
     let stdin = std::io::stdin();
@@ -126,15 +200,17 @@ fn tool_definitions() -> Value {
                         "description": "Walk files excluded by .gitignore too.",
                     },
                 },
+                "additionalProperties": false,
             },
         },
     ])
 }
 
-/// Protocol failures (no tool named, an unknown tool) are JSON-RPC
-/// errors; a tool that fails on its arguments returns a result carrying
-/// `isError`, so a model reads the reason and reacts rather than
-/// concluding the server is broken. Same rule as the npm server.
+/// Protocol failures (no tool named, an unknown tool, an argument that
+/// does not fit the schema) are JSON-RPC errors; a tool that fails on
+/// what it was given at run time returns a result carrying `isError`, so
+/// a model reads the reason and reacts rather than concluding the server
+/// is broken. Same rule, same words, as the npm server.
 fn call_tool(params: Option<&Value>) -> Result<Value, (i64, String)> {
     let params = params.ok_or((INVALID_PARAMS, "no tool call was supplied".to_string()))?;
     let name = params
@@ -147,14 +223,8 @@ fn call_tool(params: Option<&Value>) -> Result<Value, (i64, String)> {
         .unwrap_or_else(|| json!({}));
 
     match name {
-        "extract_urls" => Ok(match extract::run(&arguments) {
-            Ok(result) => tool_result(&result),
-            Err(message) => tool_failure(&message),
-        }),
-        "urls_le_scan" => Ok(match scan_tool(&arguments) {
-            Ok(result) => tool_result(&result),
-            Err(message) => tool_failure(&message),
-        }),
+        "extract_urls" => answer(extract::run(&arguments)),
+        "urls_le_scan" => answer(scan_tool(&arguments)),
         other => Err((
             INVALID_PARAMS,
             format!("this server offers no tool named {other}"),
@@ -162,25 +232,32 @@ fn call_tool(params: Option<&Value>) -> Result<Value, (i64, String)> {
     }
 }
 
-fn scan_tool(arguments: &Value) -> Result<Value, String> {
+fn answer(outcome: Result<Value, Refusal>) -> Result<Value, (i64, String)> {
+    match outcome {
+        Ok(result) => Ok(tool_result(&result)),
+        Err(Refusal::InvalidParams(message)) => Err((INVALID_PARAMS, message)),
+        Err(Refusal::Failure(message)) => Ok(tool_failure(&message)),
+    }
+}
+
+fn scan_tool(arguments: &Value) -> Result<Value, Refusal> {
+    refuse_unknown(arguments, &["path", "paths", "dedupe", "hidden", "ignored"])?;
     let inputs = requested_paths(arguments)?;
-    let flag = |name: &str| {
-        arguments
-            .get(name)
-            .and_then(Value::as_bool)
-            .unwrap_or(false)
-    };
+    // Read as the schema types them. A `hidden: "yes"` was read as false,
+    // a silence the schema never allowed.
     let walk_options = WalkOptions {
-        hidden: flag("hidden"),
-        respect_ignore: !flag("ignored"),
+        hidden: optional_bool(arguments, "hidden")?,
+        respect_ignore: !optional_bool(arguments, "ignored")?,
         follow_symlinks: false,
         format: None,
     };
     let options = ScanOptions {
-        dedupe: flag("dedupe"),
+        dedupe: optional_bool(arguments, "dedupe")?,
     };
 
-    let targets = walk::collect(&inputs, &walk_options)?;
+    // A path that is not there is a fact about the filesystem, not the
+    // schema: a tool failure the model reads, not a protocol error.
+    let targets = walk::collect(&inputs, &walk_options).map_err(Refusal::Failure)?;
     let reports: Vec<Value> = targets
         .iter()
         .map(|target| {
@@ -226,21 +303,31 @@ fn scan_tool(arguments: &Value) -> Result<Value, String> {
     ))
 }
 
-fn requested_paths(arguments: &Value) -> Result<Vec<PathBuf>, String> {
-    if let Some(path) = arguments.get("path").and_then(Value::as_str) {
+fn requested_paths(arguments: &Value) -> Result<Vec<PathBuf>, Refusal> {
+    let invalid = |message: &str| Refusal::InvalidParams(message.to_string());
+    if let Some(path) = arguments.get("path") {
+        let path = path
+            .as_str()
+            .ok_or_else(|| invalid("path must be a string"))?;
         return Ok(vec![PathBuf::from(path)]);
     }
     if let Some(items) = arguments.get("paths").and_then(Value::as_array) {
-        let paths: Vec<PathBuf> = items
-            .iter()
-            .filter_map(|item| item.as_str().map(PathBuf::from))
-            .collect();
+        // An entry that is not a string is named rather than dropped:
+        // `["dir", 7]` was answered for `dir` alone and the 7 vanished
+        // without a word.
+        let mut paths = Vec::with_capacity(items.len());
+        for (index, item) in items.iter().enumerate() {
+            let Some(path) = item.as_str() else {
+                return Err(invalid(&format!("entry {index} of paths is not a string")));
+            };
+            paths.push(PathBuf::from(path));
+        }
         if paths.is_empty() {
-            return Err("the list of paths was empty".to_string());
+            return Err(invalid("the list of paths was empty"));
         }
         return Ok(paths);
     }
-    Err("no file or directory was supplied to audit".to_string())
+    Err(invalid("no file or directory was supplied to audit"))
 }
 
 /// The one result shape every tool returns, matching the npm server's
@@ -284,8 +371,8 @@ fn warning(code: &str, message: &str) -> Value {
     json!({ "severity": "warning", "code": code, "message": message })
 }
 
-/// The tool could not run on the arguments given. `isError` so a model
-/// reads the message and corrects itself.
+/// The tool could not run on what it was given at run time. `isError` so
+/// a model reads the message and corrects itself.
 fn tool_failure(message: &str) -> Value {
     json!({
         "content": [{ "type": "text", "text": message }],
@@ -343,19 +430,114 @@ mod tests {
         assert_eq!(response["error"]["code"], INVALID_PARAMS);
     }
 
-    /// A bad argument is the tool failing on what it was given, not the
-    /// server breaking — so it comes back as a result carrying isError.
+    /// An argument that does not fit the schema is a protocol error, in
+    /// the words the npm server and the extension's use; a path that is
+    /// not there is a fact about the filesystem, not the schema, and comes
+    /// back as a result carrying isError. A `hidden: "yes"` was read as
+    /// false, a `format: 7` as absent, an entry of `paths` that is not a
+    /// string was dropped, and an argument the schema does not declare was
+    /// accepted.
     #[test]
-    fn a_missing_argument_is_a_tool_failure_not_a_protocol_error() {
-        let response = call("urls_le_scan", &json!({}));
+    fn a_wrong_typed_or_undeclared_argument_is_a_protocol_error() {
+        for (tool, arguments, message) in [
+            (
+                "urls_le_scan",
+                json!({}),
+                "no file or directory was supplied to audit",
+            ),
+            (
+                "urls_le_scan",
+                json!({ "paths": [] }),
+                "the list of paths was empty",
+            ),
+            (
+                "urls_le_scan",
+                json!({ "paths": ["a", 7] }),
+                "entry 1 of paths is not a string",
+            ),
+            (
+                "urls_le_scan",
+                json!({ "path": 7 }),
+                "path must be a string",
+            ),
+            (
+                "urls_le_scan",
+                json!({ "path": "x", "hidden": "yes" }),
+                "hidden must be a boolean",
+            ),
+            (
+                "urls_le_scan",
+                json!({ "path": "x", "bogus": 1 }),
+                "unknown argument: bogus",
+            ),
+            (
+                "extract_urls",
+                json!({ "content": "x", "format": 7 }),
+                "format must be a string",
+            ),
+            (
+                "extract_urls",
+                json!({ "content": "x", "format": "markdown", "filename": 7 }),
+                "filename must be a string",
+            ),
+            (
+                "extract_urls",
+                json!({ "content": "x", "format": "markdown", "dedupe": "yes" }),
+                "dedupe must be a boolean",
+            ),
+            (
+                "extract_urls",
+                json!({ "content": "x", "format": "markdown", "extra": true, "another": 1 }),
+                "unknown arguments: another, extra",
+            ),
+            (
+                "extract_urls",
+                json!({ "format": "markdown" }),
+                "content is required and must be a string",
+            ),
+            (
+                "extract_urls",
+                json!({ "content": "x", "format": "markdown", "maxResults": 0 }),
+                "maxResults must be a positive integer",
+            ),
+        ] {
+            let response = call(tool, &arguments);
+            assert_eq!(
+                response["error"]["code"], INVALID_PARAMS,
+                "{arguments}: {response}"
+            );
+            assert_eq!(response["error"]["message"], message, "{arguments}");
+        }
+
+        let response = call("urls_le_scan", &json!({ "path": "/no/such/place-xyz" }));
         assert!(response.get("error").is_none(), "{response}");
         assert_eq!(response["result"]["isError"], true);
         assert!(
             response["result"]["content"][0]["text"]
                 .as_str()
                 .expect("a message")
-                .contains("no file or directory")
+                .contains("/no/such/place-xyz")
         );
+    }
+
+    /// `1E20` was refused and the extension's server clamped it: JSON
+    /// Schema's `integer` is any number with a zero fractional part.
+    #[test]
+    fn a_cap_written_as_an_exponent_or_an_integer_valued_float_is_a_cap() {
+        let content = "https://a.example https://b.example";
+        for (cap, count, truncated) in [
+            (json!(1e20), 2, false),
+            (json!(1.0), 1, true),
+            (json!(1e3), 2, false),
+        ] {
+            let response = call(
+                "extract_urls",
+                &json!({ "content": content, "format": "markdown", "maxResults": cap }),
+            );
+            let meta = &response["result"]["structuredContent"]["meta"];
+            assert_eq!(meta["count"], count, "{cap}: {response}");
+            assert_eq!(meta["truncated"], truncated, "{cap}");
+        }
     }
 
     #[test]

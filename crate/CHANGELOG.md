@@ -12,6 +12,16 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- The MCP server answered an argument that does not fit the tool's schema
+  as the tool's own failure, an `isError` result, and read a wrong type on
+  an optional argument as absent: `format: 7` scanned the text as plain,
+  `dedupe: "yes"` and `hidden: "yes"` were false, an entry of `paths` that
+  is not a string vanished without a word, an argument the schema does not
+  declare was accepted, and a cap written as `1E20` or `2.0` was refused
+  where the extension's server clamped it. Each is a protocol error now,
+  `-32602`, in the words the other two servers use, and
+  `additionalProperties: false` is enforced. A path that is not there is
+  still the tool's failure. The corpus carries the refusals, with the code.
 - A Markdown block fenced with `~~~` was read as text, so a URL inside it
   was extracted, while a block fenced with backticks was skipped. Both
   markers open a fence now, and only the marker that opened one closes
