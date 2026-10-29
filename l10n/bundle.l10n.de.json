@@ -51,5 +51,6 @@
 	"URL": "URL",
 	"Occurrences": "Vorkommen",
 	"{0} file(s) could not be read.": "{0} Datei(en) konnten nicht gelesen werden.",
-	"URLs-LE could not finish: {0}": "URLs-LE konnte nicht abschließen: {0}"
+	"URLs-LE could not finish: {0}": "URLs-LE konnte nicht abschließen: {0}",
+	"The results limit of {0} was reached. The URLs after it in that file were not counted.": "Das Ergebnislimit von {0} wurde erreicht. Die URLs danach in dieser Datei wurden nicht gezählt."
 }

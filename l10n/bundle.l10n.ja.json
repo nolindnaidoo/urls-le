@@ -51,5 +51,6 @@
 	"URL": "URL",
 	"Occurrences": "出現回数",
 	"{0} file(s) could not be read.": "{0} 個のファイルを読み取れませんでした。",
-	"URLs-LE could not finish: {0}": "URLs-LE を完了できませんでした: {0}"
+	"URLs-LE could not finish: {0}": "URLs-LE を完了できませんでした: {0}",
+	"The results limit of {0} was reached. The URLs after it in that file were not counted.": "結果の上限 {0} に達しました。そのファイル内のそれ以降の URL は数えられていません。"
 }

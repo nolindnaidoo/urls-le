@@ -14,6 +14,10 @@ version and releases from one tag.
 
 ### Fixed
 
+- A folder or workspace scan that reached the results limit inside the last
+  file dropped the URLs after it without a word, since the note was tied to
+  files left unread. The report says when the limit was reached inside a
+  file and that the URLs after it were not counted.
 - Deduplicate and Sort wrote the lines back joined with a bare newline and
   nothing after the last, so a document that ended in a newline lost it on
   every run, and a CRLF document was handed bare newlines. Both write the

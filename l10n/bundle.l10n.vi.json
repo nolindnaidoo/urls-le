@@ -51,5 +51,6 @@
 	"URL": "URL",
 	"Occurrences": "Số lần xuất hiện",
 	"{0} file(s) could not be read.": "Không thể đọc {0} tệp.",
-	"URLs-LE could not finish: {0}": "URLs-LE không thể hoàn thành: {0}"
+	"URLs-LE could not finish: {0}": "URLs-LE không thể hoàn thành: {0}",
+	"The results limit of {0} was reached. The URLs after it in that file were not counted.": "Đã đạt giới hạn kết quả {0}. Các URL sau đó trong tệp này không được đếm."
 }
