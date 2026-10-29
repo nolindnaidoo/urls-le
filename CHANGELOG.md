@@ -14,6 +14,10 @@ version and releases from one tag.
 
 ### Fixed
 
+- The extension's MCP server, run as `urls-le-mcp`, died on an unhandled
+  EPIPE with a Node stack trace when the client closed the pipe, which a
+  host logs as the server crashing. It exits 2 quietly, as the other two
+  servers do.
 - The npm command line passed over a FIFO, a socket or a device in a walk
   without a word, refused one named outright as "Not a directory", and
   passed over every symbolic link without a word unless `--follow-symlinks`

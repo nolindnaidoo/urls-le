@@ -77,13 +77,9 @@ pub(crate) fn run() -> ExitCode {
     if let Some(first) = args.first() {
         match first.as_str() {
             "mcp" => return crate::mcp::serve(),
-            "--help" | "-h" => {
-                println!("{USAGE}");
-                return ExitCode::SUCCESS;
-            }
+            "--help" | "-h" => return answer(USAGE),
             "--version" | "-V" => {
-                println!("urls-le {}", env!("CARGO_PKG_VERSION"));
-                return ExitCode::SUCCESS;
+                return answer(&format!("urls-le {}", env!("CARGO_PKG_VERSION")));
             }
             _ => {}
         }
@@ -91,11 +87,27 @@ pub(crate) fn run() -> ExitCode {
 
     match execute(&args) {
         Ok(code) => ExitCode::from(code),
-        Err(message) => {
-            eprintln!("urls-le: {message}");
-            ExitCode::from(2)
-        }
+        Err(message) => refuse(&message),
     }
+}
+
+/// One line on stdout and exit 0, or the refusal the scan gives a closed
+/// stdout. `println!` panicked on a reader that went away, exit 101 with
+/// a stack trace, where the npm command line answers exit 2 and one line.
+fn answer(text: &str) -> ExitCode {
+    let mut stdout = std::io::stdout().lock();
+    match writeln!(stdout, "{text}").and_then(|()| stdout.flush()) {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(error) => refuse(&format!("could not write the report: {error}")),
+    }
+}
+
+/// A malformed question, or a report that could not be written: one line
+/// on stderr and exit 2. A reader that closed stderr loses the line and
+/// nothing else; `eprintln!` panicked on it.
+fn refuse(message: &str) -> ExitCode {
+    let _ = writeln!(std::io::stderr().lock(), "urls-le: {message}");
+    ExitCode::from(2)
 }
 
 fn execute(args: &[String]) -> Result<u8, String> {

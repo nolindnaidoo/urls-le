@@ -445,6 +445,59 @@ fn an_unreadable_path_never_becomes_exit_two() {
     assert_eq!(run(&["/no/such/place-xyz"]).code, Some(2));
 }
 
+/// A reader that went away. `| head` closes stdout after a few lines, and
+/// a reader can close stderr too. The scan refused a closed stdout with
+/// one line and exit 2, as the npm command line does; `--help` and
+/// `--version` died on a panic, exit 101, with a Rust stack trace, and a
+/// refusal written to a closed stderr panicked the same way. The read end
+/// is closed before the binary starts, so the first write is the EPIPE.
+#[test]
+fn a_closed_pipe_is_refused_in_the_npm_command_lines_words() {
+    let closed_stdout = |args: &[&str]| {
+        let (reader, writer) = std::io::pipe().expect("a pipe");
+        drop(reader);
+        let output = Command::new(BINARY)
+            .args(args)
+            .stdout(writer)
+            .stderr(std::process::Stdio::piped())
+            .output()
+            .expect("the binary runs");
+        (
+            output.status.code(),
+            String::from_utf8_lossy(&output.stderr).into_owned(),
+        )
+    };
+    let refusal = if cfg!(windows) {
+        "urls-le: could not write the report: The pipe is being closed. (os error 232)\n"
+    } else {
+        "urls-le: could not write the report: Broken pipe (os error 32)\n"
+    };
+    for args in [&["--help"][..], &["--version"][..]] {
+        let (code, stderr) = closed_stdout(args);
+        assert_eq!(code, Some(2), "{args:?}: {stderr}");
+        assert_eq!(stderr, refusal, "{args:?}");
+    }
+
+    let tree = Tree::new("closed-stderr");
+    tree.write("a.md", format!("{VALUE}\n").as_bytes());
+    let root = tree.path().to_string_lossy().into_owned();
+    for (args, expected) in [
+        (&["--no-such-flag", "."][..], 2),
+        (&["/no/such/place-xyz"][..], 2),
+        (&[root.as_str()][..], 0),
+    ] {
+        let (reader, writer) = std::io::pipe().expect("a pipe");
+        drop(reader);
+        let output = Command::new(BINARY)
+            .args(args)
+            .stdout(std::process::Stdio::piped())
+            .stderr(writer)
+            .output()
+            .expect("the binary runs");
+        assert_eq!(output.status.code(), Some(expected), "{args:?}");
+    }
+}
+
 /// Links, pipes and loops. Unix only: `std::os::windows::fs::symlink_*`
 /// needs developer mode or elevation on Windows, so a failure there would
 /// be the test environment's, not the tool's.

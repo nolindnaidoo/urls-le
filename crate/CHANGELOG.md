@@ -12,6 +12,11 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- `--help` and `--version` panicked with a stack trace, exit 101, when the
+  reader closed stdout, and a refusal written to a closed stderr panicked
+  the same way. Both answer as the scan and the npm command line do: one
+  line and exit 2 for a closed stdout, and nothing lost but the line for a
+  closed stderr.
 - A FIFO, a socket or a device in a walk was passed over without a word,
   and one named outright was walked as a directory and answered "0 URLs
   in 0 files"; a symbolic link in a walk without `--follow-symlinks` was
