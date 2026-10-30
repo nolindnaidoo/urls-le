@@ -14,6 +14,10 @@ version and releases from one tag.
 
 ### Fixed
 
+- The npm command line's MCP server joined the chunks of a line in progress
+  on every chunk, copying the whole line so far each time, so a 16 MiB line
+  cost about a gigabyte of transient copies on its way to the frame limit.
+  It joins them once, at the newline.
 - "Extracted 1 URLs", "Sorted 1 URLs" and "Removed 1 duplicate URLs" read
   as "URL(s)" now. In all twelve languages the dedupe summary read its count
   as the place the duplicates were removed from, and in Japanese and Chinese
