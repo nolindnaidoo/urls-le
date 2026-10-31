@@ -8,6 +8,48 @@ in this repository carries one version and releases from one tag.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- `--help` and `--version` panicked with a stack trace, exit 101, when the
+  reader closed stdout, and a refusal written to a closed stderr panicked
+  the same way. Both answer as the scan and the npm command line do: one
+  line and exit 2 for a closed stdout, and nothing lost but the line for a
+  closed stderr.
+- A FIFO, a socket or a device in a walk was passed over without a word,
+  and one named outright was walked as a directory and answered "0 URLs
+  in 0 files"; a symbolic link in a walk without `--follow-symlinks` was
+  passed over without a word. A FIFO, a socket or a device is a `skipped`
+  report saying "not a regular file" now, met in a walk or named
+  outright, and `--strict` fails on it; the links a walk does not follow
+  are counted, stderr ends with "N symbolic links not followed", and
+  `urls_le_scan` carries the count as `symbolicLinks`.
+- The MCP server dropped a frame that was not JSON, not UTF-8 or not a
+  JSON-RPC 2.0 request without a word, where the npm servers answer a
+  parse error; it answered a request with a null id, which they read as a
+  notification; it refused an unknown method, an unknown tool and a call
+  naming no tool in its own words; and it held a frame until its newline
+  with no ceiling. It answers every malformed frame in the npm servers'
+  words now, reads a line that is not UTF-8 with replacement characters as
+  they do, refuses a frame over 16 MiB and serves the next line, and reads
+  a last line with no newline as the partial frame it is.
+- The MCP server answered an argument that does not fit the tool's schema
+  as the tool's own failure, an `isError` result, and read a wrong type on
+  an optional argument as absent: `format: 7` scanned the text as plain,
+  `dedupe: "yes"` and `hidden: "yes"` were false, an entry of `paths` that
+  is not a string vanished without a word, an argument the schema does not
+  declare was accepted, and a cap written as `1E20` or `2.0` was refused
+  where the extension's server clamped it. Each is a protocol error now,
+  `-32602`, in the words the other two servers use, and
+  `additionalProperties: false` is enforced. A path that is not there is
+  still the tool's failure. The corpus carries the refusals, with the code.
+- A Markdown block fenced with `~~~` was read as text, so a URL inside it
+  was extracted, while a block fenced with backticks was skipped. Both
+  markers open a fence now, and only the marker that opened one closes
+  it, as CommonMark reads them. The extension changed the same way; the
+  corpus document carries a tilde block.
+
 ## [2.6.1] - 2026-10-18
 
 ### Changed

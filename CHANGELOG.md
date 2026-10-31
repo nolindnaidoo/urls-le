@@ -14,6 +14,85 @@ version and releases from one tag.
 
 ### Fixed
 
+- The npm command line's MCP server joined the chunks of a line in progress
+  on every chunk, copying the whole line so far each time, so a 16 MiB line
+  cost about a gigabyte of transient copies on its way to the frame limit.
+  It joins them once, at the newline.
+- "Extracted 1 URLs", "Sorted 1 URLs" and "Removed 1 duplicate URLs" read
+  as "URL(s)" now. In all twelve languages the dedupe summary read its count
+  as the place the duplicates were removed from, and in Japanese and Chinese
+  the sort summary read the order's name as a second count; each says what
+  the English says.
+- The extension's MCP server, run as `urls-le-mcp`, died on an unhandled
+  EPIPE with a Node stack trace when the client closed the pipe, which a
+  host logs as the server crashing. It exits 2 quietly, as the other two
+  servers do.
+- The npm command line passed over a FIFO, a socket or a device in a walk
+  without a word, refused one named outright as "Not a directory", and
+  passed over every symbolic link without a word unless `--follow-symlinks`
+  was given. A FIFO, a socket or a device is a `skipped` report saying "not
+  a regular file" now, met in a walk or named outright, and `--strict`
+  fails on it; the links a walk does not follow are counted, stderr ends
+  with "N symbolic links not followed", and `urls_le_scan` carries the
+  count as `symbolicLinks`.
+- The npm command line's MCP server dropped a frame that was not JSON, not
+  UTF-8, not a JSON-RPC 2.0 request or led by a byte order mark without a
+  word, where the extension's server answers a parse error; it answered a
+  request with a null id, which the extension's server reads as a
+  notification; it refused an unknown method, an unknown tool and a call
+  naming no tool in its own words; and it held a frame until its newline
+  with no ceiling, so a client that streamed without one grew the process
+  without bound. It answers every malformed frame in the extension server's
+  words now, refuses a frame over 16 MiB and serves the next line, and reads
+  a last line with no newline as the partial frame it is.
+- Both MCP servers answered an argument that does not fit the tool's
+  schema as the tool's own failure, an `isError` result, and read a wrong
+  type on an optional argument as absent: `format: 7` scanned the text as
+  plain, `dedupe: "yes"` was false, `hidden: "yes"` was false, an entry of
+  `paths` that is not a string vanished without a word, and an argument the
+  schema does not declare was accepted. All three servers refuse these as a
+  protocol error, `-32602`, in one set of words, and `additionalProperties:
+  false` is enforced. The npm command line's server refused a cap written
+  as `1E20` where the extension's server clamped it; a whole number however
+  it is written is a cap on all three.
+- The extension's MCP server answered `initialize` with whatever protocol
+  version the client asked for and a `listChanged: false` capability, where
+  the crate's server answers its own version and `tools: {}`; it replied to
+  an `initialize` with no id; it answered `notifications/initialized` sent
+  with an id with nothing, where the crate's server refuses an unknown
+  method; and a frame led by a byte order mark was read as a request here
+  and refused as not JSON there. The three servers answer one handshake and
+  one malformed frame alike now. The server also stops reading while the
+  pipe to a slow client is full, so what it holds is bounded by the
+  requests in flight.
+- The help document was English in every language. Every sentence goes
+  through the bundle now, and its command list carries the titles the
+  palette shows in that language.
+- The progress notification's title, "Extracting URLs...", was English in
+  every language: the string was never in the bundle.
+- The status bar read "$(link) URLs-LE" in Japanese, Portuguese, Russian,
+  Ukrainian, Vietnamese and Chinese, the text of a version that had an icon
+  and no word, and "URL-LE: Listo" in Spanish; the status bar setting's
+  description named the product "URL-LE" in eight languages. Every catalogue
+  carries the product name as written and the words the English has.
+- A failure whose thrown value was not an Error was reported as "Unknown
+  error", "Unknown error occurred" or "Unknown clipboard error" in every
+  language, and a denied clipboard was reported in English. All go through
+  the bundle.
+- A folder or workspace scan that reached the results limit inside the last
+  file dropped the URLs after it without a word, since the note was tied to
+  files left unread. The report says when the limit was reached inside a
+  file and that the URLs after it were not counted.
+- Deduplicate and Sort wrote the lines back joined with a bare newline and
+  nothing after the last, so a document that ended in a newline lost it on
+  every run, and a CRLF document was handed bare newlines. Both write the
+  document's own line ending, and end in one exactly when the document did.
+  Extract's in-place route does the same.
+- A Markdown block fenced with `~~~` was read as text, so a URL inside it
+  was extracted, while a block fenced with backticks was skipped as the
+  README says fenced blocks are. Both markers open a fence now, and only
+  the marker that opened one closes it, as CommonMark reads them. The same
+  change in the crate, so the shared tool answers alike.
 - A number setting cleared to an empty string or null read as 0 and was
   clamped to its floor, so the size guard became 1,000 bytes. It falls back
   to the default.

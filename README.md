@@ -251,7 +251,7 @@ opinions.
 
 | Format | Language IDs | Notes |
 |---|---|---|
-| Markdown | `markdown` | Fenced code blocks and inline code excluded |
+| Markdown | `markdown` | Fenced code blocks (``` or `~~~`) and inline code excluded |
 | HTML | `html` | `<!-- -->` comments excluded (multi-line supported) |
 | CSS | `css` | Quoted or bare `url(...)`, `@import` |
 | JavaScript / TypeScript | `javascript`, `typescript` | Strings, template literals, comments |
@@ -289,7 +289,7 @@ No command is bound to a key by default. Give any of them one under **Keyboard S
 | Setting | Default | Description |
 |---|---|---|
 | `urls-le.openResultsSideBySide` | `true` | Open results beside the current editor |
-| `urls-le.postProcess.openInNewFile` | `true` | Open results in a new file (when not side-by-side) |
+| `urls-le.postProcess.openInNewFile` | `true` | Open extraction results in a new file instead of over the document, when not side-by-side. Dedupe and Sort always edit in place |
 | `urls-le.showPositions` | `false` | Show the line and column of each URL |
 | `urls-le.copyToClipboardEnabled` | `false` | Also copy results to the clipboard |
 | `urls-le.clipboardIncludesPositions` | `false` | Include the line and column in that copy |
@@ -361,19 +361,19 @@ a build only tells you how busy the runner was.
 <!-- coverage:start -->
 | Metric | Coverage |
 | --- | --- |
-| Statements | 77.59% |
-| Branches | 67.64% |
-| Functions | 84.73% |
-| Lines | 79.13% |
+| Statements | 80.33% |
+| Branches | 70.69% |
+| Functions | 88.04% |
+| Lines | 81.79% |
 
-475 test cases across 35 files, plus an integration suite that runs
+533 test cases across 39 files, plus an integration suite that runs
 in a real VS Code extension host and an end-to-end test that installs the
 built `.vsix` into a clean profile.
 
 Generated from a real run — `coverage/coverage-summary.json` and
-`coverage/test-results.json` — by `scripts/coverage-readme.js`; CI fails if
-this section drifts. Reproduce with `bun run test:coverage`, and the case
-count is the one vitest prints.
+`coverage/test-results.json` — by `scripts/coverage-readme.js`, and
+`bun run coverage:readme:check` says whether it has drifted since. Reproduce
+with `bun run test:coverage`, and the case count is the one vitest prints.
 <!-- coverage:end -->
 
 ## More from the LE family

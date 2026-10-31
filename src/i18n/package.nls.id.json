@@ -15,7 +15,7 @@
 	"manifest.settings.notifications.level.option.all": "Tampilkan semua notifikasi",
 	"manifest.settings.notifications.level.option.important": "Tampilkan hanya notifikasi penting",
 	"manifest.settings.notifications.level.option.silent": "Hanya tampilkan kesalahan",
-	"manifest.settings.open.new-file.desc": "Buka konten yang diproses di editor baru",
+	"manifest.settings.open.new-file.desc": "Buka hasil ekstraksi di editor baru alih-alih mengganti dokumen, jika tidak dibuka di samping. \"Hapus duplikat URL\" dan \"Urutkan URL\" selalu mengedit dokumen di tempat.",
 	"manifest.settings.open.side-by-side.desc": "Buka hasil ekstraksi di editor baru di samping",
 	"manifest.settings.safety.enabled.desc": "Aktifkan pemeriksaan keamanan untuk file besar dan operasi",
 	"manifest.settings.safety.warn.file-size.desc": "Tolak ekstraksi bila ukuran file melebihi ambang batas ini dalam byte",

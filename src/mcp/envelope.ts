@@ -42,6 +42,65 @@ export interface EnvelopeMeta {
 export const DEFAULT_MAX_RESULTS = 500;
 export const MAX_MAX_RESULTS = 5000;
 
+/** JSON-RPC's code for params that do not fit the method's schema. */
+export const INVALID_PARAMS = -32602;
+
+/**
+ * An argument that does not fit the tool's schema is a protocol error,
+ * `-32602`, not a tool result carrying `isError`: a host counts the first
+ * against the server and shows the second to the agent, and the schema is
+ * what the agent read before sending. The transport reads the code off the
+ * thrown value and answers with it. Every server this repository ships
+ * refuses in these words.
+ */
+export function invalidParams(message: string): Error & { code: number } {
+	return Object.assign(new Error(message), { code: INVALID_PARAMS });
+}
+
+/**
+ * Refuse an argument the schema does not declare. `additionalProperties:
+ * false` is in the schema; this is what makes it true.
+ */
+export function refuseUnknown(
+	args: Record<string, unknown>,
+	known: readonly string[],
+): void {
+	const unknown = Object.keys(args)
+		.filter((key) => !known.includes(key))
+		.sort();
+	if (unknown.length === 1) {
+		throw invalidParams(`unknown argument: ${unknown[0]}`);
+	}
+	if (unknown.length > 1) {
+		throw invalidParams(`unknown arguments: ${unknown.join(', ')}`);
+	}
+}
+
+/** Read an optional argument that must be a string when present. */
+export function readOptionalString(
+	args: Record<string, unknown>,
+	name: string,
+): string | undefined {
+	const value = args[name];
+	if (value === undefined) return undefined;
+	if (typeof value !== 'string')
+		throw invalidParams(`${name} must be a string`);
+	return value;
+}
+
+/** Read an optional argument that must be a boolean when present. */
+export function readOptionalBoolean(
+	args: Record<string, unknown>,
+	name: string,
+): boolean | undefined {
+	const value = args[name];
+	if (value === undefined) return undefined;
+	if (typeof value !== 'boolean') {
+		throw invalidParams(`${name} must be a boolean`);
+	}
+	return value;
+}
+
 /**
  * `ok` is not `success`.
  *
@@ -108,8 +167,11 @@ export function envelope<T>(
 export function readMaxResults(args: Record<string, unknown>): number {
 	const raw = args.maxResults;
 	if (raw === undefined) return DEFAULT_MAX_RESULTS;
+	// A whole number, however it was written: JSON Schema's `integer` is any
+	// number with a zero fractional part, so `2.0`, `1e3` and `1E20` are
+	// caps. The crate's server and the npm command line read the same rule.
 	if (typeof raw !== 'number' || !Number.isInteger(raw) || raw < 1) {
-		throw new Error('maxResults must be a positive integer');
+		throw invalidParams('maxResults must be a positive integer');
 	}
 	return Math.min(raw, MAX_MAX_RESULTS);
 }
@@ -127,7 +189,7 @@ export function readString(
 ): string {
 	const value = args[name];
 	if (typeof value !== 'string') {
-		throw new Error(`${name} is required and must be a string`);
+		throw invalidParams(`${name} is required and must be a string`);
 	}
 	return value;
 }

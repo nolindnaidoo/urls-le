@@ -85,6 +85,32 @@ describe('extractFromMarkdown', () => {
 		expect(result[0]?.value).toBe('https://actual.com');
 	});
 
+	it('excludes a block fenced with tildes, which CommonMark reads as a fence too', () => {
+		// A fence is three backticks or three tildes, and the closing fence
+		// uses the same marker, so a backtick line inside a tilde block is
+		// text and a tilde line inside a backtick block is text.
+		const markdown = [
+			'intro https://a.example',
+			'~~~',
+			'https://fenced.example',
+			'```',
+			'https://still-fenced.example',
+			'~~~',
+			'see https://b.example',
+			'```',
+			'~~~',
+			'https://inside-backticks.example',
+			'```',
+			'https://c.example',
+			'',
+		].join('\n');
+		expect(extractFromMarkdown(markdown).map((url) => url.value)).toEqual([
+			'https://a.example',
+			'https://b.example',
+			'https://c.example',
+		]);
+	});
+
 	it('extractFromMarkdown: should not extract from inline code', () => {
 		const markdown = `
       Use \`https://example.com\` in your code.

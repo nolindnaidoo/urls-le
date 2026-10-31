@@ -135,7 +135,10 @@ A directory is walked the way ripgrep walks one: `.gitignore` honoured,
 hidden files skipped, `--no-ignore` and `--hidden` to reach the rest. A
 file named explicitly is always read. Files that are not text — a PNG, a
 zip — are named on stderr and carried in the report as `skipped`, and do
-not fail the run unless you ask with `--strict`.
+not fail the run unless you ask with `--strict`; so is a FIFO, a socket
+or a device, which is never opened. A symbolic link is not followed
+unless you ask with `--follow-symlinks`, and the ones passed over are
+counted on stderr so the report never looks like the whole tree.
 
 ### Ported as-is, including the awkward parts
 
@@ -158,6 +161,8 @@ not fail the run unless you ask with `--strict`.
 --dedupe             collapse repeated URLs to their first occurrence
 --format <format>    force a format instead of inferring from the name
 --stdin              read one document from stdin
+--strict             exit 2 if any file could not be read, rather than
+                     reporting it and carrying on
 --follow-symlinks    descend symlinked directories when walking a tree
 --hidden             walk hidden files and directories too
 --no-ignore          walk files that .gitignore excludes

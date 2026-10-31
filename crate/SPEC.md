@@ -251,6 +251,9 @@ Options:
   --dedupe             collapse repeated URLs to their first occurrence
   --format <format>    force a format instead of inferring from the name
   --stdin              read one document from stdin
+  --strict             exit 2 if any file could not be read, rather than
+                       reporting it and carrying on
+  --follow-symlinks    descend symlinked directories when walking a tree
   --hidden             walk hidden files and directories too
   --no-ignore          walk files that .gitignore excludes
 ```
@@ -325,6 +328,16 @@ file that was clean.
 — or a symlink loop under `--follow-symlinks` — used to exit 2 with
 nothing on stdout, so one locked directory deleted the audit of every
 readable file beside it. It is one `skipped` line among the others now.
+
+**Nothing is read that is not a regular file, and nothing vanishes.** A
+FIFO, a socket or a device, met in a walk or named outright, is a
+`skipped` report saying `not a regular file`: reading a pipe with no
+writer never returns, so it is never opened, and `--strict` fails on it
+as on any unread input. A link met in a walk without `--follow-symlinks`
+is never followed and has no report line, so the walk counts them and
+stderr ends with `N symbolic links not followed`; `urls_le_scan` carries
+the count as `symbolicLinks`. A link named outright is followed either
+way: naming it is an instruction.
 
 ### Report paths use `/`
 

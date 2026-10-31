@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import type { Notifier } from '../ui/notifier';
+import { describeError } from './errors';
 
 /**
  * Copying results to the clipboard.
@@ -19,14 +20,15 @@ function isPermissionError(message: string): boolean {
 }
 
 function reportFailure(error: unknown, notifier: Notifier): void {
-	const message =
-		error instanceof Error ? error.message : 'Unknown clipboard error';
+	const message = describeError(error);
 
 	// A denied clipboard is not a failed extraction — the results are already
 	// in an editor — so both arms warn rather than error.
 	if (isPermissionError(message)) {
 		notifier.showWarning(
-			'Clipboard access denied. Extracted URLs but could not copy to clipboard.',
+			vscode.l10n.t(
+				'Clipboard access denied. Extracted URLs but could not copy to clipboard.',
+			),
 		);
 		return;
 	}

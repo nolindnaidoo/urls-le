@@ -16,3 +16,7 @@ Inline code `https://inline-code.example.com/skipped` stays out.
 Duplicate of the first link: https://example.com/page appears again here.
 
 A relative [link](./docs/readme.md) is not a URL.
+
+~~~
+curl https://in-tilde-block.example.com/should-be-skipped
+~~~

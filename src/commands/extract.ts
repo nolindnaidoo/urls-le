@@ -3,7 +3,7 @@ import { getConfiguration } from '../config/config';
 import { extractUrls } from '../extraction/extract';
 import type { Configuration, ExtractionResult } from '../types';
 import { copyResultsToClipboard } from '../utils/clipboard';
-import { sanitizeErrorMessage } from '../utils/errors';
+import { describeError, sanitizeErrorMessage } from '../utils/errors';
 import { bareValue, onValues, withPosition } from '../utils/positions';
 import { handleSafetyChecks } from '../utils/safety';
 import type { CommandDependencies } from './dependencies';
@@ -138,7 +138,7 @@ async function performExtraction(
 	}
 
 	deps.notifier.showInfo(
-		vscode.l10n.t('Extracted {0} URLs', result.urls.length),
+		vscode.l10n.t('Extracted {0} URL(s)', result.urls.length),
 	);
 	deps.telemetry.event('extract-success', { count: result.urls.length });
 	// Not awaited: it resolves when the toast is answered, and a command that
@@ -168,9 +168,9 @@ function handleExtractionFailure(
 
 function extractErrorMessage(result: ExtractionResult): string {
 	if (result.errors && result.errors.length > 0) {
-		return result.errors[0]?.message || 'Unknown error';
+		return result.errors[0]?.message || vscode.l10n.t('Unknown error');
 	}
-	return 'Unknown error';
+	return vscode.l10n.t('Unknown error');
 }
 
 function showNoUrlsFound(deps: CommandDependencies): void {
@@ -183,9 +183,7 @@ function handleExtractionError(
 	error: unknown,
 	deps: CommandDependencies,
 ): void {
-	const message = sanitizeErrorMessage(
-		error instanceof Error ? error.message : 'Unknown error occurred',
-	);
+	const message = sanitizeErrorMessage(describeError(error));
 
 	deps.notifier.showError(
 		vscode.l10n.t('Failed to extract URLs: {0}', message),

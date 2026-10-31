@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import type { Notifier } from '../ui/notifier';
 import { replaceDocumentContent } from '../utils/document';
-import { sanitizeErrorMessage } from '../utils/errors';
+import { describeError, sanitizeErrorMessage } from '../utils/errors';
 import { hasPosition, onValues } from '../utils/positions';
 import { guarded } from './guard';
 
@@ -52,7 +52,7 @@ async function performDedupe(
 
 	const removed = lines.length - deduped.length;
 	const summary = vscode.l10n.t(
-		'Removed {0} duplicate URLs ({1} remaining)',
+		'Removed {0} duplicate URL(s) ({1} remaining)',
 		removed,
 		deduped.length,
 	);
@@ -84,8 +84,6 @@ function deduplicateLines(lines: string[]): string[] {
 }
 
 function handleDedupeError(error: unknown, notifier: Notifier): void {
-	const message = sanitizeErrorMessage(
-		error instanceof Error ? error.message : 'Unknown error occurred',
-	);
+	const message = sanitizeErrorMessage(describeError(error));
 	notifier.showError(vscode.l10n.t('Deduplication failed: {0}', message));
 }

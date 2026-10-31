@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
 	_clipboardText,
 	_createDocument,
+	_openedDocuments,
 	_registeredCommands,
 	_resetMockState,
 	_respondToQuickPick,
@@ -89,11 +90,11 @@ describe('urls-le.postProcess.dedupe', () => {
 
 		expect(appliedEdits).toHaveLength(1);
 		expect(appliedEdits[0]?.replacements[0]?.newText).toBe(
-			'https://a.com\nhttps://b.com\nhttps://c.com',
+			'https://a.com\nhttps://b.com\nhttps://c.com\n',
 		);
 		// 5 non-empty lines, 3 unique -> 2 duplicates (blank lines not counted)
 		expect(_shownMessages()[0]?.message).toBe(
-			'Removed 2 duplicate URLs (3 remaining)',
+			'Removed 2 duplicate URL(s) (3 remaining)',
 		);
 	});
 
@@ -109,10 +110,10 @@ describe('urls-le.postProcess.dedupe', () => {
 
 		// Whole lines all differ here. Only by URL is there a duplicate at all.
 		expect(appliedEdits[0]?.replacements[0]?.newText).toBe(
-			'1:1\thttps://a.com\n2:1\thttps://b.com',
+			'1:1\thttps://a.com\n2:1\thttps://b.com\n',
 		);
 		expect(_shownMessages()[0]?.message).toBe(
-			'Removed 1 duplicate URLs (2 remaining). Each value shows its first position only.',
+			'Removed 1 duplicate URL(s) (2 remaining). Each value shows its first position only.',
 		);
 	});
 
@@ -125,6 +126,143 @@ describe('urls-le.postProcess.dedupe', () => {
 
 		expect(appliedEdits).toHaveLength(1); // the edit still happens
 		expect(_shownMessages()).toHaveLength(0); // the toast does not
+	});
+});
+
+describe('two invocations at once', () => {
+	// Nothing serialises the commands: a second extract can start while the
+	// first is awaiting the host. Each must reach its own result with no state
+	// shared between them but the status bar, whose later text wins.
+	it('two extracts started together each open their own results', async () => {
+		const events: string[] = [];
+		registerExtractCommand(makeContext(), makeDeps(events));
+		_setConfig('urls-le.notificationsLevel', 'all');
+		_setActiveEditor(
+			_createDocument({
+				content: 'see https://a.example and https://b.example\n',
+				languageId: 'markdown',
+			}),
+		);
+		const handler = _registeredCommands().get('urls-le.extractUrls');
+		if (!handler) throw new Error('extract command not registered');
+		await Promise.all([handler(), handler()]);
+		expect(_openedDocuments().map((d) => d.getText())).toEqual([
+			'https://a.example\nhttps://b.example',
+			'https://a.example\nhttps://b.example',
+		]);
+		expect(events.filter((e) => e.startsWith('info:'))).toEqual([
+			'info:Extracted 2 URL(s)',
+			'info:Extracted 2 URL(s)',
+		]);
+		expect(events.filter((e) => e.startsWith('error:'))).toEqual([]);
+	});
+
+	it('a dedupe and a sort started together each write their own document', async () => {
+		_setConfig('urls-le.notificationsLevel', 'all');
+		registerDedupeCommand(makeContext(), createNotifier());
+		registerSortCommand(makeContext(), createNotifier());
+		_setActiveEditor(
+			_createDocument({
+				content: 'https://b.example\nhttps://a.example\nhttps://b.example\n',
+			}),
+		);
+		_respondToQuickPick(
+			(items) =>
+				(items as Array<{ label: string; value: string }>).find(
+					(item) => item.value === 'asc',
+				) ?? items[0],
+		);
+		const dedupe = _registeredCommands().get('urls-le.postProcess.dedupe');
+		const sort = _registeredCommands().get('urls-le.postProcess.sort');
+		if (!dedupe || !sort) throw new Error('commands not registered');
+		await Promise.all([dedupe(), sort()]);
+		expect(
+			appliedEdits.map((edit) => edit.replacements[0]?.newText).sort(),
+		).toEqual([
+			'https://a.example\nhttps://b.example\nhttps://b.example\n',
+			'https://b.example\nhttps://a.example\n',
+		]);
+		expect(
+			_shownMessages()
+				.map((m) => m.message)
+				.sort(),
+		).toEqual([
+			'Removed 1 duplicate URL(s) (2 remaining)',
+			'Sorted 3 URL(s) (Alphabetical (A → Z))',
+		]);
+	});
+});
+
+describe('a line command keeps the document’s terminator', () => {
+	// Both commands split the document on newlines and wrote the lines back
+	// joined with one, so a document ending in a newline lost it, and a CRLF
+	// document was written back with bare newlines. A blank line inside is
+	// dropped on purpose, and an empty document stays empty.
+	async function dedupe(content: string): Promise<string | undefined> {
+		_setConfig('urls-le.notificationsLevel', 'all');
+		registerDedupeCommand(makeContext(), createNotifier());
+		_setActiveEditor(_createDocument({ content }));
+		await runCommand('urls-le.postProcess.dedupe');
+		return appliedEdits[0]?.replacements[0]?.newText;
+	}
+
+	async function sort(content: string): Promise<string | undefined> {
+		_setConfig('urls-le.notificationsLevel', 'all');
+		registerSortCommand(makeContext(), createNotifier());
+		_setActiveEditor(_createDocument({ content }));
+		_respondToQuickPick(
+			(items) =>
+				(items as Array<{ label: string; value: string }>).find(
+					(item) => item.value === 'asc',
+				) ?? items[0],
+		);
+		await runCommand('urls-le.postProcess.sort');
+		return appliedEdits[0]?.replacements[0]?.newText;
+	}
+
+	it('dedupe keeps a trailing newline, and adds none where there was none', async () => {
+		expect(await dedupe('https://b.com\nhttps://a.com\nhttps://b.com\n')).toBe(
+			'https://b.com\nhttps://a.com\n',
+		);
+		_resetMockState();
+		expect(await dedupe('https://b.com\nhttps://a.com\nhttps://b.com')).toBe(
+			'https://b.com\nhttps://a.com',
+		);
+	});
+
+	it('dedupe writes CRLF back to a CRLF document', async () => {
+		expect(
+			await dedupe('https://b.com\r\nhttps://a.com\r\nhttps://b.com\r\n'),
+		).toBe('https://b.com\r\nhttps://a.com\r\n');
+	});
+
+	it('dedupe drops a blank line inside and does not count it, and leaves an empty document empty', async () => {
+		expect(await dedupe('https://b.com\n\nhttps://a.com\n')).toBe(
+			'https://b.com\nhttps://a.com\n',
+		);
+		expect(_shownMessages()[0]?.message).toBe(
+			'Removed 0 duplicate URL(s) (2 remaining)',
+		);
+		_resetMockState();
+		expect(await dedupe('')).toBe('');
+	});
+
+	it('sort keeps a trailing newline, and adds none where there was none', async () => {
+		expect(await sort('https://b.com\nhttps://a.com\n')).toBe(
+			'https://a.com\nhttps://b.com\n',
+		);
+		_resetMockState();
+		expect(await sort('https://b.com\nhttps://a.com')).toBe(
+			'https://a.com\nhttps://b.com',
+		);
+	});
+
+	it('sort writes CRLF back to a CRLF document, and never puts a blank line first', async () => {
+		expect(await sort('https://b.com\r\n\r\nhttps://a.com\r\n')).toBe(
+			'https://a.com\r\nhttps://b.com\r\n',
+		);
+		_resetMockState();
+		expect(await sort('')).toBe('');
 	});
 });
 
@@ -148,7 +286,7 @@ describe('urls-le.postProcess.sort', () => {
 		expect(appliedEdits[0]?.replacements[0]?.newText).toBe(
 			'https://a.com\nhttps://b.com\nhttps://c.com',
 		);
-		expect(_shownMessages()[0]?.message).toContain('Sorted 3 URLs');
+		expect(_shownMessages()[0]?.message).toContain('Sorted 3 URL(s)');
 	});
 
 	it('sorts by URL when positions are shown, and each keeps its own', async () => {
@@ -236,7 +374,7 @@ describe('urls-le.extractUrls', () => {
 		await runCommand('urls-le.extractUrls');
 
 		expect(events).toContain('command-extract-urls');
-		expect(events).toContain('info:Extracted 1 URLs');
+		expect(events).toContain('info:Extracted 1 URL(s)');
 		expect(events).toContain('statusbar:extracting');
 		expect(events).toContain('statusbar:idle');
 		expect(_clipboardText()).toBe('https://api.example.com/v1');
@@ -343,7 +481,7 @@ describe('urls-le.extractUrls', () => {
 		await runCommand('urls-le.extractUrls');
 
 		expect(events.some((e) => e.startsWith('error:'))).toBe(false);
-		expect(events).toContain('info:Extracted 1 URLs');
+		expect(events).toContain('info:Extracted 1 URL(s)');
 	});
 
 	it('replaces the document in place when both open settings are off', async () => {
@@ -380,7 +518,7 @@ describe('urls-le.extractUrls', () => {
 		await runCommand('urls-le.extractUrls');
 
 		expect(appliedEdits).toHaveLength(0);
-		expect(events).toContain('info:Extracted 1 URLs');
+		expect(events).toContain('info:Extracted 1 URL(s)');
 	});
 
 	it('reports when no URLs are found', async () => {

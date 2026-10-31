@@ -9,18 +9,19 @@ import {
 	_setApplyEditResult,
 	_setConfig,
 	_shownMessages,
+	appliedEdits,
 } from '../__mocks__/vscode';
 import { extractFromIni } from '../extraction/formats/ini';
 import { createNotifier } from '../ui/notifier';
 import { registerSortCommand } from './sort';
 
 /**
- * Every sort mode, and the INI parser's fallback.
+ * Every sort mode, and the INI extractor on a document a parser refuses.
  *
  * The sort command offers five orderings and only the default was exercised,
- * so four comparators and the rejected-edit guard never ran. The INI parser
- * falls back to a plain scan when the file will not parse — the point of the
- * fallback is that extraction still returns URLs, and that path was unread.
+ * so four comparators and the rejected-edit guard never ran. Each mode's test
+ * then asserted only that something was shown, which any mode and any order
+ * satisfies; each reads back the document as written now.
  */
 
 function makeContext() {
@@ -44,57 +45,94 @@ function pickMode(value: string): void {
 const URLS =
 	'https://zeta.example.com/a\nhttps://alpha.example.com/bbbb\nhttps://mid.example.org/cc\n';
 
+/** The document as written after the sort, and the message shown. The input ends in a newline, so the output does. */
+function sorted(): { written: string | undefined; messages: string[] } {
+	return {
+		written: appliedEdits[0]?.replacements[0]?.newText,
+		messages: _shownMessages().map((m) => `${m.kind}:${m.message}`),
+	};
+}
+
 beforeEach(() => {
 	_resetMockState();
 	_setConfig('urls-le.notificationsLevel', 'all');
 });
 
 describe('sort modes', () => {
-	it('warns without an active editor', async () => {
+	it('warns without an active editor, and writes nothing', async () => {
 		await runSort();
-		expect(_shownMessages().length).toBeGreaterThan(0);
+		expect(sorted()).toEqual({
+			written: undefined,
+			messages: ['warning:No active editor found'],
+		});
 	});
 
 	it('sorts alphabetically ascending', async () => {
 		_setActiveEditor(_createDocument({ content: URLS }));
 		pickMode('asc');
 		await runSort();
-		expect(_shownMessages().length).toBeGreaterThan(0);
+		expect(sorted()).toEqual({
+			written:
+				'https://alpha.example.com/bbbb\nhttps://mid.example.org/cc\nhttps://zeta.example.com/a\n',
+			messages: ['info:Sorted 3 URL(s) (Alphabetical (A → Z))'],
+		});
 	});
 
 	it('sorts alphabetically descending', async () => {
 		_setActiveEditor(_createDocument({ content: URLS }));
 		pickMode('desc');
 		await runSort();
-		expect(_shownMessages().length).toBeGreaterThan(0);
+		expect(sorted()).toEqual({
+			written:
+				'https://zeta.example.com/a\nhttps://mid.example.org/cc\nhttps://alpha.example.com/bbbb\n',
+			messages: ['info:Sorted 3 URL(s) (Alphabetical (Z → A))'],
+		});
 	});
 
 	it('sorts by domain', async () => {
-		_setActiveEditor(_createDocument({ content: URLS }));
+		// By host, so a longer path on an earlier host still comes first.
+		_setActiveEditor(
+			_createDocument({
+				content:
+					'https://zeta.example.com/a\nhttps://alpha.example.com/zzz\nhttps://mid.example.org/cc\n',
+			}),
+		);
 		pickMode('domain');
 		await runSort();
-		expect(_shownMessages().length).toBeGreaterThan(0);
+		expect(sorted()).toEqual({
+			written:
+				'https://alpha.example.com/zzz\nhttps://mid.example.org/cc\nhttps://zeta.example.com/a\n',
+			messages: ['info:Sorted 3 URL(s) (By Domain)'],
+		});
 	});
 
-	it('sorts by length ascending', async () => {
+	it('sorts by length ascending, keeping the written order between equal lengths', async () => {
 		_setActiveEditor(_createDocument({ content: URLS }));
 		pickMode('length-asc');
 		await runSort();
-		expect(_shownMessages().length).toBeGreaterThan(0);
+		expect(sorted()).toEqual({
+			written:
+				'https://zeta.example.com/a\nhttps://mid.example.org/cc\nhttps://alpha.example.com/bbbb\n',
+			messages: ['info:Sorted 3 URL(s) (By Length (Short → Long))'],
+		});
 	});
 
-	it('sorts by length descending', async () => {
+	it('sorts by length descending, keeping the written order between equal lengths', async () => {
 		_setActiveEditor(_createDocument({ content: URLS }));
 		pickMode('length-desc');
 		await runSort();
-		expect(_shownMessages().length).toBeGreaterThan(0);
+		expect(sorted()).toEqual({
+			written:
+				'https://alpha.example.com/bbbb\nhttps://zeta.example.com/a\nhttps://mid.example.org/cc\n',
+			messages: ['info:Sorted 3 URL(s) (By Length (Long → Short))'],
+		});
 	});
 
 	it('does nothing when the mode picker is dismissed', async () => {
 		_setActiveEditor(_createDocument({ content: URLS }));
 		_respondToQuickPick(() => undefined);
 		await runSort();
-		expect(_shownMessages().some((m) => m.kind === 'info')).toBe(false);
+		expect(sorted()).toEqual({ written: undefined, messages: [] });
 	});
 
 	it('reports a failure when the edit is rejected', async () => {
@@ -104,7 +142,9 @@ describe('sort modes', () => {
 		pickMode('asc');
 		_setApplyEditResult(false);
 		await runSort();
-		expect(_shownMessages().some((m) => m.kind === 'error')).toBe(true);
+		expect(sorted().messages).toEqual([
+			'error:Failed to apply edits to document',
+		]);
 	});
 });
 
@@ -114,13 +154,16 @@ describe('ini extraction fallback', () => {
 		expect(result.length).toBeGreaterThan(0);
 	});
 
-	it('falls back to a plain scan when the file will not parse', () => {
-		// The fallback is the point: extraction still returns the URLs it can
-		// see rather than failing the whole command.
+	it('reads a document an INI parser would refuse, since it has no parser', () => {
+		// A dotted key after its parent was a parse error under the library this
+		// once used, and the URL on the line after it was lost. The extractor is
+		// a whole-document scan minus comment lines now, so it is found.
 		const result = extractFromIni(
 			'a.b = 1\na = 2\na.c = https://example.com/found\n',
 		);
-		expect(Array.isArray(result)).toBe(true);
+		expect(result.map((url) => [url.value, url.position])).toEqual([
+			['https://example.com/found', { line: 3, column: 7 }],
+		]);
 	});
 
 	it('returns nothing for content with no URLs', () => {

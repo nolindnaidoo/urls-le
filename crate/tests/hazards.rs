@@ -445,6 +445,59 @@ fn an_unreadable_path_never_becomes_exit_two() {
     assert_eq!(run(&["/no/such/place-xyz"]).code, Some(2));
 }
 
+/// A reader that went away. `| head` closes stdout after a few lines, and
+/// a reader can close stderr too. The scan refused a closed stdout with
+/// one line and exit 2, as the npm command line does; `--help` and
+/// `--version` died on a panic, exit 101, with a Rust stack trace, and a
+/// refusal written to a closed stderr panicked the same way. The read end
+/// is closed before the binary starts, so the first write is the EPIPE.
+#[test]
+fn a_closed_pipe_is_refused_in_the_npm_command_lines_words() {
+    let closed_stdout = |args: &[&str]| {
+        let (reader, writer) = std::io::pipe().expect("a pipe");
+        drop(reader);
+        let output = Command::new(BINARY)
+            .args(args)
+            .stdout(writer)
+            .stderr(std::process::Stdio::piped())
+            .output()
+            .expect("the binary runs");
+        (
+            output.status.code(),
+            String::from_utf8_lossy(&output.stderr).into_owned(),
+        )
+    };
+    let refusal = if cfg!(windows) {
+        "urls-le: could not write the report: The pipe is being closed. (os error 232)\n"
+    } else {
+        "urls-le: could not write the report: Broken pipe (os error 32)\n"
+    };
+    for args in [&["--help"][..], &["--version"][..]] {
+        let (code, stderr) = closed_stdout(args);
+        assert_eq!(code, Some(2), "{args:?}: {stderr}");
+        assert_eq!(stderr, refusal, "{args:?}");
+    }
+
+    let tree = Tree::new("closed-stderr");
+    tree.write("a.md", format!("{VALUE}\n").as_bytes());
+    let root = tree.path().to_string_lossy().into_owned();
+    for (args, expected) in [
+        (&["--no-such-flag", "."][..], 2),
+        (&["/no/such/place-xyz"][..], 2),
+        (&[root.as_str()][..], 0),
+    ] {
+        let (reader, writer) = std::io::pipe().expect("a pipe");
+        drop(reader);
+        let output = Command::new(BINARY)
+            .args(args)
+            .stdout(std::process::Stdio::piped())
+            .stderr(writer)
+            .output()
+            .expect("the binary runs");
+        assert_eq!(output.status.code(), Some(expected), "{args:?}");
+    }
+}
+
 /// Links, pipes and loops. Unix only: `std::os::windows::fs::symlink_*`
 /// needs developer mode or elevation on Windows, so a failure there would
 /// be the test environment's, not the tool's.
@@ -456,8 +509,8 @@ fn links_pipes_and_loops_are_survived() {
     std::os::unix::fs::symlink("real.md", tree.path().join("link.md")).expect("a symlink");
     std::os::unix::fs::symlink("nowhere.md", tree.path().join("broken.md")).expect("a symlink");
 
-    // A FIFO blocks forever on open. The walk must not read it, which is
-    // what "only regular files are examined" buys.
+    // A FIFO blocks forever on open. The walk must not read it, and must
+    // not drop it either: it is named as `skipped`, "not a regular file".
     let fifo = tree.path().join("pipe.md");
     let made_fifo = std::process::Command::new("mkfifo")
         .arg(&fifo)
@@ -473,15 +526,43 @@ fn links_pipes_and_loops_are_survived() {
     assert_eq!(url_count(report_for(&reports(&plain), "real.md")), 1);
 
     // Symlinks are not followed by default — ripgrep's rule, and the
-    // reason `--follow-symlinks` exists. Pinned so it stays a decision.
+    // reason `--follow-symlinks` exists. Pinned so it stays a decision,
+    // and counted on stderr so it is not a silence.
     assert!(
         !reports(&plain).iter().any(|report| report["file"]
             .as_str()
             .is_some_and(|f| f.ends_with("link.md"))),
         "a symlink was walked without --follow-symlinks"
     );
+    assert!(
+        plain.stderr.contains("2 symbolic links not followed\n"),
+        "{}",
+        plain.stderr
+    );
 
     if made_fifo {
+        let listed = reports(&plain);
+        let pipe = report_for(&listed, "pipe.md");
+        assert!(was_skipped(pipe), "{pipe}");
+        assert_eq!(pipe["diagnostics"][0]["message"], "not a regular file");
+        assert_eq!(
+            run(&["--strict", &tree.path().to_string_lossy()]).code,
+            Some(2)
+        );
+
+        // Named outright it is the whole run: one skipped report, nothing
+        // found, which is exit 1 by grep's convention, and 2 under
+        // --strict. It answered "0 URLs in 0 files" and exit 0.
+        let named = run(&[&fifo.to_string_lossy()]);
+        assert_survived("links_pipes_and_loops_are_survived, a fifo named", &named);
+        assert_eq!(named.code, Some(1), "{}", named.stderr);
+        assert!(was_skipped(&reports(&named)[0]), "{}", named.stdout);
+        assert!(
+            named.stderr.contains("not a regular file"),
+            "{}",
+            named.stderr
+        );
+        assert_eq!(run(&["--strict", &fifo.to_string_lossy()]).code, Some(2));
         std::fs::remove_file(&fifo).expect("the fifo is removed");
     }
 

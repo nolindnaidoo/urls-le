@@ -100,6 +100,34 @@ fn docs_tree(name: &str) -> Tree {
 /// of that are asserted separately — a format that knows what to
 /// exclude still excludes it, and a format nobody wrote an extractor
 /// for is scanned rather than dropped.
+/// A link in the tree is never followed without `--follow-symlinks`, and
+/// the count is the reader's only sign the tree holds more than the scan
+/// read. It was passed over without a word.
+#[cfg(unix)]
+#[test]
+fn a_symbolic_link_is_counted_not_followed_and_not_silent() {
+    let tree = Tree::new("symlink");
+    let target = tree.write("a.md", "https://a.example\n");
+    std::os::unix::fs::symlink(&target, tree.path().join("link.md")).expect("a symlink");
+    let plain = run(&[&tree.path().to_string_lossy()]);
+    assert_eq!(plain.code, 0, "{}", plain.stderr);
+    assert_eq!(reports(&plain).len(), 1, "the link produced no report line");
+    assert!(
+        plain
+            .stderr
+            .contains("1 URL in 1 file\n1 symbolic link not followed\n"),
+        "{}",
+        plain.stderr
+    );
+    let followed = run(&["--follow-symlinks", &tree.path().to_string_lossy()]);
+    assert_eq!(reports(&followed).len(), 2, "{}", followed.stderr);
+    assert!(
+        !followed.stderr.contains("symbolic link"),
+        "{}",
+        followed.stderr
+    );
+}
+
 #[test]
 fn a_tree_with_urls_exits_zero() {
     let tree = docs_tree("found");

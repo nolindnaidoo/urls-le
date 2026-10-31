@@ -11,6 +11,7 @@
 
 use serde_json::{Value, json};
 
+use super::{Refusal, optional_bool, optional_str, refuse_unknown};
 use crate::extract::format::{SUPPORTED_FORMATS, resolve_format};
 use crate::extract::{self, Protocol};
 
@@ -75,7 +76,11 @@ pub(crate) fn definition() -> Value {
     })
 }
 
-pub(crate) fn run(arguments: &Value) -> Result<Value, String> {
+pub(crate) fn run(arguments: &Value) -> Result<Value, Refusal> {
+    refuse_unknown(
+        arguments,
+        &["content", "format", "filename", "dedupe", "maxResults"],
+    )?;
     // A leading byte-order mark is not part of the document. VS Code
     // strips it before the extension's engine ever sees a buffer and
     // `scan.rs` strips it before the CLI reads a file, so this tool was
@@ -86,23 +91,30 @@ pub(crate) fn run(arguments: &Value) -> Result<Value, String> {
         arguments
             .get("content")
             .and_then(Value::as_str)
-            .ok_or_else(|| "content is required and must be a string".to_string())?,
+            .ok_or_else(|| {
+                Refusal::InvalidParams("content is required and must be a string".to_string())
+            })?,
     );
     let max_results = read_max_results(arguments)?;
 
-    // Only a caller who named neither lands here — every name resolves,
-    // to the plain-text scan if nothing else. The message stays because
-    // "Unsupported language: undefined" tells nobody what to do.
+    // Read as the schema types them. A `format: 7` was read as absent and
+    // a `dedupe: "yes"` as false, silences the schema never allowed. Only
+    // a caller who named neither lands on the failure — every name
+    // resolves, to the plain-text scan if nothing else. The message stays
+    // because "Unsupported language: undefined" tells nobody what to do,
+    // and it is a tool failure, not a schema violation: the schema
+    // requires neither.
     let language_id = resolve_format(
-        arguments.get("format").and_then(Value::as_str),
-        arguments.get("filename").and_then(Value::as_str),
+        optional_str(arguments, "format")?,
+        optional_str(arguments, "filename")?,
     )
     .ok_or_else(|| {
-        format!(
+        Refusal::Failure(format!(
             "Provide `format` (one of: {}) or a `filename` with a recognised extension.",
             SUPPORTED_FORMATS.join(", ")
-        )
+        ))
     })?;
+    let dedupe = optional_bool(arguments, "dedupe")?;
 
     let result = extract::extract(content, language_id);
     let mut values: Vec<Value> = result
@@ -127,7 +139,7 @@ pub(crate) fn run(arguments: &Value) -> Result<Value, String> {
         })
         .collect();
 
-    if arguments.get("dedupe").and_then(Value::as_bool) == Some(true) {
+    if dedupe {
         let mut seen: Vec<String> = Vec::new();
         values.retain(|value| {
             let text = value["value"].as_str().unwrap_or_default().to_string();
@@ -173,16 +185,27 @@ pub(crate) fn run(arguments: &Value) -> Result<Value, String> {
 }
 
 /// Clamp quietly, reject loudly — the npm server's asymmetry.
-fn read_max_results(arguments: &Value) -> Result<usize, String> {
+///
+/// A whole number of one or more, however it was written. JSON Schema's
+/// `integer` is any number with a zero fractional part, and the other
+/// two servers read `2.0`, `1e3` and `1E20` as caps; serde reads all
+/// three as floats, so `as_u64` refused them here while the extension's
+/// server answered.
+fn read_max_results(arguments: &Value) -> Result<usize, Refusal> {
     let Some(raw) = arguments.get("maxResults") else {
         return Ok(DEFAULT_MAX_RESULTS);
     };
-    let invalid = "maxResults must be a positive integer".to_string();
-    let value = raw.as_u64().ok_or(invalid.clone())?;
-    if value < 1 {
-        return Err(invalid);
+    let invalid = || Refusal::InvalidParams("maxResults must be a positive integer".to_string());
+    let value = raw.as_f64().ok_or_else(invalid)?;
+    if !value.is_finite() || value.fract() != 0.0 || value < 1.0 {
+        return Err(invalid());
     }
-    Ok((value as usize).min(MAX_MAX_RESULTS))
+    if value >= MAX_MAX_RESULTS as f64 {
+        return Ok(MAX_MAX_RESULTS);
+    }
+    // A whole number below the ceiling prints without a point or an
+    // exponent, so this is exact and casts nothing.
+    format!("{value}").parse::<usize>().map_err(|_| invalid())
 }
 
 #[cfg(test)]
@@ -201,8 +224,12 @@ mod tests {
         content: Option<String>,
         arguments: Value,
         expected: Option<Value>,
+        /// A schema violation: `-32602`, in these words.
         #[serde(rename = "expectedError")]
         expected_error: Option<String>,
+        /// A tool failure on what it was given: an `isError` result.
+        #[serde(rename = "expectedFailure")]
+        expected_failure: Option<String>,
     }
 
     #[test]
@@ -222,16 +249,24 @@ mod tests {
                 arguments["content"] = json!(content);
             }
 
-            match (case.expected, case.expected_error) {
-                (_, Some(expected)) => {
+            match (case.expected, case.expected_error, case.expected_failure) {
+                (_, Some(expected), _) => {
                     assert_eq!(
                         run(&arguments).expect_err(&case.name),
-                        expected,
+                        Refusal::InvalidParams(expected),
                         "{}",
                         case.name
                     );
                 }
-                (Some(expected), None) => {
+                (_, None, Some(expected)) => {
+                    assert_eq!(
+                        run(&arguments).expect_err(&case.name),
+                        Refusal::Failure(expected),
+                        "{}",
+                        case.name
+                    );
+                }
+                (Some(expected), None, None) => {
                     assert_eq!(
                         run(&arguments).expect(&case.name),
                         expected,
@@ -239,7 +274,9 @@ mod tests {
                         case.name
                     );
                 }
-                (None, None) => panic!("{} pins neither a result nor an error", case.name),
+                (None, None, None) => {
+                    panic!("{} pins neither a result nor a refusal", case.name);
+                }
             }
         }
     }
@@ -265,6 +302,7 @@ mod tests {
     fn a_fractional_cap_is_refused() {
         let error = run(&json!({ "content": "x", "format": "markdown", "maxResults": 1.5 }))
             .expect_err("a refusal");
-        assert_eq!(error, "maxResults must be a positive integer");
+        assert_eq!(error.message(), "maxResults must be a positive integer");
+        assert!(matches!(error, Refusal::InvalidParams(_)));
     }
 }

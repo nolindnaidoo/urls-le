@@ -361,7 +361,7 @@
 		"name": "neither format nor filename",
 		"content": "x",
 		"arguments": {},
-		"expectedError": "Provide `format` (one of: markdown, html, css, javascript, typescript, json, yaml, properties, toml, ini, xml, csv, plaintext) or a `filename` with a recognised extension."
+		"expectedFailure": "Provide `format` (one of: markdown, html, css, javascript, typescript, json, yaml, properties, toml, ini, xml, csv, plaintext) or a `filename` with a recognised extension."
 	},
 	{
 		"name": "content must be a string",
@@ -378,6 +378,51 @@
 			"maxResults": 0
 		},
 		"expectedError": "maxResults must be a positive integer"
+	},
+	{
+		"name": "a format that is not a string is refused, not read as absent",
+		"content": "x",
+		"arguments": {
+			"format": 7
+		},
+		"expectedError": "format must be a string"
+	},
+	{
+		"name": "a filename that is not a string is refused",
+		"content": "x",
+		"arguments": {
+			"format": "markdown",
+			"filename": 7
+		},
+		"expectedError": "filename must be a string"
+	},
+	{
+		"name": "a dedupe that is not a boolean is refused, not read as false",
+		"content": "x",
+		"arguments": {
+			"format": "markdown",
+			"dedupe": "yes"
+		},
+		"expectedError": "dedupe must be a boolean"
+	},
+	{
+		"name": "an argument the schema does not declare is refused",
+		"content": "x",
+		"arguments": {
+			"format": "markdown",
+			"extra": true
+		},
+		"expectedError": "unknown argument: extra"
+	},
+	{
+		"name": "two undeclared arguments are named, sorted",
+		"content": "x",
+		"arguments": {
+			"format": "markdown",
+			"extra": true,
+			"another": 1
+		},
+		"expectedError": "unknown arguments: another, extra"
 	},
 	{
 		"name": "a source file with no format-aware extractor",
@@ -530,7 +575,7 @@
 		"arguments": {
 			"format": ""
 		},
-		"expectedError": "Provide `format` (one of: markdown, html, css, javascript, typescript, json, yaml, properties, toml, ini, xml, csv, plaintext) or a `filename` with a recognised extension."
+		"expectedFailure": "Provide `format` (one of: markdown, html, css, javascript, typescript, json, yaml, properties, toml, ini, xml, csv, plaintext) or a `filename` with a recognised extension."
 	},
 	{
 		"name": "an empty filename is not a name",
@@ -538,7 +583,7 @@
 		"arguments": {
 			"filename": ""
 		},
-		"expectedError": "Provide `format` (one of: markdown, html, css, javascript, typescript, json, yaml, properties, toml, ini, xml, csv, plaintext) or a `filename` with a recognised extension."
+		"expectedFailure": "Provide `format` (one of: markdown, html, css, javascript, typescript, json, yaml, properties, toml, ini, xml, csv, plaintext) or a `filename` with a recognised extension."
 	},
 	{
 		"name": "a quoted URL inside a JSON comment is trivia",

@@ -68,8 +68,8 @@ jobs:
           done
           required=$(printf '%s\n' \
             fixtures/extraction.json \
-            fixtures/heuristics.json \
-            fixtures/mcp-extract-paths.json)
+            fixtures/mcp-extract-urls.json \
+            fixtures/aliases.json)
           # Every document the corpus names must ship too — the list is
           # read from the corpus rather than repeated here, so adding a
           # case cannot leave its document behind.

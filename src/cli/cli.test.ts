@@ -1,8 +1,10 @@
+import { execFileSync } from 'node:child_process';
 import {
 	chmodSync,
 	mkdirSync,
 	mkdtempSync,
 	rmdirSync,
+	symlinkSync,
 	unlinkSync,
 	writeFileSync,
 } from 'node:fs';
@@ -189,9 +191,66 @@ describe('collect', () => {
 		return root;
 	}
 
+	it('names a FIFO rather than opening or dropping it', () => {
+		// Reading a pipe with no writer never returns, so it was never opened;
+		// it was never named either, so it vanished from the report. Named
+		// outright it was walked as a directory and refused as not one.
+		if (process.platform === 'win32') return;
+		const root = mkdtempSync(join(tmpdir(), 'urls-le-fifo-'));
+		writeFileSync(join(root, 'kept.md'), 'https://a.example\n');
+		const fifo = join(root, 'pipe.md');
+		try {
+			execFileSync('mkfifo', [fifo]);
+		} catch {
+			unlinkSync(join(root, 'kept.md'));
+			rmdirSync(root);
+			return;
+		}
+		try {
+			const walked = collect([root], WALK);
+			expect(
+				walked.targets.map((target) => [target.path, target.unreadable]),
+			).toEqual([
+				[join(root, 'kept.md'), null],
+				[fifo, 'not a regular file'],
+			]);
+			expect(
+				collect([fifo], WALK).targets.map((target) => target.unreadable),
+			).toEqual(['not a regular file']);
+		} finally {
+			unlinkSync(fifo);
+			unlinkSync(join(root, 'kept.md'));
+			rmdirSync(root);
+		}
+	});
+
+	it('counts a symbolic link it does not follow', () => {
+		// Never followed without --follow-symlinks, by design; it was passed
+		// over without a line, so a reader could not tell the tree held more
+		// than the scan read.
+		if (process.platform === 'win32') return;
+		const root = mkdtempSync(join(tmpdir(), 'urls-le-symlink-'));
+		writeFileSync(join(root, 'a.md'), 'https://a.example\n');
+		symlinkSync(join(root, 'a.md'), join(root, 'link.md'));
+		try {
+			const walked = collect([root], WALK);
+			expect(walked.targets.map((target) => target.path)).toEqual([
+				join(root, 'a.md'),
+			]);
+			expect(walked.symlinks).toBe(1);
+			const followed = collect([root], { ...WALK, followSymlinks: true });
+			expect(followed.targets).toHaveLength(2);
+			expect(followed.symlinks).toBe(0);
+		} finally {
+			unlinkSync(join(root, 'link.md'));
+			unlinkSync(join(root, 'a.md'));
+			rmdirSync(root);
+		}
+	});
+
 	it('sorts by path component and gives each file its format', () => {
 		const root = tree();
-		const found = collect([root], WALK).map((target) => [
+		const found = collect([root], WALK).targets.map((target) => [
 			// Targets keep the native separator; only the report turns it to `/`.
 			target.path.slice(root.length + 1).replaceAll('\\', '/'),
 			target.languageId,
@@ -221,7 +280,7 @@ describe('collect', () => {
 			dirs.push(shut);
 			chmodSync(shut, 0o000);
 			try {
-				const found = collect([root], WALK);
+				const found = collect([root], WALK).targets;
 				const refused = found.find((target) => target.unreadable !== null);
 				expect(refused?.path).toBe(shut);
 				expect(refused?.languageId).toBe('plaintext');
@@ -277,6 +336,27 @@ describe('run', () => {
 	it('answers --version with the release', async () => {
 		expect((await capture(['--version'])).stdout).toBe('urls-le 9.9.9\n');
 	});
+
+	it('lists a symbolic link it did not follow on stderr', async () => {
+		if (process.platform === 'win32') return;
+		const root = mkdtempSync(join(tmpdir(), 'urls-le-run-symlink-'));
+		writeFileSync(join(root, 'a.md'), 'https://a.example\n');
+		symlinkSync(join(root, 'a.md'), join(root, 'link.md'));
+		try {
+			const { status, stderr } = await capture([root]);
+			expect(status).toBe(0);
+			expect(stderr).toContain(
+				'1 URL in 1 file\n1 symbolic link not followed\n',
+			);
+			const followed = await capture(['--follow-symlinks', root]);
+			expect(followed.stderr).toContain('2 URLs in 2 files\n');
+			expect(followed.stderr).not.toContain('symbolic link');
+		} finally {
+			unlinkSync(join(root, 'link.md'));
+			unlinkSync(join(root, 'a.md'));
+			rmdirSync(root);
+		}
+	});
 });
 
 describe('mcp', () => {
@@ -287,7 +367,14 @@ describe('mcp', () => {
 				typeof item === 'string' ? Buffer.from(item) : item,
 			),
 		);
-		const status = await serve(input, (text) => written.push(text), '9.9.9');
+		const status = await serve(
+			input,
+			(text) => {
+				written.push(text);
+				return undefined;
+			},
+			'9.9.9',
+		);
 		return { status, written };
 	}
 
@@ -300,38 +387,206 @@ describe('mcp', () => {
 		]);
 	});
 
-	it('answers no notification and no frame that is not JSON', async () => {
-		const { written } = await session([
+	it('answers in serde_json’s key order and refuses what it cannot answer', async () => {
+		// A frame that is not JSON, or not UTF-8, was dropped without a word,
+		// and a client lost every request it then waited on. It is a parse
+		// error in the extension server's words now, and the next line is
+		// served.
+		const { status, written } = await session([
+			'{"jsonrpc":"2.0","id":1,"method":"initialize"}\n',
 			'{"jsonrpc":"2.0","method":"notifications/initialized"}\n',
 			'not json\n',
-			'   \n',
-		]);
-		expect(written).toEqual([]);
-	});
-
-	it('drops a line that is not UTF-8 and serves the next', async () => {
-		const { status, written } = await session([
 			Buffer.from([0x7b, 0xff, 0x7d, 0x0a]),
-			'{"jsonrpc":"2.0","id":1,"method":"ping"}\n',
+			'   \n',
+			'{"jsonrpc":"2.0","id":2,"method":"nope"}\n',
 		]);
 		expect(status).toBe(0);
-		expect(written).toEqual(['{"id":1,"jsonrpc":"2.0","result":{}}\n']);
+		expect(written).toEqual([
+			'{"id":1,"jsonrpc":"2.0","result":{"capabilities":{"tools":{}},"protocolVersion":"2025-06-18","serverInfo":{"name":"urls-le","version":"9.9.9"}}}\n',
+			'{"error":{"code":-32700,"message":"Invalid JSON"},"id":null,"jsonrpc":"2.0"}\n',
+			'{"error":{"code":-32700,"message":"Invalid JSON"},"id":null,"jsonrpc":"2.0"}\n',
+			'{"error":{"code":-32601,"message":"Unknown method: nope"},"id":2,"jsonrpc":"2.0"}\n',
+		]);
 	});
 
-	it('reports a scan of a missing path as a tool failure', async () => {
+	it('refuses malformed frames in the words the other two servers use, and a null id is a notification', async () => {
+		// The three servers this repository ships answered a malformed frame
+		// three different ways. The words are the extension server's.
 		const { written } = await session([
-			`${JSON.stringify({
-				jsonrpc: '2.0',
-				id: 1,
-				method: 'tools/call',
-				params: { name: 'urls_le_scan', arguments: {} },
-			})}\n`,
+			'{"id":1,"method":"ping"}\n',
+			'{"jsonrpc":"1.0","id":2,"method":"ping"}\n',
+			'[{"jsonrpc":"2.0","id":3,"method":"ping"}]\n',
+			'{"jsonrpc":"2.0","id":null,"method":"ping"}\n',
+			'{"jsonrpc":"2.0","id":4,"method":"notifications/initialized"}\n',
+			'{"jsonrpc":"2.0","id":5,"method":"tools/call","params":5}\n',
+			'{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"nope"}}\n',
+			'{"jsonrpc":"2.0","id":7,"method":"tools/call"}\n',
+			'{"jsonrpc":"2.0","id":8,"method":"initialize","params":{"protocolVersion":"1999-01-01"}}\n',
 		]);
-		expect(JSON.parse(written[0] as string).result).toEqual({
-			content: [
-				{ text: 'no file or directory was supplied to audit', type: 'text' },
-			],
-			isError: true,
-		});
+		const refused = {
+			jsonrpc: '2.0',
+			id: null,
+			error: { code: -32700, message: 'Not a JSON-RPC 2.0 request' },
+		};
+		expect(written.map((line) => JSON.parse(line))).toEqual([
+			refused,
+			refused,
+			refused,
+			{
+				jsonrpc: '2.0',
+				id: 4,
+				error: {
+					code: -32601,
+					message: 'Unknown method: notifications/initialized',
+				},
+			},
+			{
+				jsonrpc: '2.0',
+				id: 5,
+				error: { code: -32602, message: 'tools/call requires a string `name`' },
+			},
+			{
+				jsonrpc: '2.0',
+				id: 6,
+				error: { code: -32602, message: 'Unknown tool: nope' },
+			},
+			{
+				jsonrpc: '2.0',
+				id: 7,
+				error: { code: -32602, message: 'tools/call requires a string `name`' },
+			},
+			{
+				jsonrpc: '2.0',
+				id: 8,
+				result: {
+					capabilities: { tools: {} },
+					protocolVersion: '2025-06-18',
+					serverInfo: { name: 'urls-le', version: '9.9.9' },
+				},
+			},
+		]);
+	});
+
+	it('waits for the pipe to drain before reading the next frame', async () => {
+		const lines: string[] = [];
+		let drained = 0;
+		const input = Readable.from([
+			Buffer.from(
+				'{"jsonrpc":"2.0","id":1,"method":"ping"}\n{"jsonrpc":"2.0","id":2,"method":"ping"}\n',
+			),
+		]);
+		await serve(
+			input,
+			(line) => {
+				lines.push(line);
+				return new Promise((resolve) =>
+					setTimeout(() => {
+						drained += 1;
+						resolve();
+					}, 1),
+				);
+			},
+			'9.9.9',
+		);
+		expect(lines).toHaveLength(2);
+		expect(drained).toBe(2);
+	});
+
+	const call = (name: string, args: string) =>
+		`{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"${name}","arguments":${args}}}\n`;
+	const refusal = (reply: string) => JSON.parse(reply).error;
+
+	it('refuses a wrong-typed or undeclared argument as a protocol error, and a path that is not there as a tool failure', async () => {
+		// A `hidden: "yes"` was read as false and a `format: 7` as absent, and
+		// an argument the schema does not declare was accepted, on this
+		// server and the crate's alike. A path that is not there is a fact
+		// about the filesystem, not the schema: a result carrying isError.
+		const { written } = await session([
+			call('extract_urls', '{"content":"x","format":7}'),
+			call(
+				'extract_urls',
+				'{"content":"x","format":"markdown","dedupe":"yes"}',
+			),
+			call('extract_urls', '{"content":"x","format":"markdown","filename":7}'),
+			call(
+				'extract_urls',
+				'{"content":"x","format":"markdown","bogus":1,"another":2}',
+			),
+			call('urls_le_scan', '{"path":"x","hidden":"yes"}'),
+			call('urls_le_scan', '{"path":"x","bogus":1}'),
+			call('urls_le_scan', '{"path":"/no/such/place-xyz"}'),
+		]);
+		expect(written.slice(0, 6).map(refusal)).toEqual([
+			{ code: -32602, message: 'format must be a string' },
+			{ code: -32602, message: 'dedupe must be a boolean' },
+			{ code: -32602, message: 'filename must be a string' },
+			{ code: -32602, message: 'unknown arguments: another, bogus' },
+			{ code: -32602, message: 'hidden must be a boolean' },
+			{ code: -32602, message: 'unknown argument: bogus' },
+		]);
+		const failure = JSON.parse(written[6] as string).result;
+		expect(failure.isError).toBe(true);
+		expect(failure.content[0].text).toContain('/no/such/place-xyz');
+	});
+
+	it('names a path entry that is not a string rather than dropping it, and refuses a scan that names nothing', async () => {
+		// `["dir", 7]` was answered for `dir` alone and the 7 vanished without
+		// a word, on this server and the crate's alike.
+		const { written } = await session([
+			call('urls_le_scan', '{"paths":["a",7]}'),
+			call('urls_le_scan', '{"paths":[null]}'),
+			call('urls_le_scan', '{"path":7}'),
+			call('urls_le_scan', '{"paths":[]}'),
+			call('urls_le_scan', '{}'),
+		]);
+		expect(written.map(refusal)).toEqual([
+			{ code: -32602, message: 'entry 1 of paths is not a string' },
+			{ code: -32602, message: 'entry 0 of paths is not a string' },
+			{ code: -32602, message: 'path must be a string' },
+			{ code: -32602, message: 'the list of paths was empty' },
+			{ code: -32602, message: 'no file or directory was supplied to audit' },
+		]);
+	});
+
+	it('carries the symbolic links it did not follow in the envelope', async () => {
+		if (process.platform === 'win32') return;
+		const root = mkdtempSync(join(tmpdir(), 'urls-le-mcp-symlink-'));
+		writeFileSync(join(root, 'a.md'), 'https://a.example\n');
+		symlinkSync(join(root, 'a.md'), join(root, 'link.md'));
+		try {
+			const { written } = await session([
+				call('urls_le_scan', JSON.stringify({ path: root })),
+			]);
+			const data = JSON.parse(written[0] ?? '').result.structuredContent.data;
+			expect(data.symbolicLinks).toBe(1);
+			expect(data.reports).toHaveLength(1);
+			expect(data.urls).toBe(1);
+		} finally {
+			unlinkSync(join(root, 'link.md'));
+			unlinkSync(join(root, 'a.md'));
+			rmdirSync(root);
+		}
+	});
+
+	it('reads a cap written as an exponent or an integer-valued float as the crate does', async () => {
+		// `1E20` was refused here and clamped by the extension's server; JSON
+		// Schema's `integer` is any number with a zero fractional part.
+		const { written } = await session([
+			call(
+				'extract_urls',
+				'{"content":"https://a.example https://b.example","format":"markdown","maxResults":1E20}',
+			),
+			call(
+				'extract_urls',
+				'{"content":"https://a.example https://b.example","format":"markdown","maxResults":1.0}',
+			),
+		]);
+		const meta = written.map(
+			(reply) => JSON.parse(reply).result.structuredContent.meta,
+		);
+		expect(meta).toEqual([
+			{ count: 2, tool: 'extract_urls', truncated: false },
+			{ count: 1, tool: 'extract_urls', truncated: true },
+		]);
 	});
 });

@@ -10,6 +10,21 @@ use std::path::{Path as StdPath, PathBuf};
 
 use crate::extract::format::{FALLBACK_FORMAT, resolve_format};
 
+/// The reason a FIFO, a socket or a device is skipped, in the words the
+/// npm command line uses. Reading a pipe with no writer never returns, so
+/// one is never opened; one was never named either, so it vanished.
+const NOT_A_REGULAR_FILE: &str = "not a regular file";
+
+/// What a walk reached, and what it passed over.
+#[derive(Debug, Default)]
+pub(crate) struct Walked {
+    pub(crate) targets: Vec<Target>,
+    /// Links met in a walk without `--follow-symlinks`. Never followed
+    /// then, by design; counted, because a reader has to know the tree
+    /// holds more than the scan read.
+    pub(crate) symlinks: usize,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Target {
     pub(crate) path: PathBuf,
@@ -54,8 +69,8 @@ impl Default for WalkOptions {
 /// The sort is not cosmetic: `ignore` makes no ordering guarantee, and
 /// a report whose lines move between two runs over an unchanged tree
 /// cannot be diffed — which is most of what a report in CI is for.
-pub(crate) fn collect(inputs: &[PathBuf], options: &WalkOptions) -> Result<Vec<Target>, String> {
-    let mut targets = Vec::new();
+pub(crate) fn collect(inputs: &[PathBuf], options: &WalkOptions) -> Result<Walked, String> {
+    let mut walked = Walked::default();
 
     for input in inputs {
         let metadata =
@@ -66,23 +81,36 @@ pub(crate) fn collect(inputs: &[PathBuf], options: &WalkOptions) -> Result<Vec<T
             // say — and whatever its name suggests. Naming a file is an
             // instruction, and this used to answer it with a refusal
             // when the extension was one it had no extractor for.
-            targets.push(Target {
+            walked.targets.push(Target {
                 path: input.clone(),
                 language_id: options.format.unwrap_or_else(|| language_for(input)),
                 unreadable: None,
             });
             continue;
         }
+        // A FIFO, a socket or a device named outright: never opened, and
+        // never silent. It was walked as a directory and answered for as
+        // an empty one.
+        if !metadata.is_dir() {
+            walked.targets.push(Target {
+                path: input.clone(),
+                language_id: FALLBACK_FORMAT,
+                unreadable: Some(NOT_A_REGULAR_FILE.to_string()),
+            });
+            continue;
+        }
 
-        targets.extend(walk_directory(input, options));
+        let found = walk_directory(input, options);
+        walked.targets.extend(found.targets);
+        walked.symlinks += found.symlinks;
     }
 
-    targets.sort_by(|a, b| a.path.cmp(&b.path));
-    targets.dedup();
-    Ok(targets)
+    walked.targets.sort_by(|a, b| a.path.cmp(&b.path));
+    walked.targets.dedup();
+    Ok(walked)
 }
 
-fn walk_directory(root: &StdPath, options: &WalkOptions) -> Vec<Target> {
+fn walk_directory(root: &StdPath, options: &WalkOptions) -> Walked {
     let mut builder = ignore::WalkBuilder::new(root);
     builder
         .hidden(!options.hidden)
@@ -93,7 +121,7 @@ fn walk_directory(root: &StdPath, options: &WalkOptions) -> Vec<Target> {
         .parents(options.respect_ignore)
         .follow_links(options.follow_symlinks);
 
-    let mut targets = Vec::new();
+    let mut walked = Walked::default();
     for entry in builder.build() {
         let entry = match entry {
             Ok(entry) => entry,
@@ -103,7 +131,7 @@ fn walk_directory(root: &StdPath, options: &WalkOptions) -> Vec<Target> {
             // the answer for every readable file in the tree was thrown
             // away along with the one that could not be read.
             Err(error) => {
-                targets.push(Target {
+                walked.targets.push(Target {
                     path: errored_path(&error).unwrap_or_else(|| root.to_path_buf()),
                     language_id: FALLBACK_FORMAT,
                     unreadable: Some(error.to_string()),
@@ -111,16 +139,33 @@ fn walk_directory(root: &StdPath, options: &WalkOptions) -> Vec<Target> {
                 continue;
             }
         };
-        if !entry.file_type().is_some_and(|kind| kind.is_file()) {
-            continue;
+        match entry.file_type() {
+            Some(kind) if kind.is_file() => walked.targets.push(Target {
+                path: entry.path().to_path_buf(),
+                language_id: options.format.unwrap_or_else(|| language_for(entry.path())),
+                unreadable: None,
+            }),
+            // A directory the walker descends.
+            Some(kind) if kind.is_dir() => {}
+            // A link the walker reports as a link only when it is not
+            // following them; counted so that it is not silent. The root
+            // is the exception: a link named outright is followed whatever
+            // the flag says, and its entries come next.
+            Some(kind) if kind.is_symlink() => {
+                if entry.depth() > 0 {
+                    walked.symlinks += 1;
+                }
+            }
+            // A FIFO, a socket or a device under a name the walk reads:
+            // named rather than opened or dropped.
+            _ => walked.targets.push(Target {
+                path: entry.path().to_path_buf(),
+                language_id: FALLBACK_FORMAT,
+                unreadable: Some(NOT_A_REGULAR_FILE.to_string()),
+            }),
         }
-        targets.push(Target {
-            path: entry.path().to_path_buf(),
-            language_id: options.format.unwrap_or_else(|| language_for(entry.path())),
-            unreadable: None,
-        });
     }
-    targets
+    walked
 }
 
 /// Which path a walk error is about, when the error knows.
@@ -186,7 +231,8 @@ mod tests {
         tree.write("c.rs", "// no");
         tree.write("d.py", "pass");
         let targets = collect(&[tree.path().to_path_buf()], &WalkOptions::default())
-            .expect("the walk succeeds");
+            .expect("the walk succeeds")
+            .targets;
         assert_eq!(names(&targets), ["a.md", "b.toml", "c.rs", "d.py"]);
         assert_eq!(targets[0].language_id, "markdown");
         assert_eq!(targets[2].language_id, FALLBACK_FORMAT);
@@ -199,9 +245,11 @@ mod tests {
             tree.write(name, "{}");
         }
         let first = collect(&[tree.path().to_path_buf()], &WalkOptions::default())
-            .expect("the walk succeeds");
+            .expect("the walk succeeds")
+            .targets;
         let second = collect(&[tree.path().to_path_buf()], &WalkOptions::default())
-            .expect("the walk succeeds");
+            .expect("the walk succeeds")
+            .targets;
         assert_eq!(names(&first), ["a.md", "m.md", "z.md"]);
         assert_eq!(first, second);
     }
@@ -217,7 +265,8 @@ mod tests {
         tree.write("kept.md", "x");
 
         let default = collect(&[tree.path().to_path_buf()], &WalkOptions::default())
-            .expect("the walk succeeds");
+            .expect("the walk succeeds")
+            .targets;
         assert_eq!(names(&default), ["kept.md"]);
 
         let everything = collect(
@@ -227,7 +276,8 @@ mod tests {
                 ..WalkOptions::default()
             },
         )
-        .expect("the walk succeeds");
+        .expect("the walk succeeds")
+        .targets;
         assert_eq!(names(&everything), ["kept.md", "skipped.md"]);
     }
 
@@ -241,7 +291,8 @@ mod tests {
         tree.write(".gitignore", "skipped.md\n");
         tree.write("skipped.md", "x");
         let targets = collect(&[tree.path().to_path_buf()], &WalkOptions::default())
-            .expect("the walk succeeds");
+            .expect("the walk succeeds")
+            .targets;
         assert_eq!(names(&targets), ["skipped.md"]);
     }
 
@@ -252,7 +303,8 @@ mod tests {
         tree.write("shown.md", "x");
 
         let default = collect(&[tree.path().to_path_buf()], &WalkOptions::default())
-            .expect("the walk succeeds");
+            .expect("the walk succeeds")
+            .targets;
         assert_eq!(names(&default), ["shown.md"]);
 
         let everything = collect(
@@ -262,7 +314,8 @@ mod tests {
                 ..WalkOptions::default()
             },
         )
-        .expect("the walk succeeds");
+        .expect("the walk succeeds")
+        .targets;
         assert_eq!(names(&everything), [".hidden.md", "shown.md"]);
     }
 
@@ -274,7 +327,9 @@ mod tests {
         let tree = TempTree::new("walk-explicit");
         tree.write(".gitignore", "skipped.json\n");
         let file = tree.write("skipped.md", "x");
-        let targets = collect(&[file], &WalkOptions::default()).expect("the walk succeeds");
+        let targets = collect(&[file], &WalkOptions::default())
+            .expect("the walk succeeds")
+            .targets;
         assert_eq!(names(&targets), ["skipped.md"]);
     }
 
@@ -285,7 +340,9 @@ mod tests {
     fn an_explicitly_named_file_of_unknown_format_is_read_anyway() {
         let tree = TempTree::new("walk-unknown");
         let file = tree.write("notes.rs", "// x");
-        let targets = collect(&[file], &WalkOptions::default()).expect("the walk succeeds");
+        let targets = collect(&[file], &WalkOptions::default())
+            .expect("the walk succeeds")
+            .targets;
         assert_eq!(names(&targets), ["notes.rs"]);
         assert_eq!(targets[0].language_id, FALLBACK_FORMAT);
     }
@@ -301,7 +358,8 @@ mod tests {
                 ..WalkOptions::default()
             },
         )
-        .expect("the walk succeeds");
+        .expect("the walk succeeds")
+        .targets;
         assert_eq!(targets[0].language_id, "markdown");
     }
 
@@ -329,12 +387,12 @@ mod tests {
         std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o000))
             .expect("permissions");
 
-        let targets = collect(&[tree.path().to_path_buf()], &WalkOptions::default());
+        let walked = collect(&[tree.path().to_path_buf()], &WalkOptions::default());
         // Restore before asserting, or a failure leaves a directory the
         // temporary-tree cleanup cannot remove.
         std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o755))
             .expect("permissions");
-        let targets = targets.expect("the walk succeeds");
+        let targets = walked.expect("the walk succeeds").targets;
 
         // Running as root reads it anyway, which is not this test's
         // subject. Say so rather than passing on a case that never ran.
@@ -356,8 +414,9 @@ mod tests {
     fn naming_the_same_file_twice_examines_it_once() {
         let tree = TempTree::new("walk-dedupe");
         let file = tree.write("a.json", "{}");
-        let targets =
-            collect(&[file.clone(), file], &WalkOptions::default()).expect("the walk succeeds");
+        let targets = collect(&[file.clone(), file], &WalkOptions::default())
+            .expect("the walk succeeds")
+            .targets;
         assert_eq!(targets.len(), 1);
     }
 }

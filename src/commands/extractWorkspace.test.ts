@@ -154,6 +154,27 @@ describe('urls-le.extractWorkspace and urls-le.extractFolder', () => {
 		expect(report()).toContain(
 			'> The results limit was reached. The rest of the files were not read.',
 		);
+		// That file's one URL filled the limit exactly, so nothing in it was
+		// dropped, and only the files left unread are noted.
+		expect(report()).not.toContain('The URLs after it in that file');
+	});
+
+	it('says when the results limit was reached inside the last file, since the URLs after it were dropped', async () => {
+		// The scan reported an early stop only when files remained, so a limit
+		// hit inside the last file dropped the URLs after it without a word.
+		open({
+			'/w/one.md': 'https://a.example https://b.example https://c.example\n',
+		});
+		_setConfig('urls-le.workspace.scanMaxResults', 2);
+		await runCommand('urls-le.extractWorkspace');
+
+		expect(report()).toContain(
+			'1 file(s) read · 2 distinct URL(s), 2 occurrence(s) in 1 file(s)',
+		);
+		expect(report()).toContain(
+			'> The results limit of 2 was reached. The URLs after it in that file were not counted.',
+		);
+		expect(report()).not.toContain('The rest of the files were not read.');
 	});
 
 	it('reads what a switch would skip when the settings say so', async () => {

@@ -25,17 +25,27 @@ export function extractFromMarkdown(content: string): readonly Url[] {
 	return toUrls(content, matches);
 }
 
-/** 1-based line numbers inside (or delimiting) ``` fenced blocks. */
+const FENCES = ['```', '~~~'] as const;
+
+/**
+ * 1-based line numbers inside (or delimiting) a fenced block. A fence is
+ * three backticks or three tildes, and only the marker that opened a block
+ * closes it, as CommonMark reads them: a tilde line inside a backtick block
+ * is text, and the other way round. Only backticks were read as fences, so
+ * a URL in a tilde block was extracted on both sides.
+ */
 function computeFencedLines(lines: readonly string[]): Set<number> {
 	const fenced = new Set<number>();
-	let inBlock = false;
+	let open: (typeof FENCES)[number] | undefined;
 	lines.forEach((line, index) => {
-		const isFence = line.trim().startsWith('```');
-		if (isFence || inBlock) {
+		const trimmed = line.trim();
+		const marker = FENCES.find((fence) => trimmed.startsWith(fence));
+		const isFence = open === undefined ? marker !== undefined : marker === open;
+		if (isFence || open !== undefined) {
 			fenced.add(index + 1);
 		}
 		if (isFence) {
-			inBlock = !inBlock;
+			open = open === undefined ? marker : undefined;
 		}
 	});
 	return fenced;

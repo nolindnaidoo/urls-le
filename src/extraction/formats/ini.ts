@@ -8,9 +8,9 @@ import { createPositionIndex } from '../position';
  * **No parser.** This used to parse with the `ini` package and then
  * forward-locate each value, which made the answer depend on which INI
  * library each language happened to install. `ini` never throws — a line
- * with no `=` becomes a key whose value is `true`, which `collectStrings`
- * skips, so the URL vanished and the declared fallback below could never
- * fire. The Rust server's parser refuses that same line and fell back to
+ * with no `=` becomes a key whose value is `true`, which the string
+ * collector skipped, so the URL vanished and the declared fallback below
+ * could never fire. The Rust server's parser refuses that same line and fell back to
  * a whole-document scan, so it found the URL. One document, one
  * `extract_urls` tool, two servers, two answers — found by generated
  * documents in `scripts/differential.ts`.

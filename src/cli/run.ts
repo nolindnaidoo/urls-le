@@ -49,14 +49,14 @@ export async function run(args: readonly string[], io: RunIo): Promise<number> {
 
 async function execute(args: readonly string[], io: RunIo): Promise<number> {
 	const options = parse(args);
-	const reports = options.stdin
-		? [await scanStdin(options, io)]
+	const { reports, symlinks } = options.stdin
+		? { reports: [await scanStdin(options, io)], symlinks: 0 }
 		: await readTree(options.inputs, options.scan, options.walk);
 
 	if (!io.stdoutIsTerminal) {
 		io.stdout(reports.map((report) => `${JSON.stringify(report)}\n`).join(''));
 	}
-	io.stderr(summary(reports));
+	io.stderr(summary(reports, symlinks));
 	return exitCode(reports, options.strict);
 }
 
@@ -64,12 +64,13 @@ export async function readTree(
 	inputs: readonly string[],
 	scan: ScanOptions,
 	walk: WalkOptions,
-): Promise<FileReport[]> {
+): Promise<{ readonly reports: FileReport[]; readonly symlinks: number }> {
+	const walked = collect(inputs, walk);
 	const reports: FileReport[] = [];
-	for (const target of collect(inputs, walk)) {
+	for (const target of walked.targets) {
 		reports.push(await scanFile(target, scan));
 	}
-	return reports;
+	return { reports, symlinks: walked.symlinks };
 }
 
 async function scanStdin(options: Cli, io: RunIo): Promise<FileReport> {
@@ -92,8 +93,12 @@ async function scanStdin(options: Cli, io: RunIo): Promise<FileReport> {
 	);
 }
 
-/** The human half. Every line restates something already in the JSON. */
-function summary(reports: readonly FileReport[]): string {
+/**
+ * The human half. Every line restates something already in the JSON, but
+ * the last: a link passed over has no report line, and the count is the
+ * only place a reader learns the tree holds more than the scan read.
+ */
+function summary(reports: readonly FileReport[], symlinks: number): string {
 	const lines: string[] = [];
 	let urls = 0;
 	for (const report of reports) {
@@ -108,6 +113,13 @@ function summary(reports: readonly FileReport[]): string {
 	lines.push(
 		`${plural(urls, 'URL', 'URLs')} in ${plural(reports.length, 'file', 'files')}`,
 	);
+	if (symlinks > 0) {
+		// Never followed without --follow-symlinks, by design; still not a
+		// silence.
+		lines.push(
+			`${plural(symlinks, 'symbolic link', 'symbolic links')} not followed`,
+		);
+	}
 	return lines.map((line) => `${line}\n`).join('');
 }
 

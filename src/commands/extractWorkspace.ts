@@ -86,6 +86,9 @@ async function extractWorkspace(
 			);
 			const found = new Map<string, Occurrence[]>();
 			let total = 0;
+			// A URL past the limit is dropped, and the scan reports an early stop
+			// only when files remained: inside the last file it said nothing.
+			let dropped = false;
 			const scanned = await scanFiles(
 				root,
 				files,
@@ -100,7 +103,10 @@ async function extractWorkspace(
 					// recognises is scanned whole, as Extract scans it.
 					const language = resolveFormat(undefined, file) ?? 'unknown';
 					for (const url of extractUrlsFromText(text, language)) {
-						if (total >= config.workspaceScanMaxResults) return false;
+						if (total >= config.workspaceScanMaxResults) {
+							dropped = true;
+							return false;
+						}
 						const occurrence = { file, position: url.position };
 						const where = found.get(url.value);
 						if (where === undefined) found.set(url.value, [occurrence]);
@@ -128,6 +134,7 @@ async function extractWorkspace(
 						summary,
 						limits,
 						positions,
+						resultsCap: dropped ? config.workspaceScanMaxResults : undefined,
 					}),
 				config,
 				deps,
@@ -180,6 +187,8 @@ export interface ExtractWorkspaceReportInput {
 	readonly summary: ScanSummary;
 	readonly limits: ScanLimits;
 	readonly positions?: boolean;
+	/** The results limit, when a URL was dropped for it inside a file. */
+	readonly resultsCap?: number | undefined;
 }
 
 /**
@@ -193,6 +202,7 @@ export function formatExtractWorkspaceReport({
 	summary,
 	limits,
 	positions = true,
+	resultsCap,
 }: ExtractWorkspaceReportInput): string {
 	const lines: string[] = [
 		`# ${vscode.l10n.t('{0} workspace report', 'URLs-LE')}`,
@@ -239,7 +249,16 @@ export function formatExtractWorkspaceReport({
 		lines.push('');
 	}
 
-	const notes = unreadNotes(summary, limits, code('urls-le.workspace.*'));
+	const notes = [...unreadNotes(summary, limits, code('urls-le.workspace.*'))];
+	// The scan's own note covers the files it never opened; this one covers
+	// the rest of the file the limit was reached in.
+	if (resultsCap !== undefined)
+		notes.push(
+			vscode.l10n.t(
+				'The results limit of {0} was reached. The URLs after it in that file were not counted.',
+				resultsCap,
+			),
+		);
 	if (notes.length > 0) lines.push(...notes.map((note) => `> ${note}`), '');
 	return lines.join('\n');
 }

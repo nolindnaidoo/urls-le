@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import type { Configuration } from '../types';
 import { replaceDocumentContent } from '../utils/document';
+import { describeError } from '../utils/errors';
 import type { CommandDependencies } from './dependencies';
 
 /**
@@ -13,11 +14,6 @@ import type { CommandDependencies } from './dependencies';
  * notification, so the user really can interrupt between the extraction and
  * the write.
  */
-
-function describe(error: unknown): string {
-	if (error instanceof Error) return error.message;
-	return vscode.l10n.t('Unknown error');
-}
 
 /** Returns whether the results reached the user. */
 export async function displayResults(
@@ -37,7 +33,7 @@ export async function displayResults(
 		return await openInNewFile(content, token, deps);
 	}
 
-	return await replaceInPlace(document, content, token, deps);
+	return await replaceInPlace(document, formattedUrls, token, deps);
 }
 
 async function openBeside(
@@ -58,7 +54,7 @@ async function openBeside(
 		deps.notifier.showError(
 			vscode.l10n.t(
 				'Failed to open results side by side: {0}',
-				describe(error),
+				describeError(error),
 			),
 		);
 		return false;
@@ -81,7 +77,10 @@ async function openInNewFile(
 		return true;
 	} catch (error) {
 		deps.notifier.showError(
-			vscode.l10n.t('Failed to open results in new file: {0}', describe(error)),
+			vscode.l10n.t(
+				'Failed to open results in new file: {0}',
+				describeError(error),
+			),
 		);
 		return false;
 	}
@@ -89,16 +88,17 @@ async function openInNewFile(
 
 async function replaceInPlace(
 	document: vscode.TextDocument,
-	content: string,
+	lines: readonly string[],
 	token: vscode.CancellationToken,
 	deps: CommandDependencies,
 ): Promise<boolean> {
 	if (token.isCancellationRequested) return false;
 
 	try {
-		// The shared helper owns the full-document range and returns whether the
-		// edit landed; this file used to carry a second copy of both.
-		const applied = await replaceDocumentContent(document, [content]);
+		// The shared helper owns the full-document range, the document's line
+		// ending and whether the edit landed; this file used to carry a second
+		// copy of all three.
+		const applied = await replaceDocumentContent(document, lines);
 		if (!applied) {
 			deps.notifier.showError(
 				vscode.l10n.t('Failed to apply edits to document'),
@@ -108,7 +108,10 @@ async function replaceInPlace(
 		return true;
 	} catch (error) {
 		deps.notifier.showError(
-			vscode.l10n.t('Failed to replace document content: {0}', describe(error)),
+			vscode.l10n.t(
+				'Failed to replace document content: {0}',
+				describeError(error),
+			),
 		);
 		return false;
 	}

@@ -77,13 +77,9 @@ pub(crate) fn run() -> ExitCode {
     if let Some(first) = args.first() {
         match first.as_str() {
             "mcp" => return crate::mcp::serve(),
-            "--help" | "-h" => {
-                println!("{USAGE}");
-                return ExitCode::SUCCESS;
-            }
+            "--help" | "-h" => return answer(USAGE),
             "--version" | "-V" => {
-                println!("urls-le {}", env!("CARGO_PKG_VERSION"));
-                return ExitCode::SUCCESS;
+                return answer(&format!("urls-le {}", env!("CARGO_PKG_VERSION")));
             }
             _ => {}
         }
@@ -91,23 +87,41 @@ pub(crate) fn run() -> ExitCode {
 
     match execute(&args) {
         Ok(code) => ExitCode::from(code),
-        Err(message) => {
-            eprintln!("urls-le: {message}");
-            ExitCode::from(2)
-        }
+        Err(message) => refuse(&message),
     }
+}
+
+/// One line on stdout and exit 0, or the refusal the scan gives a closed
+/// stdout. `println!` panicked on a reader that went away, exit 101 with
+/// a stack trace, where the npm command line answers exit 2 and one line.
+fn answer(text: &str) -> ExitCode {
+    let mut stdout = std::io::stdout().lock();
+    match writeln!(stdout, "{text}").and_then(|()| stdout.flush()) {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(error) => refuse(&format!("could not write the report: {error}")),
+    }
+}
+
+/// A malformed question, or a report that could not be written: one line
+/// on stderr and exit 2. A reader that closed stderr loses the line and
+/// nothing else; `eprintln!` panicked on it.
+fn refuse(message: &str) -> ExitCode {
+    let _ = writeln!(std::io::stderr().lock(), "urls-le: {message}");
+    ExitCode::from(2)
 }
 
 fn execute(args: &[String]) -> Result<u8, String> {
     let options = parse(args)?;
-    let reports = if options.stdin {
-        vec![scan_stdin(&options)?]
+    let (reports, symlinks) = if options.stdin {
+        (vec![scan_stdin(&options)?], 0)
     } else {
-        let targets = walk::collect(&options.inputs, &options.walk)?;
-        targets
+        let walked = walk::collect(&options.inputs, &options.walk)?;
+        let reports = walked
+            .targets
             .iter()
             .map(|target| scan::scan_file(target, options.scan))
-            .collect()
+            .collect();
+        (reports, walked.symlinks)
     };
 
     let stdout = std::io::stdout();
@@ -115,7 +129,7 @@ fn execute(args: &[String]) -> Result<u8, String> {
     write_reports(&mut stdout.lock(), &reports, terminal)
         .map_err(|error| format!("could not write the report: {error}"))?;
 
-    summarise(&reports);
+    summarise(&reports, symlinks);
     Ok(scan::exit_code(&reports, options.strict))
 }
 
@@ -210,8 +224,10 @@ fn parse(args: &[String]) -> Result<Options, String> {
     Ok(options)
 }
 
-/// The human half. Every line restates something already in the JSON.
-fn summarise(reports: &[FileReport]) {
+/// The human half. Every line restates something already in the JSON,
+/// but the last: a link passed over has no report line, and the count is
+/// the only place a reader learns the tree holds more than the scan read.
+fn summarise(reports: &[FileReport], symlinks: usize) {
     let mut stderr = std::io::stderr().lock();
     let mut urls = 0;
 
@@ -231,6 +247,15 @@ fn summarise(reports: &[FileReport]) {
         plural(urls, "URL", "URLs"),
         plural(reports.len(), "file", "files")
     );
+    if symlinks > 0 {
+        // Never followed without --follow-symlinks, by design; still not
+        // a silence.
+        let _ = writeln!(
+            stderr,
+            "{} not followed",
+            plural(symlinks, "symbolic link", "symbolic links")
+        );
+    }
 }
 
 fn plural(count: usize, one: &str, many: &str) -> String {
@@ -282,6 +307,41 @@ mod tests {
         let mut implemented = FLAGS.to_vec();
         implemented.sort_unstable();
         assert_eq!(documented, implemented);
+    }
+
+    /// The README and the SPEC each carry an options block for a reader
+    /// who never runs `--help`. Each names every flag the parser accepts
+    /// and no other: the README had left out `--strict`, and the SPEC
+    /// `--strict` and `--follow-symlinks`.
+    #[test]
+    fn the_readme_and_the_spec_name_every_flag() {
+        let mut implemented = FLAGS.to_vec();
+        implemented.sort_unstable();
+        for (name, heading, text) in [
+            ("README.md", "\n## Options\n", include_str!("../README.md")),
+            (
+                "SPEC.md",
+                "\n## The CLI surface\n",
+                include_str!("../SPEC.md"),
+            ),
+        ] {
+            let after = text.split_once(heading).map_or_else(
+                || panic!("{name} has no {heading:?} heading"),
+                |(_, rest)| rest,
+            );
+            let block = after
+                .split("```")
+                .nth(1)
+                .unwrap_or_else(|| panic!("{name}: no fenced block under {heading:?}"));
+            let mut documented: Vec<&str> = block
+                .split_whitespace()
+                .filter(|word| word.starts_with("--"))
+                .filter(|word| !matches!(*word, "--version" | "--help"))
+                .collect();
+            documented.sort_unstable();
+            documented.dedup();
+            assert_eq!(documented, implemented, "{name}");
+        }
     }
 
     #[test]
